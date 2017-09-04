@@ -51,7 +51,7 @@ with adhoc_import.Google3CitcClient('rl_predict', username='iansf', behavior='pr
   from google3.third_party.py.pandas.tools import plotting
 
   U = reload(U)
-  
+
 pd.set_option('display.max_rows', 1000)
 
 figsize = (16, 12)
@@ -80,7 +80,7 @@ class pict(dict):  # pylint: disable=invalid-name
     return self is other
 
   __eq__ = __cmp__
-  
+
   def __ne__(self, other):
     return not self == other
 
@@ -109,7 +109,7 @@ class pict(dict):  # pylint: disable=invalid-name
   def update(self, *a, **kw):
     dict.update(self, *a, **kw)
     return self
-  
+
   def copy(self):
     return pict(dict.copy(self))
 
@@ -171,7 +171,7 @@ class defaultpict(defaultdict):  # pylint: disable=invalid-name
   def update(self, *a, **kw):
     defaultdict.update(self, *a, **kw)
     return self
-  
+
   def copy(self):
     return defaultpict(defaultdict.copy(self))
 
@@ -219,7 +219,7 @@ class pist(list):  # pylint: disable=invalid-name
                       or x[name] for x in self], root=self.__root__), name, b=dbg)
     except Exception as e:
       raise qj(AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e))), l=lambda _: self, b=dbg)
-  
+
   def __getattr__(self, name):
     qj(self, name, b=dbg * (not name.startswith('__')))
     attr = None
@@ -255,7 +255,7 @@ class pist(list):  # pylint: disable=invalid-name
     if self is self.__root__:
       return pist(list.__getslice__(self, i, j))
     return pist(list.__getslice__(self, i, j), root=pist(list.__getslice__(self.__root__, i, j)))
-  
+
   def __setattr__(self, name, value):
     if name == '__root__':
       list.__setattr__(self, name, value)
@@ -265,38 +265,38 @@ class pist(list):  # pylint: disable=invalid-name
     else:
       for x in self:
         x.__setattr__(name, value)
-  
+
   def __setitem__(self, key, value):
     list.__setitem__(self, key, value)
     return self
-  
+
   def __setslice__(self, i, j, sequence):
     list.__setslice__(self, i, j, sequence)
     return self
-  
+
   def __delattr__(self, name):
     for x in self:
       x.__delattr__(name)
     return self
-  
+
   def __delitem__(self, key):
     list.__delitem__(self, key)
     return self
-  
+
   def __delslice__(self, i, j):
     list.__delslice__(self, i, j)
     return self
-  
+
   __hash__ = None
 
 
   def __call__(self, *args, **kwargs):
     return qj(pist([x(*args, **kwargs) for x in self], root=self.__root__), '__call__', b=dbg)
-  
+
   def __contains__(self, other):
     return list.__contains__(self, other)
 
-  
+
   def __and__(self, other):
     if isinstance(other, pist):
       if len(self) == len(other):
@@ -326,7 +326,7 @@ class pist(list):  # pylint: disable=invalid-name
       )  # Don't pass root -- we are uprooting
     else:
       return pist([(x | other) for x in self], root=self.__root__)
-  
+
   def __xor__(self, other):
     if isinstance(other, pist):
       if len(self) == len(other):
@@ -343,7 +343,7 @@ class pist(list):  # pylint: disable=invalid-name
       )  # Don't pass root -- we are uprooting
     else:
       return pist([(x ^ other) for x in self], root=self.__root__)
-    
+
 
   def __add__(self, other):
     if isinstance(other, pist):
@@ -384,7 +384,7 @@ class pist(list):  # pylint: disable=invalid-name
       if len(self) == len(other):
         return pist([x * o for x, o in zip(self, other)], root=self.__root__)
     return pist([x * other for x in self], root=self.__root__)
-  
+
   def __rmul__(self, other):
     return pist([other * x for x in self], root=self.__root__)
 
@@ -416,7 +416,7 @@ class pist(list):  # pylint: disable=invalid-name
       if len(self) == len(other):
         return pist([x % o for x, o in zip(self, other)], root=self.__root__)
     return pist([x % other for x in self], root=self.__root__)
-  
+
   def __rmod__(self, other):
     return pist([other % x for x in self], root=self.__root__)
 
@@ -466,31 +466,31 @@ class pist(list):  # pylint: disable=invalid-name
 
   def __rtruediv__(self, other):
     return pist([other / x for x in self], root=self.__root__)
-  
+
   def __rfloordiv__(self, other):
     return pist([other // x for x in self], root=self.__root__)
-  
+
   def __rdivmod__(self, other):
     return pist([divmod(other, x) for x in self], root=self.__root__)
-  
+
   def __rpow__(self, other):
     return pist([other ** x for x in self], root=self.__root__)
-  
+
   def __rlshift__(self, other):
     return pist([other << x for x in self], root=self.__root__)
-  
+
   def __rrshift__(self, other):
     return pist([other >> x for x in self], root=self.__root__)
-  
+
   def __rand__(self, other):
     return pist([other & x for x in self], root=self.__root__)
-  
+
   def __rxor__(self, other):
     return pist([other ^ x for x in self], root=self.__root__)
-  
+
   def __ror__(self, other):
     return pist([other | x for x in self], root=self.__root__)
-  
+
 
   def __itruediv__(self, other):
     new_pist = pist(self, root=self.__root__)
@@ -590,12 +590,12 @@ class pist(list):  # pylint: disable=invalid-name
   def __enter__(self):
     qj(d=1)
     return pist([x.__enter__() for x in self], root=self.__root__)
-    
+
   def __exit__(self, exc_type, exc_value, traceback):
     qj(d=1)
     return pist([x.__exit__(exc_type, exc_value, traceback) for x in self], root=self.__root__)
 
-  
+
   def root(self):
     return self.__root__
 
@@ -654,10 +654,10 @@ class pist(list):  # pylint: disable=invalid-name
           groups[x] = pist()
         groups[x].append(self.__root__[i])
       return pist(groups.values())
-  
+
   def join(self):
     return pist([self])
-  
+
   def nonempty(self, r=1):
     if r > 1 or r < 0:
       try:
@@ -670,10 +670,10 @@ class pist(list):  # pylint: disable=invalid-name
 
   def np(self, *args, **kwargs):
     return pist([np.array(x, *args, **kwargs) for x in self], root=self.__root__)
-  
+
   def pd(self, *args, **kwargs):
     return pd.DataFrame.from_records(list(self), *args, **kwargs)
-  
+
   def pet(self):
     return pist([pet(x) for x in self], root=self.__root__)
 
@@ -701,7 +701,7 @@ class pist(list):  # pylint: disable=invalid-name
       except Exception:
         pass
     return pist([len(self)], root=self.__root__)
-  
+
   def rlen(self, r=1):
     if r > 1 or r < 0:
       try:
@@ -709,7 +709,7 @@ class pist(list):  # pylint: disable=invalid-name
       except Exception:
         pass
     return pist([len(self)], root=self.__root__)
-  
+
   def pshape(self):
     try:
       return pist([x.pshape() for x in self], root=self.__root__)
@@ -731,7 +731,7 @@ class pist(list):  # pylint: disable=invalid-name
     if not_root:
       return pist(new_items, root=pist(new_roots))
     return pist(new_items)
-    
+
   def pstr(self):
     try:
       return pist([x.pstr() for x in self], root=self.__root__)
@@ -740,7 +740,7 @@ class pist(list):  # pylint: disable=invalid-name
 
   def qj(self, *args, **kwargs):
     return qj(self, *args, **kwargs)
-  
+
   def remix(self, *args, **kwargs):
     kwargs = {
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
@@ -756,7 +756,7 @@ class pist(list):  # pylint: disable=invalid-name
       y.update({k: v[i] for k, v in kwargs.items()})
       new_items.append(y)
     return pist(new_items)
-  
+
   def sortby(self, key=None, reverse=False):
     key = key or (lambda x: x)
     sorted_inds = [i for i, _ in sorted(enumerate(self), key=lambda x: key(x[1]), reverse=reverse)]
@@ -784,7 +784,7 @@ class pist(list):  # pylint: disable=invalid-name
 #         return pist([x.ungroup(r - 1) for x in self.__root__])
 #       except Exception:
 #         pass
-    
+
 #     new_items = []
 #     for g in self.__root__:
 #       if not isinstance(g, list):
@@ -833,7 +833,7 @@ class pist(list):  # pylint: disable=invalid-name
           inds.append(child_inds)
         elif x == other:
           inds.append(i)
-    
+
     qj(inds, 'inds cmp self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds cmp self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
@@ -841,7 +841,7 @@ class pist(list):  # pylint: disable=invalid-name
     return qj(self.__root__[inds], 'return cmp self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
   __eq__ = __cmp__
-  
+
   def __ne__(self, other, return_inds=False):
     if self is other:
       if return_inds:
@@ -868,7 +868,7 @@ class pist(list):  # pylint: disable=invalid-name
           inds.append(child_inds)
         elif x != other:
           inds.append(i)
-    
+
     qj(inds, 'inds ne self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds ne self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
@@ -900,14 +900,14 @@ class pist(list):  # pylint: disable=invalid-name
           inds.append(child_inds)
         elif x > other:
           inds.append(i)
-    
+
     qj(inds, 'inds gt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds gt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
     return qj(self.__root__[inds], 'return gt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  
-  
+
+
   def __ge__(self, other, return_inds=False):
     if self is other:
       if return_inds:
@@ -935,14 +935,14 @@ class pist(list):  # pylint: disable=invalid-name
           inds.append(child_inds)
         elif x >= other:
           inds.append(i)
-    
+
     qj(inds, 'inds ge self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds ge self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
     return qj(self.__root__[inds], 'return ge self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
-  
+
   def __lt__(self, other, return_inds=False):
     if self is other:
       return pist()
@@ -967,14 +967,14 @@ class pist(list):  # pylint: disable=invalid-name
           inds.append(child_inds)
         elif x < other:
           inds.append(i)
-    
+
     qj(inds, 'inds lt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds lt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
     return qj(self.__root__[inds], 'return lt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  
-  
+
+
   def __le__(self, other, return_inds=False):
     if self is other:
       if return_inds:
@@ -1002,7 +1002,7 @@ class pist(list):  # pylint: disable=invalid-name
           inds.append(child_inds)
         elif x <= other:
           inds.append(i)
-    
+
     qj(inds, 'inds le self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds le self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
@@ -1492,7 +1492,7 @@ def clean_agent(agent_and_path):
   except Exception:
     agent.a_id = np.nan
   agent.winner = False
-  
+
   agent.stats = defaultpict(lambda: defaultpict(list), **agent.stats)
   fix_subkeys(agent.stats)
 
@@ -1501,10 +1501,10 @@ def clean_agent(agent_and_path):
     wins = agent.stats.test.wins[-1]
     del agent.stats.test.wins[:]
     agent.stats.test.wins.append(wins)
-  
+
   agent.original_settings = pict(**agent.original_settings)
   agent.num_params = int(agent.num_params)
-  
+
   if (len(agent.stats.test_stoch.total_reward) < 100
       or ('ww_multi' in agent.checkpoint_dir and len(agent.stats.test_stoch_solo.total_reward) < 100)
       or agent.mid == '<missing_mid>'
@@ -1576,7 +1576,7 @@ def get_agents(agent_files):
 #   except Exception:
 #     agent.a_id = np.nan
 #   agent.winner = False
-  
+
 #   agent.stats = defaultpict(lambda: defaultpict(list), **agent.stats)
 #   fix_subkeys(agent.stats)
 
@@ -1585,10 +1585,10 @@ def get_agents(agent_files):
 #     wins = agent.stats.test.wins[-1]
 #     del agent.stats.test.wins[:]
 #     agent.stats.test.wins.append(wins)
-  
+
 #   agent.original_settings = pict(**agent.original_settings)
 #   agent.num_params = int(agent.num_params)
-  
+
 #   if (len(agent.stats.test_stoch.total_reward) < 100
 #       or ('ww_multi' in agent.checkpoint_dir and len(agent.stats.test_stoch_solo.total_reward) < 100)
 #       or agent.mid == '<missing_mid>'
@@ -1597,13 +1597,13 @@ def get_agents(agent_files):
 #     qj((agent.exp_name, agent.name, agent.a_id), 'File %s had missing data (%d stoch rewards, %d solo rewards)' % (agent_file, len(agent.stats.test_stoch.total_reward), len(agent.stats.test_stoch_solo.total_reward)))
 #     cached_agents[a_id] = None
 #     return None
-  
+
 #   if 'recording_dirs' not in agent:
 #     agent.recording_dirs = []
-  
+
 #   agent.update(agent.original_settings)
 #   del agent.original_settings
-  
+
 #   cached_agents[a_id] = agent
 #   if len(cached_agents) % 1000 == 0:
 #     qj(len(cached_agents), 'Num loaded agents')
@@ -1712,7 +1712,7 @@ def plot(y, x=None, label='', title=None, remaining=0, mean_std=True, min_max=Fa
       plt.fill_between(x, min_, max_, alpha=0.05, color=line.get_color())
 
     plt.fill_between(x, mean - std, mean + std, alpha=0.25, color=line.get_color())
-    
+
   else:
     if x is None:
       x = np.arange(len(y))
@@ -1723,7 +1723,7 @@ def plot(y, x=None, label='', title=None, remaining=0, mean_std=True, min_max=Fa
 
   if remaining == 0:
     finalize_plot(**locals())
-  
+
   return line.get_color()
 
 
@@ -1755,7 +1755,7 @@ def plot_hist(x, label='', secondary_x=None, secondary_label='', title=None, fig
 
   if title is not None:
     plt.gca().set_title(title)
-  
+
   finalize_plot(**locals())
 
 
@@ -1998,7 +1998,7 @@ We were also curious about the fact that increasing $\beta$ results in Agent 1 (
  - Having a strongly predictive agent that the other agents are cotrained with influences their training and makes them more predictable as well.
  - The larger $\beta$ causes the optimizer to make the prediction superstructure more optimal, even though those adjustments don't change the weights of the actual policy network.
  - There's a bug, and Agent 1 is actually leaking predictive information to the policy.  I ruled this out by inspecting the gradients of the policy network directly and verifying that they are 0 when I set the base policy gradient loss to 0.
- 
+
 I look at this question some more below in ww_multi_sfpg{0|1}.
 
 I've added a chart showing how the mutual information changes with $\beta$ for both predictive and normal agents.
@@ -2381,7 +2381,7 @@ def dual_plot(x, ent, lsf, lab, title='', *a, **kw):
   color = plot(lsf, ls=':', label=lab, title=title, remaining=1)
   kw.update(color=color)
   plot_with_baseline(x, ent, title=title, *a, **kw)
-  
+
 by.stats.test.policy_mutual_information_through_time_self.apply(
     dual_plot,
     ent=by.stats.test.policy_entropy_self.np_().mean(),
@@ -2419,7 +2419,7 @@ def dual_plot(x, ent, lsf, lab, title='', *a, **kw):
   color = plot(lsf, ls=':', label=lab, title=title, remaining=1)
   kw.update(color=color)
   plot_with_baseline(x, ent, title=title, *a, **kw)
-  
+
 label = by[fields[-1]].preduce_eq__().ungroup_().pstr()
 
 by.stats.test.policy_mutual_information_through_time_self.apply(
@@ -3080,7 +3080,7 @@ def dual_plot(x, ent, lsf, lab, title='', *a, **kw):
   color = plot(lsf, ls=':', label=lab, title=title, remaining=1)
   kw.update(color=color)
   plot_with_baseline(x, ent, title=title, *a, **kw)
-  
+
 by.stats.test.policy_mutual_information_through_time_self.apply(
     dual_plot,
     ent=by.stats.test.policy_entropy_self.np_().mean(),
@@ -3118,7 +3118,7 @@ def dual_plot(x, ent, lsf, lab, title='', *a, **kw):
   color = plot(lsf, ls=':', label=lab, title=title, remaining=1)
   kw.update(color=color)
   plot_with_baseline(x, ent, title=title, *a, **kw)
-  
+
 label = by[fields[-1]].preduce_eq__().ungroup_().pstr()
 
 by.stats.test.policy_mutual_information_through_time_self.apply(
@@ -3346,7 +3346,7 @@ def dual_plot(x, ent, lsf, lab, title='', *a, **kw):
   color = plot(lsf, ls=':', label=lab, title=title, remaining=1)
   kw.update(color=color)
   plot_with_baseline(x, ent, title=title, *a, **kw)
-  
+
 label = by[fields[-1]].preduce_eq__().ungroup_().pstr()
 
 by.stats.test.policy_mutual_information_through_time_self.apply(
