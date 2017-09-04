@@ -41,13 +41,17 @@ class pdict(dict):  # pylint: disable=invalid-name
     dict.__init__(self, *a, **kw)
     self.__dict__ = self
 
-  def __cmp__(self, other):
-    return self is other
+  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
+  # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  # def __cmp__(self, other):
+  #   return self is other
 
-  __eq__ = __cmp__
+  # __eq__ = __cmp__
 
-  def __ne__(self, other):
-    return not self == other
+  # def __ne__(self, other):
+  #   return not self == other
+  # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
 
   def __getitem__(self, key):
     if isinstance(key, list):
@@ -590,6 +594,19 @@ class plist(list):  # pylint: disable=invalid-name
         return self
     return plist()
 
+  def none(self, func, *args, **kwargs):
+    for x in self:
+      if func(x, *args, **kwargs):
+        return plist()
+    return self
+
+  def aslist(self):
+    try:
+      return [x.aslist() for x in self]
+    except Exception as e:
+      pass
+    return [x for x in self]
+
   def apply(self, func, *args, **kwargs):
     pepth = kwargs.pop('pepth', 0)
     args = [_ensure_len(len(self), a) for a in args]
@@ -643,7 +660,7 @@ class plist(list):  # pylint: disable=invalid-name
     return plist([np.array(x, *args, **kwargs) for x in self], root=self.__root__)
 
   def pd(self, *args, **kwargs):
-    return pd.DataFrame.from_records(list(self), *args, **kwargs)
+    return pd.DataFrame.from_records(self.aslist(), *args, **kwargs)
 
   def pset(self):
     return plist([pset(x) for x in self], root=self.__root__)
@@ -710,7 +727,7 @@ class plist(list):  # pylint: disable=invalid-name
       return plist([str(x) for x in self], root=self.__root__)
 
   def qj(self, *args, **kwargs):
-    return qj(self, _depth=2, *args, **kwargs)
+    return qj(self, _depth=3, *args, **kwargs)
 
   def remix(self, *args, **kwargs):
     kwargs = {
@@ -783,7 +800,7 @@ class plist(list):  # pylint: disable=invalid-name
         return qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
       else:
         return self
-    qj((self, other), b=0)
+    qj((self, other), '(self, other)', b=0)
     inds = []
     if isinstance(other, list) and len(self) == len(other):
       for i, (x, o) in enumerate(zip(self, other)):
