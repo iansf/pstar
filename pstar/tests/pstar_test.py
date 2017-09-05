@@ -857,45 +857,174 @@ class PStarTest(unittest.TestCase):
                      '3    1    6   13    1\n'
                      '4    1    6   13    3')
 
+  def test_plist_of_pdict_pandas_filtering_equivalence(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    foos.bin = -1
+
+    by_bar = foos.bar.groupby()
+    baz = by_bar.baz.np_().sum()
+    (baz == baz.np().max()).bin = 13
+
+    by = by_bar.ungroup()
+    by.idx = range(len(by))
+
+    self.assertEqual(by.aslist(),
+                     [{'bin': -1, 'baz': 3, 'foo': 0, 'bar': 0, 'idx': 0},
+                      {'bin': -1, 'baz': 5, 'foo': 2, 'bar': 0, 'idx': 1},
+                      {'bin': 13, 'baz': 7, 'foo': 4, 'bar': 0, 'idx': 2},
+                      {'bin': 13, 'baz': 6, 'foo': 1, 'bar': 1, 'idx': 3},
+                      {'bin': 13, 'baz': 6, 'foo': 3, 'bar': 1, 'idx': 4}])
+
+    df = by.pd(index='idx')
+    self.assertEqual(str(df),
+                     '     bar  baz  bin  foo\n'
+                     'idx                    \n'
+                     '0      0    3   -1    0\n'
+                     '1      0    5   -1    2\n'
+                     '2      0    7   13    4\n'
+                     '3      1    6   13    1\n'
+                     '4      1    6   13    3')
+
+    self.assertEqual(str(df[(df.bar == 0) & (df.bin == -1)]),
+                     str(((by.bar == 0) & (by.bin == -1)).pd(index='idx')))
+
+    self.assertEqual(str(df[(df.bar == 0) | (df.bin == -1)]),
+                     str(((by.bar == 0) | (by.bin == -1)).pd(index='idx')))
+
+    self.assertEqual(str(df[(df.bar == 0) ^ (df.bin == -1)]),
+                     str(((by.bar == 0) ^ (by.bin == -1)).pd(index='idx')))
+
+    self.assertEqual(str(df[(df.bar == 0) & (df.bar == 0)]),
+                     str(((by.bar == 0) & (by.bar == 0)).pd(index='idx')))
+
+    self.assertEqual(str(df[(df.bar == 0) & (df.bar == 1)]),
+                     str(((by.bar == 0) & (by.bar == 1)).pd(index='idx', columns=sorted(by.keys()[0]))))
+
+  def test_plist_of_pdict_groupby_groupby_apply_args(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    foos.bin = -1
+
+    by_bar = foos.bar.groupby()
+    baz = by_bar.baz.np_().sum()
+    (baz == baz.np().max()).bin = 13
+
+    by_bar_bin = by_bar.bin.groupby().qj('by_bar_bin')
+
+    target_calls = by_bar_bin.foo.apply(str, pepth=1)
+    self.assertEqual(by_bar_bin.foo.apply_(str),
+                     target_calls)
+
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      qj.COLOR = False
+
+      by_bar_bin.foo.qj__('CORRECT: foos by_bar_bin')
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar> __call__: CORRECT: foos by_bar_bin <\d+>: \[0, 2\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> __call__: CORRECT: foos by_bar_bin <\d+>: \[4\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> __call__: CORRECT: foos by_bar_bin <\d+>: \[1, 3\]')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.apply(qj, 'SHOULD MATCH: foos by_bar_bin', pepth=1)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar> apply: SHOULD MATCH: foos by_bar_bin <\d+>: \[0, 2\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> apply: SHOULD MATCH: foos by_bar_bin <\d+>: \[4\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> apply: SHOULD MATCH: foos by_bar_bin <\d+>: \[1, 3\]')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.apply_(qj, 'SHOULD MATCH_: foos by_bar_bin')
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar> apply: SHOULD MATCH_: foos by_bar_bin <\d+>: \[0, 2\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> apply: SHOULD MATCH_: foos by_bar_bin <\d+>: \[4\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> apply: SHOULD MATCH_: foos by_bar_bin <\d+>: \[1, 3\]')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.apply(qj, 'PAINFUL *args bin=' + by_bar_bin.bar.apply(str, pepth=2) + ' baz=' + by_bar_bin.baz.apply(str, pepth=2), pepth=1)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['PAINFUL \*args bin=0 baz=3', 'PAINFUL \*args bin=0 baz=5'\] <\d+>: \[0, 2\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['PAINFUL \*args bin=0 baz=7'\] <\d+>: \[4\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['PAINFUL \*args bin=1 baz=6', 'PAINFUL \*args bin=1 baz=6'\] <\d+>: \[1, 3\]")),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.apply(qj, s='PAINFUL **kwargs bin=' + by_bar_bin.bar.apply(str, pepth=2) + ' baz=' + by_bar_bin.baz.apply(str, pepth=2), pepth=1)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['PAINFUL \*\*kwargs bin=0 baz=3', 'PAINFUL \*\*kwargs bin=0 baz=5'\] <\d+>: \[0, 2\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['PAINFUL \*\*kwargs bin=0 baz=7'\] <\d+>: \[4\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['PAINFUL \*\*kwargs bin=1 baz=6', 'PAINFUL \*\*kwargs bin=1 baz=6'\] <\d+>: \[1, 3\]")),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.apply(qj, 'NICE *a bin=' + by_bar_bin.bar.pstr() + ' baz=' + by_bar_bin.baz.pstr(), pepth=1)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['NICE \*a bin=0 baz=3', 'NICE \*a bin=0 baz=5'\] <\d+>: \[0, 2\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['NICE \*a bin=0 baz=7'\] <\d+>: \[4\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['NICE \*a bin=1 baz=6', 'NICE \*a bin=1 baz=6'\] <\d+>: \[1, 3\]")),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.apply(qj, s='NICE **kw bin=' + by_bar_bin.bar.pstr() + ' baz=' + by_bar_bin.baz.pstr(), pepth=1)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['NICE \*\*kw bin=0 baz=3', 'NICE \*\*kw bin=0 baz=5'\] <\d+>: \[0, 2\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['NICE \*\*kw bin=0 baz=7'\] <\d+>: \[4\]")),
+              mock.call(
+                  RegExp(r"qj: <pstar> apply: \['NICE \*\*kw bin=1 baz=6', 'NICE \*\*kw bin=1 baz=6'\] <\d+>: \[1, 3\]")),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
 
 """
-foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
-(foos.bar == 0).baz = 3 + (foos.bar == 0).foo
-(foos.bar == 1).baz = 6
-foos.bin = -1
-
-by_bar = foos.bar.groupby()
-baz = by_bar.baz.np_().sum()
-(baz == baz.np().max()).bin = 13
-df = qj(by_bar.ungroup().pd(), 'by_bar')
-qj(df[(df.bar == 0) & (df.bin == -1)], 'df[bar == 0 and bin == -1]')
-
-qj(((by_bar.qj('by_bar').bar == 0).qj('bar == 0', l=lambda x: len(x)) & (by_bar.bin == -1).qj('bin == -1', l=lambda x: len(x))).qj('bar == 0 and bin == -1').ungroup().pd(), 'df')
-qj(((by_bar.bar == 0) | (by_bar.bin == -1)).qj('bar == 0 or bin == -1').ungroup().pd(), 'df')
-qj(((by_bar.bar == 0) ^ (by_bar.bin == -1)).qj('bar == 0 xor bin == -1').ungroup().pd(), 'df')
-qj(((by_bar.bar == 0) & (by_bar.bar == 0)).qj('bar == 0 and bar == 0').ungroup().pd(), 'df')
-
-foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
-(foos.bar == 0).baz = 3 + (foos.bar == 0).foo
-(foos.bar == 1).baz = 6
-foos.bin = -1
-
-by_bar = foos.bar.groupby()
-baz = by_bar.baz.np_().sum()
-(baz == baz.np().max()).bin = 13
-
-by_bar_bin = by_bar.bin.groupby().qj('by_bar_bin')
-by_bar_bin.foo.qj__('CORRECT: foos by_bar_bin')
-by_bar_bin.foo.apply(qj, 'SHOULD MATCH: foos by_bar_bin', pepth=1)
-by_bar_bin.foo.apply_(qj, 'SHOULD MATCH_: foos by_bar_bin')
-by_bar_bin.foo.apply(qj, 'PAINFUL *args bin=' + by_bar_bin.bar.apply(str, pepth=2) + ' baz=' + by_bar_bin.baz.apply(str, pepth=2), pepth=1)
-by_bar_bin.foo.apply(qj, s='PAINFUL **kwargs bin=' + by_bar_bin.bar.apply(str, pepth=2) + ' baz=' + by_bar_bin.baz.apply(str, pepth=2), pepth=1)
-
-by_bar_bin.foo.apply(qj, 'NICE *a bin=' + by_bar_bin.bar.pstr() + ' baz=' + by_bar_bin.baz.pstr(), pepth=1)
-by_bar_bin.foo.apply(qj, s='NICE **kw bin=' + by_bar_bin.bar.pstr() + ' baz=' + by_bar_bin.baz.pstr(), pepth=1)
-
-None
-
 foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
 (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
 (foos.bar == 1).baz = 6
