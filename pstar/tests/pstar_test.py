@@ -912,7 +912,7 @@ class PStarTest(unittest.TestCase):
     baz = by_bar.baz.np_().sum()
     (baz == baz.np().max()).bin = 13
 
-    by_bar_bin = by_bar.bin.groupby().qj('by_bar_bin')
+    by_bar_bin = by_bar.bin.groupby()
 
     target_calls = by_bar_bin.foo.apply(str, pepth=1)
     self.assertEqual(by_bar_bin.foo.apply_(str),
@@ -1024,58 +1024,156 @@ class PStarTest(unittest.TestCase):
     qj.LOG_FN = log_fn
     qj.COLOR = True
 
-"""
-foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
-(foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
-(foos.bar == 1).baz = 6
-foos.qj('foos')
+  def test_plist_of_pdict_filter_against_subelements(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
 
-(foos == foos[:1]).qj('foos == foos[:1]')
-(foos != foos[:1]).qj('foos != foos[:1]')
+    self.assertEqual(foos.aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
 
-(foos == foos[:2]).qj('foos == foos[:2]')
-(foos != foos[:2]).qj('foos != foos[:2]')
+    self.assertEqual((foos == foos[:1]).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0}])
+    self.assertEqual((foos != foos[:1]).aslist(),
+                     [{'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
 
-(foos == foos[1:2]).qj('foos == foos[1:2]')
-(foos != foos[1:2]).qj('foos != foos[1:2]')
+    self.assertEqual((foos == foos[:2]).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1}])
+    self.assertEqual((foos != foos[:2]).aslist(),
+                     [{'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
 
-(foos == foos[1:]).qj('foos == foos[1:]')
-(foos != foos[1:]).qj('foos != foos[1:]')
+    self.assertEqual((foos == foos[1:2]).aslist(),
+                     [{'baz': 6, 'foo': 1, 'bar': 1}])
+    self.assertEqual((foos != foos[1:2]).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
 
-(foos.foo >= foos[:1].foo).qj('foos.foo >= foos[:1].foo')
-(foos.foo <= foos[:1].foo).qj('foos.foo <= foos[:1].foo')
+    self.assertEqual((foos == foos[1:]).aslist(),
+                     [{'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos != foos[1:]).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0}])
 
-(foos.foo >= foos[1:2].foo).qj('foos.foo >= foos[1:2].foo')
-(foos.foo <= foos[1:2].foo).qj('foos.foo <= foos[1:2].foo')
+    self.assertEqual((foos.foo >= foos[:1].foo).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos.foo <= foos[:1].foo).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0}])
 
-(foos.foo >= foos[1:4].foo).qj('foos.foo >= foos[1:4].foo')
-(foos.foo <= foos[1:4].foo).qj('foos.foo <= foos[1:4].foo')
+    self.assertEqual((foos.foo >= foos[1:2].foo).aslist(),
+                     [{'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos.foo <= foos[1:2].foo).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1}])
 
-(foos.foo > foos[:1].foo).qj('foos.foo > foos[:1].foo')
-(foos.foo < foos[:1].foo).qj('foos.foo < foos[:1].foo')
+    self.assertEqual((foos.foo >= foos[1:4].foo).aslist(),
+                     [{'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos.foo <= foos[1:4].foo).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1}])
 
-(foos.foo > foos[1:2].foo).qj('foos.foo > foos[1:2].foo')
-(foos.foo < foos[1:2].foo).qj('foos.foo < foos[1:2].foo')
+    self.assertEqual((foos.foo > foos[:1].foo).aslist(),
+                     [{'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos.foo < foos[:1].foo).aslist(),
+                     [])
 
-(foos.foo > foos[1:4].foo).qj('foos.foo > foos[1:4].foo')
-(foos.foo < foos[1:4].foo).qj('foos.foo < foos[1:4].foo')
+    self.assertEqual((foos.foo > foos[1:2].foo).aslist(),
+                     [{'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos.foo < foos[1:2].foo).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0}])
 
-by_bar_baz = foos.bar.sortby().groupby().baz.groupby().sortby_().qj('by_bar_baz')
+    self.assertEqual((foos.foo > foos[1:4].foo).aslist(),
+                     [{'baz': 2, 'foo': 4, 'bar': 0}])
+    self.assertEqual((foos.foo < foos[1:4].foo).aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0}])
 
-(by_bar_baz == by_bar_baz[:1]).qj('by_bar_baz == by_bar_baz[:1]')
-(by_bar_baz != by_bar_baz[:1]).qj('by_bar_baz != by_bar_baz[:1]')
+  def test_plist_of_pdict_groupby_groupby_filter_against_subelements(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
 
-(by_bar_baz == by_bar_baz[:2]).qj('by_bar_baz == by_bar_baz[:2]')
-(by_bar_baz != by_bar_baz[:2]).qj('by_bar_baz != by_bar_baz[:2]')
+    by_bar_baz = foos.bar.sortby().groupby().baz.groupby().sortby_()
 
-(by_bar_baz.foo >= by_bar_baz[:1].foo).qj('by_bar_baz.foo >= by_bar_baz[:1].foo')
-(by_bar_baz.foo <= by_bar_baz[:1].foo).qj('by_bar_baz.foo <= by_bar_baz[:1].foo')
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'baz': 2, 'foo': 4, 'bar': 0}],
+                       [{'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[{'baz': 6, 'foo': 1, 'bar': 1},
+                        {'baz': 6, 'foo': 3, 'bar': 1}]]])
 
-(by_bar_baz.foo >= by_bar_baz[:2].foo).qj('by_bar_baz.foo >= by_bar_baz[:2].foo (switches to element-wise comparison)')
-(by_bar_baz.foo <= by_bar_baz[:2].foo).qj('by_bar_baz.foo <= by_bar_baz[:2].foo (switches to element-wise comparison)')
+    self.assertEqual((by_bar_baz == by_bar_baz[:1]).aslist(),
+                     [[[{'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'baz': 2, 'foo': 4, 'bar': 0}],
+                       [{'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[]]])
+    self.assertEqual((by_bar_baz != by_bar_baz[:1]).aslist(),
+                     [[[],
+                       [],
+                       []],
+                      [[{'baz': 6, 'foo': 1, 'bar': 1},
+                        {'baz': 6, 'foo': 3, 'bar': 1}]]])
 
-None
-"""
+    self.assertEqual((by_bar_baz == by_bar_baz[:2]).aslist(),
+                     [[[{'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'baz': 2, 'foo': 4, 'bar': 0}],
+                       [{'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[{'baz': 6, 'foo': 1, 'bar': 1},
+                        {'baz': 6, 'foo': 3, 'bar': 1}]]])
+    self.assertEqual((by_bar_baz != by_bar_baz[:2]).aslist(),
+                     [[], []])
+
+    self.assertEqual((by_bar_baz.foo >= by_bar_baz[:1].foo).aslist(),
+                     [[[],
+                       [{'baz': 2, 'foo': 4, 'bar': 0}],
+                       []],
+                      [[]]])
+    self.assertEqual((by_bar_baz.foo <= by_bar_baz[:1].foo).aslist(),
+                     [[[],
+                       [],
+                       [{'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[]]])
+
+    # These two result in element-wise comparison because the two plists have
+    # the same base dimension (2).
+    self.assertEqual((by_bar_baz.foo >= by_bar_baz[:2].foo).aslist(),
+                     [[[{'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'baz': 2, 'foo': 4, 'bar': 0}],
+                       [{'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[{'baz': 6, 'foo': 1, 'bar': 1},
+                        {'baz': 6, 'foo': 3, 'bar': 1}]]])
+    self.assertEqual((by_bar_baz.foo <= by_bar_baz[:2].foo).aslist(),
+                     [[[{'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'baz': 2, 'foo': 4, 'bar': 0}],
+                       [{'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[{'baz': 6, 'foo': 1, 'bar': 1},
+                        {'baz': 6, 'foo': 3, 'bar': 1}]]])
+
 
 # pylint: enable=line-too-long
 if __name__ == '__main__':
