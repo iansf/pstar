@@ -340,6 +340,51 @@ class PStarTest(unittest.TestCase):
                      [[{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}],
                       [{'baz': 3, 'foo': 0, 'bar': 0}, {'baz': 1, 'foo': 2, 'bar': 0}, {'baz': 2, 'foo': 4, 'bar': 0}]])
 
+  def test_plist_of_pdict_iops(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    foos.bar += 3
+    foos.foo += foos.bar
+
+    self.assertEqual(foos.aslist(),
+                     [{'baz': 3, 'foo': 3, 'bar': 3},
+                      {'baz': 6, 'foo': 5, 'bar': 4},
+                      {'baz': 1, 'foo': 5, 'bar': 3},
+                      {'baz': 6, 'foo': 7, 'bar': 4},
+                      {'baz': 2, 'foo': 7, 'bar': 3}])
+
+    foos.foo -= foos.bar
+    foos.bar -= 3
+
+    self.assertEqual(foos.aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+
+    foos.baz *= 2
+    foos.foo *= foos.baz
+
+    self.assertEqual(foos.aslist(),
+                     [{'baz': 6, 'foo': 0, 'bar': 0},
+                      {'baz': 12, 'foo': 12, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0},
+                      {'baz': 12, 'foo': 36, 'bar': 1},
+                      {'baz': 4, 'foo': 16, 'bar': 0}])
+
+    foos.foo //= foos.baz
+    foos.baz //= 2
+
+    self.assertEqual(foos.aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0},
+                      {'baz': 6, 'foo': 1, 'bar': 1},
+                      {'baz': 1, 'foo': 2, 'bar': 0},
+                      {'baz': 6, 'foo': 3, 'bar': 1},
+                      {'baz': 2, 'foo': 4, 'bar': 0}])
+
   def test_plist_of_pdict_groupby_groupby(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
