@@ -362,41 +362,6 @@ class plist(list):  # pylint: disable=invalid-name
     return list.__contains__(self, other)
 
 
-  # def __cmp__(self, other, return_inds=False):
-  #   if self is other:
-  #     if return_inds:
-  #       return qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
-  #     else:
-  #       return self
-  #   qj((self, other), '(self, other)', b=0)
-  #   inds = []
-  #   if isinstance(other, list) and len(self) == len(other):
-  #     for i, (x, o) in enumerate(zip(self, other)):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__cmp__(o, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x == o:
-  #         inds.append(i)
-  #   elif isinstance(other, list) and len(other) > 0:
-  #     inds = self.__cmp__(other[0], return_inds=True)
-  #     for o in other[1:]:
-  #       inds = _merge_indices(inds, self.__cmp__(o, return_inds=True), operator.__or__)
-  #     qj((inds, self, other), 'inds self.cmp(other)', b=0)
-  #   else:
-  #     for i, x in enumerate(self):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__cmp__(other, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x == other:
-  #         inds.append(i)
-
-  #   qj(inds, 'inds cmp self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  #   if return_inds:
-  #     return qj(inds, 'return inds cmp self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  #   return qj(self.__root__[inds], 'return cmp self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  # __eq__ = __cmp__
   __cmp__ = _build_comparator(
       operator.__eq__,
       operator.__or__,
@@ -405,118 +370,15 @@ class plist(list):  # pylint: disable=invalid-name
           if return_inds else self))
   __eq__ = __cmp__
 
-
-  # def __ne__(self, other, return_inds=False):
-  #   if self is other:
-  #     if return_inds:
-  #       return []
-  #     return plist()
-  #   qj((self, other), b=0)
-  #   inds = []
-  #   if isinstance(other, list) and len(self) == len(other):
-  #     for i, (x, o) in enumerate(zip(self, other)):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__ne__(o, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x != o:
-  #         inds.append(i)
-  #   elif isinstance(other, list) and len(other) > 0:
-  #     inds = self.__ne__(other[0], return_inds=True)
-  #     for o in other[1:]:
-  #       inds = _merge_indices(inds, self.__ne__(o, return_inds=True), operator.__and__)
-  #     qj((inds, self, other), 'inds self.ne(other)', b=0)
-  #   else:
-  #     for i, x in enumerate(self):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__ne__(other, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x != other:
-  #         inds.append(i)
-
-  #   qj(inds, 'inds ne self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  #   if return_inds:
-  #     return qj(inds, 'return inds ne self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  #   return qj(self.__root__[inds], 'return ne self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
   __ne__ = _build_comparator(
       operator.__ne__,
       operator.__and__,
       lambda self, return_inds: ([] if return_inds else plist()))
 
-
-  # def __gt__(self, other, return_inds=False):
-  #   if self is other:
-  #     if return_inds:
-  #       return []
-  #     return plist()
-  #   qj((self, other), b=0)
-  #   inds = []
-  #   if isinstance(other, list) and len(self) == len(other):
-  #     for i, (x, o) in enumerate(zip(self, other)):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__gt__(o, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x > o:
-  #         inds.append(i)
-  #   elif isinstance(other, list) and len(other) > 0:
-  #     inds = self.__gt__(other[0], return_inds=True)
-  #     for o in other[1:]:
-  #       inds = _merge_indices(inds, self.__gt__(o, return_inds=True), operator.__and__)
-  #     qj((inds, self, other), 'inds self.gt(other)', b=0)
-  #   else:
-  #     for i, x in enumerate(self):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__gt__(other, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x > other:
-  #         inds.append(i)
-
-  #   qj(inds, 'inds gt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  #   if return_inds:
-  #     return qj(inds, 'return inds gt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  #   return qj(self.__root__[inds], 'return gt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
   __gt__ = _build_comparator(
       operator.__gt__,
       operator.__and__,
       lambda self, return_inds: ([] if return_inds else plist()))
-
-
-  # def __ge__(self, other, return_inds=False):
-  #   if self is other:
-  #     if return_inds:
-  #       return qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
-  #     else:
-  #       return self
-  #   qj((self, other), b=0)
-  #   inds = []
-  #   if isinstance(other, list) and len(self) == len(other):
-  #     for i, (x, o) in enumerate(zip(self, other)):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__ge__(o, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x >= o:
-  #         inds.append(i)
-  #   elif isinstance(other, list) and len(other) > 0:
-  #     inds = self.__ge__(other[0], return_inds=True)
-  #     for o in other[1:]:
-  #       inds = _merge_indices(inds, self.__ge__(o, return_inds=True), operator.__and__)
-  #     qj((inds, self, other), 'inds self.ge(other)', b=0)
-  #   else:
-  #     for i, x in enumerate(self):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__ge__(other, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x >= other:
-  #         inds.append(i)
-
-  #   qj(inds, 'inds ge self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  #   if return_inds:
-  #     return qj(inds, 'return inds ge self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  #   return qj(self.__root__[inds], 'return ge self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
   __ge__ = _build_comparator(
       operator.__ge__,
@@ -525,79 +387,10 @@ class plist(list):  # pylint: disable=invalid-name
           qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
           if return_inds else self))
 
-
-  # def __lt__(self, other, return_inds=False):
-  #   if self is other:
-  #     if return_inds:
-  #       return []
-  #     return plist()
-  #   qj((self, other), b=0)
-  #   inds = []
-  #   if isinstance(other, list) and len(self) == len(other):
-  #     for i, (x, o) in enumerate(zip(self, other)):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__lt__(o, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x < o:
-  #         inds.append(i)
-  #   elif isinstance(other, list) and len(other) > 0:
-  #     inds = self.__lt__(other[0], return_inds=True)
-  #     for o in other[1:]:
-  #       inds = _merge_indices(inds, self.__lt__(o, return_inds=True), operator.__and__)
-  #     qj((inds, self, other), 'inds self.lt(other)', b=0)
-  #   else:
-  #     for i, x in enumerate(self):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__lt__(other, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x < other:
-  #         inds.append(i)
-
-  #   qj(inds, 'inds lt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  #   if return_inds:
-  #     return qj(inds, 'return inds lt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  #   return qj(self.__root__[inds], 'return lt self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
   __lt__ = _build_comparator(
       operator.__lt__,
       operator.__and__,
       lambda self, return_inds: ([] if return_inds else plist()))
-
-
-  # def __le__(self, other, return_inds=False):
-  #   if self is other:
-  #     if return_inds:
-  #       return qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
-  #     else:
-  #       return self
-  #   qj((self, other), b=0)
-  #   inds = []
-  #   if isinstance(other, list) and len(self) == len(other):
-  #     for i, (x, o) in enumerate(zip(self, other)):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__le__(o, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x <= o:
-  #         inds.append(i)
-  #   elif isinstance(other, list) and len(other) > 0:
-  #     inds = self.__le__(other[0], return_inds=True)
-  #     for o in other[1:]:
-  #       inds = _merge_indices(inds, self.__le__(o, return_inds=True), operator.__and__)
-  #     qj((inds, self, other), 'inds self.le(other)', b=0)
-  #   else:
-  #     for i, x in enumerate(self):
-  #       if isinstance(x, plist):
-  #         child_inds = x.__le__(other, return_inds=True)
-  #         inds.append(child_inds)
-  #       elif x <= other:
-  #         inds.append(i)
-
-  #   qj(inds, 'inds le self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-  #   if return_inds:
-  #     return qj(inds, 'return inds le self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
-
-  #   return qj(self.__root__[inds], 'return le self: %s other: %s' % ('str(self)', 'str(other)'), b=0)
 
   __le__ = _build_comparator(
       operator.__le__,
@@ -607,326 +400,61 @@ class plist(list):  # pylint: disable=invalid-name
           if return_inds else self))
 
 
-  # def __and__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       try:
-  #         return plist([x & o for x, o in zip(self, other)])
-  #       except Exception:
-  #         pass
-  #     self_flat = self.ungroup(-1)
-  #     ids = set([id(x) for x in self_flat]) & set([id(x) for x in other.ungroup(-1)])
-  #     return plist([x for x in self_flat if id(x) in ids])  # Don't pass root -- we are uprooting
-  #   else:
-  #     return plist([(x & other) for x in self], root=self.__root__)
-
-  # def __rand__(self, other):
-  #   return plist([other & x for x in self], root=self.__root__)
-
-  # def __iand__(self, other):
-  #   qj(d=1)
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x &= other
-  #   return new_plist
-
   __and__ = _build_logical_op(operator.__and__)
   __rand__ = _build_binary_rop(operator.__and__)
   __iand__ = _build_binary_op(operator.__iand__)
 
-  # def __or__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       try:
-  #         return plist([x | o for x, o in zip(self, other)])
-  #       except Exception:
-  #         pass
-  #     self_flat = self.ungroup(-1)
-  #     other_flat = other.ungroup(-1)
-  #     ids = set([id(x) for x in self_flat]) | set([id(x) for x in other_flat])
-  #     return plist(
-  #         [ids.remove(id(x)) or x for x in self_flat if id(x) in ids] +
-  #         [ids.remove(id(x)) or x for x in other_flat if id(x) in ids]
-  #     )  # Don't pass root -- we are uprooting
-  #   else:
-  #     return plist([(x | other) for x in self], root=self.__root__)
-
-  # def __ror__(self, other):
-  #   return plist([other | x for x in self], root=self.__root__)
-
-  # def __ior__(self, other):
-  #   qj(d=1)
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x |= other
-  #   return new_plist
-
   __or__ = _build_logical_op(operator.__or__)
   __ror__ = _build_binary_rop(operator.__or__)
   __ior__ = _build_binary_op(operator.__ior__)
-
-  # def __xor__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       try:
-  #         return plist([x ^ o for x, o in zip(self, other)])
-  #       except Exception:
-  #         pass
-  #     self_flat = self.ungroup(-1)
-  #     other_flat = other.ungroup(-1)
-  #     ids = set([id(x) for x in self_flat]) ^ set([id(x) for x in other_flat])
-  #     return plist(
-  #         [ids.remove(id(x)) or x for x in self_flat if id(x) in ids] +
-  #         [ids.remove(id(x)) or x for x in other_flat if id(x) in ids]
-  #     )  # Don't pass root -- we are uprooting
-  #   else:
-  #     return plist([(x ^ other) for x in self], root=self.__root__)
-
-  # def __rxor__(self, other):
-  #   return plist([other ^ x for x in self], root=self.__root__)
-
-  # def __ixor__(self, other):
-  #   qj(d=1)
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x ^= other
-  #   return new_plist
 
   __xor__ = _build_logical_op(operator.__xor__)
   __rxor__ = _build_binary_rop(operator.__xor__)
   __ixor__ = _build_binary_op(operator.__ixor__)
 
 
-  # def __add__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x + o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x + other for x in self], root=self.__root__)
-
-  # def __radd__(self, other):
-  #   return plist([other + x for x in self], root=self.__root__)
-
-  # def __iadd__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([operator.__iadd__(x, o) for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([operator.__iadd__(x, other) for x in self], root=self.__root__)
-
   __add__, __radd__, __iadd__ = _build_binary_ops(operator.__add__, operator.__iadd__)
-
-  # def __sub__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x - o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x - other for x in self], root=self.__root__)
-
-  # def __rsub__(self, other):
-  #   return plist([other - x for x in self], root=self.__root__)
-
-  # def __isub__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x -= other
-  #   return new_plist
 
   __sub__, __rsub__, __isub__ = _build_binary_ops(operator.__sub__, operator.__isub__)
 
-
-  # def __mul__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x * o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x * other for x in self], root=self.__root__)
-
-  # def __rmul__(self, other):
-  #   return plist([other * x for x in self], root=self.__root__)
-
-  # def __imul__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x *= other
-  #   return new_plist
-
   __mul__, __rmul__, __imul__ = _build_binary_ops(operator.__mul__, operator.__imul__)
-
-
-  # def __div__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x / o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x / other for x in self], root=self.__root__)
-
-  # def __rdiv__(self, other):
-  #   return plist([other / x for x in self], root=self.__root__)
-
-  # def __idiv__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x /= other
-  #   return new_plist
 
   __div__, __rdiv__, __idiv__ = _build_binary_ops(operator.__div__, operator.__idiv__)
 
-
-  # def __mod__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x % o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x % other for x in self], root=self.__root__)
-
-  # def __rmod__(self, other):
-  #   return plist([other % x for x in self], root=self.__root__)
-
-  # def __imod__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x %= other
-  #   return new_plist
-
   __mod__, __rmod__, __imod__ = _build_binary_ops(operator.__mod__, operator.__imod__)
 
-
-  # def __floordiv__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x // o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x // other for x in self], root=self.__root__)
-
-  # def __rfloordiv__(self, other):
-  #   return plist([other // x for x in self], root=self.__root__)
-
-  # def __ifloordiv__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x //= other
-  #   return new_plist
-
   __floordiv__, __rfloordiv__, __ifloordiv__ = _build_binary_ops(operator.__floordiv__, operator.__ifloordiv__)
-
-
-  # def __divmod__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([divmod(x, o) for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([divmod(x, other) for x in self], root=self.__root__)
-
-  # def __rdivmod__(self, other):
-  #   return plist([divmod(other, x) for x in self], root=self.__root__)
 
   __divmod__ = _build_binary_op(divmod)
   __rdivmod__ = _build_binary_rop(divmod)
 
-
-  # def __pow__(self, *args):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([pow(x, *args) for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([pow(x, *args) for x in self], root=self.__root__)
-
-  # def __rpow__(self, other):
-  #   return plist([other ** x for x in self], root=self.__root__)
-
-  # def __ipow__(self, *args):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x = pow(x, *args)
-  #   return new_plist
-
   __pow__, __rpow__, __ipow__ = _build_binary_ops(operator.__pow__, operator.__ipow__)
-
-
-  # def __lshift__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x << o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x << other for x in self], root=self.__root__)
-
-  # def __rlshift__(self, other):
-  #   return plist([other << x for x in self], root=self.__root__)
-
-  # def __ilshift__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x <<= other
-  #   return new_plist
 
   __lshift__, __rlshift__, __ilshift__ = _build_binary_ops(operator.__lshift__, operator.__ilshift__)
 
-
-  # def __rshift__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x >> o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x >> other for x in self], root=self.__root__)
-
-  # def __rrshift__(self, other):
-  #   return plist([other >> x for x in self], root=self.__root__)
-
-  # def __irshift__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x >>= other
-  #   return new_plist
-
   __rshift__, __rrshift__, __irshift__ = _build_binary_ops(operator.__rshift__, operator.__irshift__)
-
-
-  # def __truediv__(self, other):
-  #   if isinstance(other, plist):
-  #     if len(self) == len(other):
-  #       return plist([x / o for x, o in zip(self, other)], root=self.__root__)
-  #   return plist([x / other for x in self], root=self.__root__)
-
-  # def __rtruediv__(self, other):
-  #   return plist([other / x for x in self], root=self.__root__)
-
-  # def __itruediv__(self, other):
-  #   new_plist = plist(self, root=self.__root__)
-  #   for x in new_plist:
-  #     x /= other
-  #   return new_plist
 
   __truediv__, __rtruediv__, __itruediv__ = _build_binary_ops(operator.__truediv__, operator.__itruediv__)
 
 
-  # def __neg__(self):
-  #   return plist([-x for x in self], root=self.__root__)
   __neg__ = _build_unary_op(operator.__neg__)
 
-  # def __pos__(self):
-  #   return plist([+x for x in self], root=self.__root__)
   __pos__ = _build_unary_op(operator.__pos__)
 
-  # def __abs__(self):
-  #   return plist([abs(x) for x in self], root=self.__root__)
   __abs__ = _build_unary_op(abs)
 
-  # def __invert__(self):
-  #   return plist([~x for x in self], root=self.__root__)
   __invert__ = _build_unary_op(operator.__invert__)
 
-  # def __complex__(self):
-  #   return plist([complex(x) for x in self], root=self.__root__)
   __complex__ = _build_unary_op(complex)
 
-  # def __int__(self):
-  #   return plist([int(x) for x in self], root=self.__root__)
   __int__ = _build_unary_op(int)
 
-  # def __long__(self):
-  #   return plist([long(x) for x in self], root=self.__root__)
   __long__ = _build_unary_op(long)
 
-  # def __float__(self):
-  #   return plist([float(x) for x in self], root=self.__root__)
   __float__ = _build_unary_op(float)
 
-  # def __oct__(self):
-  #   return plist([oct(x) for x in self], root=self.__root__)
   __oct__ = _build_unary_op(oct)
 
-  # def __hex__(self):
-  #   return plist([hex(x) for x in self], root=self.__root__)
   __hex__ = _build_unary_op(hex)
 
 
