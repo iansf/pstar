@@ -27,6 +27,7 @@ import mock
 import numpy as np
 
 from pstar import *
+from qj import qj
 
 DEBUG_TESTS = False
 
@@ -243,12 +244,12 @@ class PStarTest(unittest.TestCase):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     foos.baz = 3 - ((foos.bar == 0).foo % 3)
 
-    self.assertEqual(foos.apply('keys').aslist(),
-                     [['baz', 'foo', 'bar'],
-                      ['baz', 'foo', 'bar'],
-                      ['baz', 'foo', 'bar'],
-                      ['baz', 'foo', 'bar'],
-                      ['baz', 'foo', 'bar']])
+    self.assertEqual(foos.apply('keys').apply(sorted).aslist(),
+                     [['bar', 'baz', 'foo'],
+                      ['bar', 'baz', 'foo'],
+                      ['bar', 'baz', 'foo'],
+                      ['bar', 'baz', 'foo'],
+                      ['bar', 'baz', 'foo']])
 
   def test_plist_of_pdict_groupby_filter_pshape(self):
     foos = plist([pdict(foo=i, bar=i % 3) for i in range(5)])
@@ -715,18 +716,10 @@ class PStarTest(unittest.TestCase):
     baz = by_bar.baz.np_().sum()
     (baz == baz.np().max()).bin = 13
 
-    self.assertEqual(str(by_bar.pd()),
-                     '                                               0  \\\n'
-                     "0  {u'bin': 13, u'baz': 6, u'foo': 1, u'bar': 1}   \n"
-                     "1  {u'bin': -1, u'baz': 3, u'foo': 0, u'bar': 0}   \n"
-                     '\n'
-                     '                                               1  \\\n'
-                     "0  {u'bin': 13, u'baz': 6, u'foo': 3, u'bar': 1}   \n"
-                     "1  {u'bin': -1, u'baz': 5, u'foo': 2, u'bar': 0}   \n"
-                     '\n'
-                     '                                               2  \n'
-                     '0                                           None  \n'
-                     "1  {u'bin': 13, u'baz': 7, u'foo': 4, u'bar': 0}  ")
+    self.assertEqual(str(by_bar.baz.pd()),
+                     '   0  1    2\n'
+                     '0  6  6  NaN\n'
+                     '1  3  5  7.0')
 
   def test_plist_of_pdict_groupby_groupby_pd(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
@@ -740,14 +733,10 @@ class PStarTest(unittest.TestCase):
 
     by_bar_bin = by_bar.bin.groupby()
 
-    self.assertEqual(str(by_bar_bin.pd()),
-                     '                                                   0  \\\n'
-                     "0  [{u'bin': 13, u'baz': 6, u'foo': 1, u'bar': 1}...   \n"
-                     "1  [{u'bin': -1, u'baz': 3, u'foo': 0, u'bar': 0}...   \n"
-                     '\n'
-                     '                                                 1  \n'
-                     '0                                             None  \n'
-                     "1  [{u'bin': 13, u'baz': 7, u'foo': 4, u'bar': 0}]  ")
+    self.assertEqual(str(by_bar_bin.baz.pd()),
+                     '        0     1\n'
+                     '0  [6, 6]  None\n'
+                     '1  [3, 5]   [7]')
 
   def test_plist_of_pdict_groupby_remix_pd(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])

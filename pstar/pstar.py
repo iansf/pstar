@@ -31,7 +31,7 @@ import types
 
 import numpy as np
 import pandas as pd
-from qj_global import qj
+from qj import qj
 
 
 class pdict(dict):  # pylint: disable=invalid-name
@@ -508,6 +508,13 @@ class plist(list):  # pylint: disable=invalid-name
     except Exception as e:
       pass
     return [x for x in self]
+
+  def astuple(self):
+    try:
+      return tuple([x.astuple() for x in self])
+    except Exception as e:
+      pass
+    return tuple([x for x in self])
 
   def apply(self, func, *args, **kwargs):
     pepth = kwargs.pop('pepth', 0)
