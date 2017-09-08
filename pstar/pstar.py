@@ -27,12 +27,18 @@ import functools
 from functools import partial
 import operator
 import os
+import sys
 import types
 
 import numpy as np
 import pandas as pd
 from qj import qj
 
+
+if sys.version_info[0] < 3:
+  STRING_TYPES = types.StringTypes
+else:
+  STRING_TYPES = str
 
 class pdict(dict):  # pylint: disable=invalid-name
   """Dict where everything is automatically a property."""
@@ -69,7 +75,7 @@ class pdict(dict):  # pylint: disable=invalid-name
 
 
   def __setitem__(self, key, value):
-    if isinstance(key, list) and not isinstance(value, types.StringTypes) and hasattr(value, '__len__') and len(value) == len(key):
+    if isinstance(key, list) and not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(key):
       for k, v in zip(key, value):
         dict.__setitem__(self, k, v)
     else:
@@ -133,7 +139,7 @@ class defaultpdict(defaultdict):  # pylint: disable=invalid-name
 #           raise KeyError('\'%s\' is neither a key nor an attribute in this \'%s\'' % (key, type(self)))
 
   def __setitem__(self, key, value):
-    if isinstance(key, list) and not isinstance(value, types.StringTypes) and hasattr(value, '__len__') and len(value) == len(key):
+    if isinstance(key, list) and not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(key):
       for k, v in zip(key, value):
         defaultdict.__setitem__(self, k, v)
     else:
@@ -263,22 +269,19 @@ class plist(list):  # pylint: disable=invalid-name
   def __getattribute__(self, name):
     if name == '__root__':
       return list.__getattribute__(self, name)
-    if name.startswith('___'):
-      # Let people call reserved members of elements by using, e.g., ___len__().
-      name = name[1:]
-    elif name.startswith('__') and name.endswith('__'):
+    if not name.endswith('___') and name.startswith('__') and name.endswith('__'):
       raise qj(AttributeError('\'%s\'  objects cannot call reserved members of their elements: \'%s\'' % (type(self), name)), l=lambda _: self, b=0*dbg)
-    qj(self, name, b=dbg)
     try:
-      return qj(self.__getattr__(name), name, b=dbg)
+      return qj(plist.__getattr__(self, name), name, b=dbg)
     except AttributeError:
       qj(self, 'caught AttributeError for %s' % name, b=dbg)
       pass
-    if not name.startswith('__') and name.endswith('_'):
+    if ((name.startswith('__') and name.endswith('___'))
+        or (not name.startswith('__') and name.endswith('_'))):
       # Allows calling one level deeper by adding '_' to the end of a property name.  This is recursive, so '__' on the end goes two levels deep, etc.
+      # Works for both regular properties (foo.bar_) and private properties (foo.__len___).
       name = name[:-1]
     try:
-      qj(name, 'trying', b=0)
       return qj(plist([(qj(hasattr(*qj((x, name), 'calling hasattr', l=lambda y: (self, y[0], type(y[0])), b=dbg)), 'hasattr %s' % name, l=lambda _: (self, x, type(x)), b=dbg)
                        and getattr(x, name))
                       or x[name] for x in self], root=self.__root__), name, b=dbg)
@@ -286,15 +289,34 @@ class plist(list):  # pylint: disable=invalid-name
       raise qj(AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e))), l=lambda _: self, b=dbg)
 
   def __getattr__(self, name):
-    qj(self, name, b=dbg * (not name.startswith('__')))
-    attr = None
-    if attr is None:
-      attr = list.__getattribute__(self, name)
-    def not_none_or_self(x):
-      if x is None:
+    attr = list.__getattribute__(self, name)
+
+    def call_attr(self, attr, *args, **kwargs):
+      pepth = kwargs.pop('pepth', 0)
+      if pepth != 0:
+        if not isinstance(self, plist):
+          raise Exception  # ('Attempting to call attr %s on object of type %s' % (name, type(self)))
+        pargs = [_ensure_len(len(self), a) for a in args]
+        pkwargs = {
+            k: _ensure_len(len(self), v) for k, v in kwargs.items()
+        }
+        if pepth < 0:
+          try:
+            attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
+            return plist([call_attr(x, attrs[i], pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+          except Exception as e:
+            pass
+        else:
+          attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
+          return plist([call_attr(x, attrs[i], pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+
+      result = attr(*args, **kwargs)
+      if result is None:
         return self
-      return x
-    return qj(lambda *a, **k: not_none_or_self(attr(*a, **k)), name, l=lambda _: self, b=dbg * (not name.startswith('__')))
+      return result
+
+    wrap = lambda *a, **k: call_attr(self, attr, *a, **k)
+    return wrap
 
   def __getitem__(self, key):
     try:
@@ -356,7 +378,41 @@ class plist(list):  # pylint: disable=invalid-name
 
 
   def __call__(self, *args, **kwargs):
-    return qj(plist([x(*args, **kwargs) for x in self], root=self.__root__), '__call__', b=dbg)
+    pepth = kwargs.pop('pepth', 0)
+    args = [_ensure_len(len(self), a) for a in args]
+    kwargs = {
+        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+    }
+    if pepth != 0:
+      if not isinstance(self, plist):
+        raise Exception  # ('Attempting to plist.__call__ object of type %s' % type(self))
+      pargs = args
+      pkwargs = kwargs
+      if pepth < 0:
+        try:
+          return plist([x(pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+        except Exception as e:
+          pass
+      else:
+        return plist([x(pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+
+    return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+
+
+  def apply(self, func, *args, **kwargs):
+    args = [_ensure_len(len(self), a) for a in args]
+    kwargs = {
+        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+    }
+    if isinstance(func, str):
+      func = plist.__getattribute__(self, func)
+      if hasattr(func, '__len__') and len(func) == len(self):
+        return plist([func[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+      else:
+        # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
+        return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
+    return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+
 
   def __contains__(self, other):
     return list.__contains__(self, other)
@@ -366,7 +422,7 @@ class plist(list):  # pylint: disable=invalid-name
       operator.__eq__,
       operator.__or__,
       lambda self, return_inds: (
-          qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
+          self.lfill(-1, pepth=-1)
           if return_inds else self))
   __eq__ = __cmp__
 
@@ -384,7 +440,7 @@ class plist(list):  # pylint: disable=invalid-name
       operator.__ge__,
       operator.__and__,
       lambda self, return_inds: (
-          qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
+          self.lfill(-1, pepth=-1)
           if return_inds else self))
 
   __lt__ = _build_comparator(
@@ -396,7 +452,7 @@ class plist(list):  # pylint: disable=invalid-name
       operator.__le__,
       operator.__and__,
       lambda self, return_inds: (
-          qj(self.apply('lfill', -1, pepth=-1), 'lfill(-1)', b=0)
+          self.lfill(-1, pepth=-1)
           if return_inds else self))
 
 
@@ -419,7 +475,8 @@ class plist(list):  # pylint: disable=invalid-name
 
   __mul__, __rmul__, __imul__ = _build_binary_ops(operator.__mul__, operator.__imul__)
 
-  __div__, __rdiv__, __idiv__ = _build_binary_ops(operator.__div__, operator.__idiv__)
+  if sys.version_info[0] < 3:
+    __div__, __rdiv__, __idiv__ = _build_binary_ops(operator.__div__, operator.__idiv__)
 
   __mod__, __rmod__, __imod__ = _build_binary_ops(operator.__mod__, operator.__imod__)
 
@@ -449,7 +506,8 @@ class plist(list):  # pylint: disable=invalid-name
 
   __int__ = _build_unary_op(int)
 
-  __long__ = _build_unary_op(long)
+  if sys.version_info[0] < 3:
+    __long__ = _build_unary_op(long)
 
   __float__ = _build_unary_op(float)
 
@@ -516,30 +574,6 @@ class plist(list):  # pylint: disable=invalid-name
       pass
     return tuple([x for x in self])
 
-  def apply(self, func, *args, **kwargs):
-    pepth = kwargs.pop('pepth', 0)
-    args = [_ensure_len(len(self), a) for a in args]
-    kwargs = {
-        k: _ensure_len(len(self), v) for k, v in kwargs.items()
-    }
-    qj((self, func, args, kwargs), 'apply called', b=0)
-    if pepth != 0:
-      if pepth < 0:
-        try:
-          return plist([x.apply(func, pepth=pepth - 1, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-        except Exception as e:
-          # qj((self, func, e), 'caught exception applying function, ignoring.', b=0)
-          pass
-      else:
-        return plist([x.apply(func, pepth=pepth - 1, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-    if isinstance(func, str):
-      func = self.__getattribute__(func)
-      if hasattr(func, '__len__') and len(func) == len(self):
-        return plist([func[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-      else:
-        # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
-        return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
-    return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
   def groupby(self):
     try:
@@ -707,7 +741,7 @@ pist = plist
 
 
 def _ensure_len(length, x):
-  if not isinstance(x, str) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
+  if not isinstance(x, type) and not isinstance(x, str) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
     return x
   return [x for _ in range(length)]
 

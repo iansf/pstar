@@ -41,7 +41,7 @@ class RegExp(object):
 
   def __eq__(self, o):
     if DEBUG_TESTS:
-      print('%s: \'%s\'' % (str(self), str(o)))
+      print('%s: %s: \'%s\'' % ('pass' if bool(re.search(self._p, o, self._f)) else 'FAIL', str(self), str(o)))
     return bool(re.search(self._p, o, self._f))
 
   def __ne__(self, o):
@@ -120,6 +120,7 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
     (foos.bar == 1).baz = 6
 
+    # DON'T DO THIS! O^2!
     foos_by_bar = (plist([(foos.bar == bar) for bar in set(foos.bar)]))
 
     self.assertEqual(foos_by_bar.aslist(),
@@ -539,10 +540,16 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz.lfill__().aslist(),
                      [[[1, 2]], [[1], [1], [1]]])
 
+    self.assertEqual(by_bar_baz.lfill__().aslist(),
+                     by_bar_baz.lfill(pepth=2).aslist())
+
     # Generates a complete index list into the source plist.
     self.assertEqual(by_bar_baz.apply('lfill', -1, pepth=-1).aslist(),
                      [[[0, 1]], [[0], [0], [0]]])
     self.assertIsInstance(by_bar_baz.apply('lfill', -1, pepth=-1), plist)
+
+    self.assertEqual(by_bar_baz.apply('lfill', -1, pepth=-1).aslist(),
+                     by_bar_baz.lfill(-1, pepth=-1).aslist())
 
   def test_plist_of_pdict_groupby_groupby_pleft(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
@@ -961,11 +968,25 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r'qj: <pstar> __call__: CORRECT: foos by_bar_bin <\d+>: \[0, 2\]')),
+                  RegExp(r'qj: <pstar> .*\.lambda: CORRECT: foos by_bar_bin <\d+>: \[0, 2\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> __call__: CORRECT: foos by_bar_bin <\d+>: \[4\]')),
+                  RegExp(r'qj: <pstar> .*\.lambda: CORRECT: foos by_bar_bin <\d+>: \[4\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> __call__: CORRECT: foos by_bar_bin <\d+>: \[1, 3\]')),
+                  RegExp(r'qj: <pstar> .*\.lambda: CORRECT: foos by_bar_bin <\d+>: \[1, 3\]')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+      mock_log_fn.reset_mock()
+
+      by_bar_bin.foo.qj('SHOULD MATCH: foos by_bar_bin', pepth=2)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar> call_attr: SHOULD MATCH: foos by_bar_bin <\d+>: \[0, 2\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> call_attr: SHOULD MATCH: foos by_bar_bin <\d+>: \[4\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> call_attr: SHOULD MATCH: foos by_bar_bin <\d+>: \[1, 3\]')),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 3)
@@ -1152,7 +1173,7 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
-    by_bar_baz = foos.bar.sortby().groupby().baz.groupby().sortby_()
+    by_bar_baz = foos.bar.sortby().groupby().baz.sortby_().groupby()
 
     self.assertEqual(by_bar_baz.aslist(),
                      [[[{'baz': 1, 'foo': 2, 'bar': 0}],
@@ -1207,6 +1228,54 @@ class PStarTest(unittest.TestCase):
                        [{'baz': 3, 'foo': 0, 'bar': 0}]],
                       [[{'baz': 6, 'foo': 1, 'bar': 1},
                         {'baz': 6, 'foo': 3, 'bar': 1}]]])
+
+  def test_plist_of_pdict_call_elements(self):
+    foos = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby().groupby().baz.sortby(pepth=1).groupby()
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'bin': '4', 'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'bin': '16', 'baz': 2, 'foo': 4, 'bar': 0}],
+                       [{'bin': '0', 'baz': 3, 'foo': 0, 'bar': 0}]],
+                      [[{'bin': '1', 'baz': 6, 'foo': 1, 'bar': 1},
+                        {'bin': '9', 'baz': 6, 'foo': 3, 'bar': 1}]]])
+
+    self.assertEqual(by_bar_baz.bin.pshape().aslist(),
+                     [[[1],
+                       [1],
+                       [1]],
+                      [[2]]])
+
+    self.assertEqual(by_bar_baz.bin.replace('1', 'fun').aslist(),
+                     [[['4'],
+                       ['fun6'],
+                       ['0']],
+                      [['fun', '9']]])
+
+    self.assertEqual(by_bar_baz.bin.replace('1', by_bar_baz.baz.pstr() * 2).aslist(),
+                     [[['4'],
+                       ['226'],
+                       ['0']],
+                      [['66', '9']]])
+
+  def test_plist_of_pdict_groupby_groupby_call_elements(self):
+    foos = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby().groupby().baz.sortby(pepth=1).groupby()
+
+    self.assertEqual(by_bar_baz.apply_('__getslice___', 0, 2),
+                     [[[{'bin': '4', 'baz': 1, 'foo': 2, 'bar': 0}],
+                       [{'bin': '16', 'baz': 2, 'foo': 4, 'bar': 0}]],
+                      [[{'bin': '1', 'baz': 6, 'foo': 1, 'bar': 1},
+                        {'bin': '9', 'baz': 6, 'foo': 3, 'bar': 1}]]])
+
+    self.assertEqual(by_bar_baz.apply_('__getslice___', 0, 2),
+                     by_bar_baz.__getslice__(0, 2, pepth=1))
 
 
 # pylint: enable=line-too-long
