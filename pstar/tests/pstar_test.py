@@ -1277,6 +1277,115 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz.apply_('__getslice___', 0, 2),
                      by_bar_baz.__getslice__(0, 2, pepth=1))
 
+  def test_sample_data_analysis_flow(self):
+    foos = plist([pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(1001)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    fields = ('bin', 'bar')
+    by = foos[fields].sortby().groupby().bun.sortby(pepth=-1).groupby()
+    by.baz = by.foo % (by.bin + by.bun + 1)
+
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      qj.COLOR = False
+
+      rmx = by.ungroup(-1).remix('bun', bam=by.baz.np__().mean().ungroup(-1), *fields).bun.sortby().groupby()[fields].sortby().root()
+
+      rmx.bam.qj(rmx.bun.ungroup(-1).preduce_eq().pstr().qj('bun'), n=1, pepth=1)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar> test_sample_data_analysis_flow.lambda: bun <\d+>: \['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0'\]")),
+              mock.call(
+                  RegExp(r'qj: <pstar> call_attr: 10 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8\.4\d*, 5\.0\d*\), 21\.0\), array\(\[22, 23, 29, 11,  6\]\)')),
+              mock.call(
+                  RegExp(r"qj: <pstar> call_attr: 9 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8.3\d+, 5.1\d+\), 20.0\), array\(\[24, 12, 34, 14,  7\]\)")),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 12)
+      mock_log_fn.reset_mock()
+
+
+      params = (rmx.bam == rmx.bam.np().max())[tuple(['bun'] + list(fields))].qj('max-yielding params').pshape().qj('maxes ps').root()
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar> test_sample_data_analysis_flow.*: max-yielding params <\d+>: \[\[\(10, 11, 1\), \(10, 11, 1\), \(10, 11, 1\)\], ")),
+              mock.call(
+                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: maxes ps <\d+>: \[\[3\], \[5\], \[1\], \[2\], \[1\], \[1\], \[2\], \[1\], \[1\], \[1\], \[7\]\]')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 2)
+      mock_log_fn.reset_mock()
+
+      rmx_x = rmx.bun.preduce_eq(pepth=1).ungroup().qj('rmx_x')
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: rmx_x <\d+>: \[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0\]')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 1)
+      mock_log_fn.reset_mock()
+
+      rmx.ungroup(-1).bun.groupby().bam.join().np_().apply(lambda y, x: [qj((x_, np.mean(y_))) for x_, y_ in zip(x, y)], rmx_x)
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar_test> .*: x_, np.mean\(y_\) <\d+>: \(10, 8.4\d+\)')),
+              mock.call(
+                  RegExp(r'qj: <pstar_test> .*: x_, np.mean\(y_\) <\d+>: \(9, 8.3\d+\)')),
+              mock.call(
+                  RegExp(r'qj: <pstar_test> .*: x_, np.mean\(y_\) <\d+>: \(8, 7.3\d+\)')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 11)
+      mock_log_fn.reset_mock()
+
+      if sys.version_info[0] < 3:
+        (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
+         .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
+         .np().mean().qj('means').join().apply(
+              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
+         )
+         .root()[0].root().apply('__getslice___', 0, 10).qj('bam top 10').join()
+         .root()[0].root().__getslice___(0, 10).qj('bam top 10').join()
+         .root()[0].root().__getslice__(0, 10, pepth=1).qj('bam top 10').join()
+         .root()[0].root().apply(type).qj('bam types')
+        )
+      else:
+        (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
+         .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
+         .np().mean().qj('means').join().apply(
+              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
+         )
+         .root()[0].root().apply('__getitem___', slice(0, 10)).qj('bam top 10').join()
+         .root()[0].root().__getitem___(slice(0, 10)).qj('bam top 10').join()
+         .root()[0].root().__getitem__(slice(0, 10), pepth=1).qj('bam top 10').join()
+         .root()[0].root().apply(type).qj('bam types')
+        )
+
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: shape <\d+>: \[\(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\)\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: means <\d+>: \[8.4\d+, 8.3\d+, 7.3\d+, 6.1\d+, 6.6\d+, 5.8\d+, 5.0\d+, 4.8\d+, 4.0\d+, 3.7\d+, 3.2\d+\]')),
+              mock.call(
+                  RegExp(r'qj: <pstar_test> .*: x_, y_ <\d+>: \(10, 8.4\d+\)')),
+              mock.call(
+                  RegExp(r'qj: <pstar_test> .*: x_, y_ <\d+>: \(9, 8.3\d+\)')),
+              mock.call(
+                  RegExp(r'qj: <pstar_test> .*: x_, y_ <\d+>: \(8, 7.3\d+\)')),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 17)
+      mock_log_fn.reset_mock()
+
+    qj.LOG_FN = log_fn
+
 
 # pylint: enable=line-too-long
 if __name__ == '__main__':
