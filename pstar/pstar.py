@@ -21,10 +21,6 @@ Import with:
 
 import collections
 from collections import defaultdict
-from collections import namedtuple
-
-import functools
-from functools import partial
 import operator
 import os
 import sys
@@ -37,8 +33,10 @@ from qj import qj
 
 if sys.version_info[0] < 3:
   STRING_TYPES = types.StringTypes
+  PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 1
 else:
   STRING_TYPES = str
+  PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 2
 
 class pdict(dict):  # pylint: disable=invalid-name
   """Dict where everything is automatically a property."""
@@ -101,7 +99,6 @@ class defaultpdict(defaultdict):  # pylint: disable=invalid-name
   def __getattr__(self, name):
     if name.startswith('_'):
       return defaultdict.__getattribute__(self, name)
-#       raise AttributeError('\'%s\' object has no attribute \'%s\'' % (type(self), name))
     if name == '*':
       return plist([self[k] for k in self])
     return self[name]
@@ -109,13 +106,17 @@ class defaultpdict(defaultdict):  # pylint: disable=invalid-name
   def __setattr__(self, name, value):
     self[name] = value
 
-  def __cmp__(self, other):
-    return self is other
+  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
+  # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+  # def __cmp__(self, other):
+  #   return self is other
 
-  __eq__ = __cmp__
+  # __eq__ = __cmp__
 
-  def __ne__(self, other):
-    return not self == other
+  # def __ne__(self, other):
+  #   return not self == other
+  # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
 
   def __str__(self):
     delim = ', ' if len(self) < 8 else ',\n '
@@ -170,7 +171,7 @@ def _build_comparator(op, merge_op, shortcut):
   def comparator(self, other, return_inds=False):
     if self is other:
       return shortcut(self, return_inds)
-    qj((self, other), '(self, other)', b=0)
+    # qj((self, other), '(self, other)', b=0)
     inds = []
     if isinstance(other, list) and len(self) == len(other):
       for i, (x, o) in enumerate(zip(self, other)):
@@ -183,7 +184,7 @@ def _build_comparator(op, merge_op, shortcut):
       inds = comparator(self, other[0], return_inds=True)
       for o in other[1:]:
         inds = _merge_indices(inds, comparator(self, o, return_inds=True), merge_op)
-      qj((inds, self, other), 'inds self %s other)' % op.__name__, b=0)
+      # qj((inds, self, other), 'inds self %s other)' % op.__name__, b=0)
     else:
       for i, x in enumerate(self):
         if isinstance(x, plist):
@@ -192,7 +193,7 @@ def _build_comparator(op, merge_op, shortcut):
         elif op(x, other):
           inds.append(i)
 
-    qj(inds, 'inds %s self: %s other: %s' % (op.__name__, 'str(self)', 'str(other)'), b=0)
+    # qj(inds, 'inds %s self: %s other: %s' % (op.__name__, 'str(self)', 'str(other)'), b=0)
     if return_inds:
       return qj(inds, 'return inds %s self: %s other: %s' % (op.__name__, 'str(self)', 'str(other)'), b=0)
 
@@ -258,8 +259,8 @@ class plist(list):  # pylint: disable=invalid-name
   """List where everything is automatically a property that is applied to its elements.  Guaranteed to surprise, if not delight."""
 
   def __init__(self, *args, **kwargs):
-    depth = qj(kwargs.pop('depth', 1), b=0)
-    self.__root__ = qj(kwargs.pop('root', self), b=0)
+    depth = kwargs.pop('depth', 1)
+    self.__root__ = kwargs.pop('root', self)
     if depth == 1:
       list.__init__(self, *args, **kwargs)
     else:
@@ -270,29 +271,50 @@ class plist(list):  # pylint: disable=invalid-name
     if name == '__root__':
       return list.__getattribute__(self, name)
     if not name.endswith('___') and name.startswith('__') and name.endswith('__'):
-      raise qj(AttributeError('\'%s\'  objects cannot call reserved members of their elements: \'%s\'' % (type(self), name)), l=lambda _: self, b=0*dbg)
+      raise qj(AttributeError('\'%s\' objects cannot call reserved members of their elements: \'%s\'' % (type(self), name)), l=lambda _: self, b=0*dbg)
+    # qj(self, name, b=dbg)
     try:
       return qj(plist.__getattr__(self, name), name, b=dbg)
     except AttributeError:
-      qj(self, 'caught AttributeError for %s' % name, b=dbg)
+      # qj(self, 'caught AttributeError for %s' % name, b=dbg)
       pass
     if ((name.startswith('__') and name.endswith('___'))
         or (not name.startswith('__') and name.endswith('_'))):
       # Allows calling one level deeper by adding '_' to the end of a property name.  This is recursive, so '__' on the end goes two levels deep, etc.
       # Works for both regular properties (foo.bar_) and private properties (foo.__len___).
+      try:
+        starting_unders = 2 if name.startswith('__') else 0  # We don't care about single starting underscores for this count
+        ending_unders = 0
+        for i in range(len(name) - 1, 0, -1):
+          if name[i] == '_':
+            ending_unders += 1
+          else:
+            break
+        ending_unders -= starting_unders
+        return qj(plist.__getattr__(self, name[:-ending_unders], _pepth=ending_unders), name, b=dbg)
+      except AttributeError:
+        pass
       name = name[:-1]
     try:
-      return qj(plist([(qj(hasattr(*qj((x, name), 'calling hasattr', l=lambda y: (self, y[0], type(y[0])), b=dbg)), 'hasattr %s' % name, l=lambda _: (self, x, type(x)), b=dbg)
-                       and getattr(x, name))
-                      or x[name] for x in self], root=self.__root__), name, b=dbg)
+      # qj(name, 'trying', b=0)
+      return qj(
+          plist([
+            (qj(hasattr(*qj((x, name), 'calling hasattr', l=lambda y: (self, y[0], type(y[0])), b=dbg)), 'hasattr %s' % name, l=lambda _: (self, x, type(x)), b=dbg)
+             and getattr(x, name))
+            or x[name] for x in self],
+            root=self.__root__)
+          , name, b=dbg)
     except Exception as e:
       raise qj(AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e))), l=lambda _: self, b=dbg)
 
-  def __getattr__(self, name):
+
+  def __getattr__(self, name, _pepth=0):
+    # qj(self, name, b=dbg * (not name.startswith('__')))
     attr = list.__getattribute__(self, name)
 
     def call_attr(self, attr, *args, **kwargs):
       pepth = kwargs.pop('pepth', 0)
+      call_pepth = kwargs.pop('call_pepth', 0)
       if pepth != 0:
         if not isinstance(self, plist):
           raise Exception  # ('Attempting to call attr %s on object of type %s' % (name, type(self)))
@@ -300,23 +322,33 @@ class plist(list):  # pylint: disable=invalid-name
         pkwargs = {
             k: _ensure_len(len(self), v) for k, v in kwargs.items()
         }
+        # qj(self, 'About to try calling attr %r (%s) at pepth %d' % (attr, name, pepth), b=dbg * (not name.startswith('__')))
         if pepth < 0:
           try:
             attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
-            return plist([call_attr(x, attrs[i], pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+            return plist([call_attr(x, attrs[i], pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
           except Exception as e:
+            # qj(self, 'caught %s calling attr %r (%s) at pepth %d:\n%r' % (type(e), attr, name, pepth, e), b=dbg * (not name.startswith('__')))
             pass
         else:
           attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
-          return plist([call_attr(x, attrs[i], pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+          return plist([call_attr(x, attrs[i], pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
-      result = attr(*args, **kwargs)
+      # qj(self, 'Directly calling attr %r (%s) at pepth %d' % (attr, name, pepth), b=dbg * (not name.startswith('__')))
+      if name in ['qj', 'me']:
+        result = attr(call_pepth=call_pepth, *args, **kwargs)
+      else:
+        result = attr(*args, **kwargs)
       if result is None:
         return self
       return result
 
-    wrap = lambda *a, **k: call_attr(self, attr, *a, **k)
+    if _pepth:
+      wrap = lambda *a, **k: call_attr(self, attr, pepth=_pepth, *a, **k)
+    else:
+      wrap = lambda *a, **k: call_attr(self, attr, *a, **k)
     return wrap
+
 
   def __getitem__(self, key):
     try:
@@ -381,6 +413,7 @@ class plist(list):  # pylint: disable=invalid-name
 
   def __call__(self, *args, **kwargs):
     pepth = kwargs.pop('pepth', 0)
+    call_pepth = kwargs.pop('call_pepth', 0)
     args = [_ensure_len(len(self), a) for a in args]
     kwargs = {
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
@@ -388,16 +421,18 @@ class plist(list):  # pylint: disable=invalid-name
     if pepth != 0:
       if not isinstance(self, plist):
         raise Exception  # ('Attempting to plist.__call__ object of type %s' % type(self))
+      # qj(self, 'About to try calling at pepth %d' %  pepth, b=dbg)
       pargs = args
       pkwargs = kwargs
       if pepth < 0:
         try:
-          return plist([x(pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+          return plist([x(pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
         except Exception as e:
           pass
       else:
-        return plist([x(pepth=pepth - 1, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+        return plist([x(pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
+    # qj(self, 'Directly calling at pepth %d' %  pepth, b=dbg)
     return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
 
@@ -576,7 +611,6 @@ class plist(list):  # pylint: disable=invalid-name
       pass
     return tuple([x for x in self])
 
-
   def groupby(self):
     try:
       return plist([x.groupby() for x in self])
@@ -665,6 +699,8 @@ class plist(list):  # pylint: disable=invalid-name
       return plist(new_items, root=plist(new_roots))
     return plist(new_items)
 
+  puniq = preduce_eq
+
   def pstr(self):
     try:
       return plist([x.pstr() for x in self], root=self.__root__)
@@ -672,7 +708,8 @@ class plist(list):  # pylint: disable=invalid-name
       return plist([str(x) for x in self], root=self.__root__)
 
   def qj(self, *args, **kwargs):
-    return qj(self, _depth=3, *args, **kwargs)
+    call_pepth = kwargs.pop('call_pepth', 0)
+    return qj(self, _depth=4 + call_pepth, *args, **kwargs)
 
   def remix(self, *args, **kwargs):
     kwargs = {
@@ -749,7 +786,7 @@ def _ensure_len(length, x):
 
 
 def _merge_indices(left, right, op):
-  qj((left, right), 'l,r', b=0)
+  # qj((left, right), 'l,r', b=0)
   try:
     left_empty_or_ints = len(left) == 0 or plist(left).all(isinstance, int)
     right_empty_or_ints = len(right) == 0 or plist(right).all(isinstance, int)

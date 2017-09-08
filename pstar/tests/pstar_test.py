@@ -282,6 +282,16 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos.bar.preduce_eq().root().aslist(),
                      [{'baz': 3, 'foo': 0, 'bar': 0}, {'baz': 6, 'foo': 1, 'bar': 1}])
 
+  def test_plist_of_pdict_puniq(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    self.assertEqual(foos.bar.puniq().aslist(),
+                     [0, 1])
+    self.assertEqual(foos.bar.puniq().root().aslist(),
+                     [{'baz': 3, 'foo': 0, 'bar': 0}, {'baz': 6, 'foo': 1, 'bar': 1}])
+
   def test_plist_of_pdict_groupby_tuple_index(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
@@ -517,6 +527,9 @@ class PStarTest(unittest.TestCase):
                      [[[1, 2]], [[1], [1], [1]]])
     # Generates a complete index plist into the source plist.
     self.assertEqual(by_bar_baz.apply('pfill', -1, pepth=-1).aslist(),
+                     [[[0, 1]], [[0], [0], [0]]])
+    # Better way of generating a complete index with pfill.
+    self.assertEqual(by_bar_baz.pfill(-1, pepth=-1).aslist(),
                      [[[0, 1]], [[0], [0], [0]]])
 
   def test_plist_of_pdict_groupby_groupby_lfill(self):
@@ -968,11 +981,11 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r'qj: <pstar> .*\.lambda: CORRECT: foos by_bar_bin <\d+>: \[0, 2\]')),
+                  RegExp(r'qj: <pstar_test> test_plist_of_pdict_groupby_groupby_apply_args: CORRECT: foos by_bar_bin <\d+>: \[0, 2\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> .*\.lambda: CORRECT: foos by_bar_bin <\d+>: \[4\]')),
+                  RegExp(r'qj: <pstar_test> test_plist_of_pdict_groupby_groupby_apply_args: CORRECT: foos by_bar_bin <\d+>: \[4\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> .*\.lambda: CORRECT: foos by_bar_bin <\d+>: \[1, 3\]')),
+                  RegExp(r'qj: <pstar_test> test_plist_of_pdict_groupby_groupby_apply_args: CORRECT: foos by_bar_bin <\d+>: \[1, 3\]')),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 3)
@@ -982,11 +995,11 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r'qj: <pstar> call_attr: SHOULD MATCH: foos by_bar_bin <\d+>: \[0, 2\]')),
+                  RegExp(r'qj: <pstar_test> test_plist_of_pdict_groupby_groupby_apply_args:  SHOULD MATCH: foos by_bar_bin <\d+>: \[0, 2\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> call_attr: SHOULD MATCH: foos by_bar_bin <\d+>: \[4\]')),
+                  RegExp(r'qj: <pstar_test> test_plist_of_pdict_groupby_groupby_apply_args:  SHOULD MATCH: foos by_bar_bin <\d+>: \[4\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> call_attr: SHOULD MATCH: foos by_bar_bin <\d+>: \[1, 3\]')),
+                  RegExp(r'qj: <pstar_test> test_plist_of_pdict_groupby_groupby_apply_args:  SHOULD MATCH: foos by_bar_bin <\d+>: \[1, 3\]')),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 3)
@@ -1297,11 +1310,11 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r"qj: <pstar> test_sample_data_analysis_flow.lambda: bun <\d+>: \['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0'\]")),
+                  RegExp(r"qj: <pstar_test> test_sample_data_analysis_flow: bun <\d+>: \['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', '0'\]")),
               mock.call(
-                  RegExp(r'qj: <pstar> call_attr: 10 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8\.4\d*, 5\.0\d*\), 21\.0\), array\(\[22, 23, 29, 11,  6\]\)')),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:  10 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8\.4\d*, 5\.0\d*\), 21\.0\), array\(\[22, 23, 29, 11,  6\]\)')),
               mock.call(
-                  RegExp(r"qj: <pstar> call_attr: 9 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8.3\d+, 5.1\d+\), 20.0\), array\(\[24, 12, 34, 14,  7\]\)")),
+                  RegExp(r"qj: <pstar_test> test_sample_data_analysis_flow:  9 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8.3\d+, 5.1\d+\), 20.0\), array\(\[24, 12, 34, 14,  7\]\)")),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 12)
@@ -1312,9 +1325,9 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r"qj: <pstar> test_sample_data_analysis_flow.*: max-yielding params <\d+>: \[\[\(10, 11, 1\), \(10, 11, 1\), \(10, 11, 1\)\], ")),
+                  RegExp(r"qj: <pstar_test> test_sample_data_analysis_flow:   max-yielding params <\d+>: \[\[\(10, 11, 1\), \(10, 11, 1\), \(10, 11, 1\)\], ")),
               mock.call(
-                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: maxes ps <\d+>: \[\[3\], \[5\], \[1\], \[2\], \[1\], \[1\], \[2\], \[1\], \[1\], \[1\], \[7\]\]')),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:    maxes ps <\d+>: \[\[3\], \[5\], \[1\], \[2\], \[1\], \[1\], \[2\], \[1\], \[1\], \[1\], \[7\]\]')),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 2)
@@ -1324,7 +1337,7 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: rmx_x <\d+>: \[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0\]')),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:     rmx_x <\d+>: \[10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0\]')),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 1)
@@ -1370,9 +1383,9 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: shape <\d+>: \[\(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\)\]')),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:      shape <\d+>: \[\(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\), \(91,\)\]')),
               mock.call(
-                  RegExp(r'qj: <pstar> test_sample_data_analysis_flow.*: means <\d+>: \[8.4\d+, 8.3\d+, 7.3\d+, 6.1\d+, 6.6\d+, 5.8\d+, 5.0\d+, 4.8\d+, 4.0\d+, 3.7\d+, 3.2\d+\]')),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:       means <\d+>: \[8.4\d+, 8.3\d+, 7.3\d+, 6.1\d+, 6.6\d+, 5.8\d+, 5.0\d+, 4.8\d+, 4.0\d+, 3.7\d+, 3.2\d+\]')),
               mock.call(
                   RegExp(r'qj: <pstar_test> .*: x_, y_ <\d+>: \(10, 8.4\d+\)')),
               mock.call(
@@ -1385,6 +1398,30 @@ class PStarTest(unittest.TestCase):
       mock_log_fn.reset_mock()
 
     qj.LOG_FN = log_fn
+
+  @unittest.skip('slow')
+  def test_plist_of_pdict_timing(self):
+    qj(tic=1)
+    large_input = [pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(100000)]
+    qj(toc=-1, tic=1)
+
+    foos = plist(large_input)
+    qj(toc=-1, tic=1)
+
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    qj(tic=2)
+    (foos.bar == 1).baz = 6
+    qj(toc=-1, tic=1)
+
+    fields = ('bin', 'bar')
+    by = foos[fields].sortby().groupby().bun.sortby_().groupby()
+    qj(toc=1, tic=2)
+    by.baz = by.foo % (by.bin + by.bun + 1)
+    qj(toc=1, tic=3)
+
+    by.baz.qj(by[fields].preduce_eq__().ungroup_().pstr(), n=10, pepth=2)
+    qj(toc=1)
+
 
 
 # pylint: enable=line-too-long
