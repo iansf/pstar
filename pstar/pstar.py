@@ -323,6 +323,10 @@ class plist(list):  # pylint: disable=invalid-name
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
         return qj(plist([self[k] for k in key]), 'return self[%s]' % str(key), b=0)  # Don't pass root -- we are uprooting
+      elif isinstance(key, slice):
+        if self is self.__root__:
+          return plist(list.__getitem__(self, key))
+        return plist(list.__getitem__(self, key), root=plist(list.__getitem__(self.__root__, key)))
       else:
         return qj(list.__getitem__(self, key), 'return list[%s]' % str(key), b=0)
     except TypeError as first_exception:
@@ -339,14 +343,12 @@ class plist(list):  # pylint: disable=invalid-name
         raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
 
   def __getslice__(self, i, j):
-    if self is self.__root__:
-      return plist(list.__getslice__(self, i, j))
-    return plist(list.__getslice__(self, i, j), root=plist(list.__getslice__(self.__root__, i, j)))
+    return plist.__getitem__(self, slice(i, j))
 
   def __setattr__(self, name, value):
     if name == '__root__':
       list.__setattr__(self, name, value)
-    elif not isinstance(value, types.StringTypes) and hasattr(value, '__len__') and len(value) == len(self):
+    elif not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(self):
       for x, v in zip(self, value):
         x.__setattr__(name, v)
     else:
