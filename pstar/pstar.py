@@ -39,6 +39,8 @@ else:
   STRING_TYPES = str
   PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 2
 
+NONCALLABLE_ATTRS = ['__class__', '__dict__', '__doc__', '__module__']
+
 class pdict(dict):  # pylint: disable=invalid-name
   """Dict where everything is automatically a property."""
 
@@ -277,7 +279,9 @@ class plist(list):  # pylint: disable=invalid-name
       call_pepth = kwargs.pop('call_pepth', 0)
       if pepth != 0:
         if not isinstance(self, plist):
-          raise Exception  # ('Attempting to call attr %s on object of type %s' % (name, type(self)))
+          if name in NONCALLABLE_ATTRS:
+            return attr
+          return attr(*args, **kwargs)
         pargs = [_ensure_len(len(self), a) for a in args]
         pkwargs = {
             k: _ensure_len(len(self), v) for k, v in kwargs.items()
@@ -297,8 +301,11 @@ class plist(list):  # pylint: disable=invalid-name
       # qj(self, 'Directly calling attr %r (%s) at pepth %d' % (attr, name, pepth), b=dbg * (not name.startswith('__')))
       if name in ['qj', 'me']:
         result = attr(call_pepth=call_pepth, *args, **kwargs)
+      elif name in NONCALLABLE_ATTRS:
+        return attr
       else:
         result = attr(*args, **kwargs)
+
       if result is None:
         return self
       return result
@@ -307,6 +314,10 @@ class plist(list):  # pylint: disable=invalid-name
       wrap = lambda *a, **k: call_attr(self, attr, pepth=_pepth, *a, **k)
     else:
       wrap = lambda *a, **k: call_attr(self, attr, *a, **k)
+
+    if name in NONCALLABLE_ATTRS:
+      return wrap()
+
     return wrap
 
 

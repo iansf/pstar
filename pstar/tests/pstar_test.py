@@ -1506,6 +1506,47 @@ class PStarTest(unittest.TestCase):
 
     qj.LOG_FN = log_fn
 
+  def test_plist_of_pdict_groupby_groupby_noncallable_attrs(self):
+    foos = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby().groupby().baz.sortby(pepth=1).groupby()
+
+    self.assertEqual(foos.__class__,
+                     plist)
+    self.assertEqual(foos.__dict__,
+                     dict(__root__=foos))
+    self.assertIn('List where',
+                  foos.__doc__)
+    self.assertEqual(foos.__module__,
+                     'pstar.pstar')
+
+    self.assertEqual(by_bar_baz.__class__,
+                     plist)
+    self.assertEqual(by_bar_baz.__dict__,
+                     dict(__root__=foos))
+    self.assertIn('List where',
+                  by_bar_baz.__doc__)
+    self.assertEqual(by_bar_baz.__module__,
+                     'pstar.pstar')
+
+    self.assertEqual(by_bar_baz.__class___.aslist(),
+                     [plist, plist])
+    self.assertEqual(by_bar_baz.__class____.aslist(),
+                     [[plist, plist, plist], [plist]])
+    self.assertEqual(by_bar_baz.__class_____.aslist(),
+                     [[[pdict], [pdict], [pdict]], [[pdict, pdict]]])
+
+
+
+  def test_plist_generators(self):
+    foos = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
+    gen_foos = plist(pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5))
+
+    foos.qj('foos')
+    gen_foos.qj('gen_foos')
+
   @unittest.skip('slow')
   def test_plist_of_pdict_timing(self):
     qj(tic=1, toc=1)
