@@ -1508,26 +1508,26 @@ class PStarTest(unittest.TestCase):
 
   @unittest.skip('slow')
   def test_plist_of_pdict_timing(self):
-    qj(tic=1)
+    qj(tic=1, toc=1)
     large_input = [pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(100000)]
-    qj(toc=-1, tic=1)
+    qj(tic=1, toc=1)
 
     foos = plist(large_input)
-    qj(toc=-1, tic=1)
+    qj(tic=1, toc=1)
 
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
-    qj(tic=2)
+    qj(tic=1, toc=1)
     (foos.bar == 1).baz = 6
-    qj(toc=-1, tic=1)
+    qj(tic=1, toc=1)
 
     fields = ('bin', 'bar')
     by = foos[fields].sortby().groupby().bun.sortby_().groupby()
-    qj(toc=1, tic=2)
+    qj(tic=1, toc=1)
     by.baz = by.foo % (by.bin + by.bun + 1)
-    qj(toc=1, tic=3)
+    qj(tic=1, toc=1)
 
     by.baz.qj(by[fields].preduce_eq__().ungroup_().pstr(), n=10, pepth=2)
-    qj(toc=1)
+    qj(tic=1, toc=1)
 
 
 
