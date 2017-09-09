@@ -630,6 +630,92 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz.values_like(by_bar_baz.foo + by_bar_baz.bar).aslist(),
                      [[[2, 4]], [[2], [4], [0]]])
 
+  def test_plist_of_pdict_groupby_groupby_apply_paslist(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    by_bar_baz_apply_paslist = by_bar_baz.apply(lambda x: x, paslist=True)
+
+    # This test shows that doing apply(..., paslist=True) may give back a plist with lower depth than the input plist.
+    # This is because aslist() has to be fully recursive, but there isn't a true inverse operation that we can know a priori,
+    # since the function passed to apply could return an arbitrary structure, so instead it just wraps each returned value
+    # as a plist and returns that collection as a plist.
+    self.assertEqual(by_bar_baz.aslist(),
+                     by_bar_baz_apply_paslist.aslist())
+    self.assertEqual(by_bar_baz.pshape().aslist(),
+                     [[[2]], [[1], [1], [1]]])
+    self.assertEqual(by_bar_baz_apply_paslist.pshape().aslist(),
+                     [[1], [3]])
+
+  def test_plist_of_pdict_groupby_groupby_me_local(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    me = plist()
+    ((foos.bar == 0).me()
+      .foo.apply(
+          self.assertEqual,
+          me.foo
+      )
+    )
+
+    me2 = plist()
+    me.bar.me('me2').apply(self.assertEqual, me2)
+    me.bar.me('me2').root().baz.apply(self.assertEqual, me2.root().baz)
+
+    (foos.bar.sortby(reverse=True).groupby().baz.groupby()
+      .baz.me(me).sortby_().root()
+      .apply(
+          lambda x, y: (self.assertEqual(x, y) and False) or x,  # Always returns x if there's no exception.
+          [[[{'foo': 1, 'bar': 1, 'baz': 6},
+             {'foo': 3, 'bar': 1, 'baz': 6}]],
+           [[{'foo': 2, 'bar': 0, 'baz': 1}],
+            [{'foo': 4, 'bar': 0, 'baz': 2}],
+            [{'foo': 0, 'bar': 0, 'baz': 3}]]],
+          paslist=True
+      )
+      .root()[-1:].baz
+      .apply(
+          lambda x, y: (self.assertEqual(x, y) and False) or x,  # Always returns x if there's no exception.
+          (me.uproot() < 6).nonempty(-1).sortby_().root().aslist(),
+          paslist=True
+      )
+    )
+
+    self.assertEqual(me.aslist(),
+                     [[[6, 6]], [[1], [2], [3]]])
+
+  def test_plist_of_pdict_groupby_groupby_me_global(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    self.assertFalse('me' in globals())
+    self.assertFalse('me2' in globals())
+
+    # If there's no local variable, me() will create a global variable. Not particularly recommended, but convenient in notebooks.
+    ((foos.bar == 0).me()
+      .foo.apply(
+          self.assertEqual,
+          me.foo
+      )
+    )
+
+    self.assertTrue('me' in globals())
+
+    me.bar.me('me2').apply(self.assertEqual, me2)
+    me.bar.me('me2').root().baz.apply(self.assertEqual, me2.root().baz)
+
+    self.assertTrue('me2' in globals())
+
+    # Clean up the globals.
+    del globals()['me']
+    del globals()['me2']
+
   def test_plist_of_pdict_groupby_groupby_filter_nonempty(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)

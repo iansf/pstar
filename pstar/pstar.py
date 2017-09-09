@@ -21,6 +21,7 @@ Import with:
 
 import collections
 from collections import defaultdict
+import inspect
 import operator
 import os
 import sys
@@ -437,6 +438,7 @@ class plist(list):  # pylint: disable=invalid-name
 
 
   def apply(self, func, *args, **kwargs):
+    paslist = kwargs.pop('paslist', False)
     args = [_ensure_len(len(self), a) for a in args]
     kwargs = {
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
@@ -448,7 +450,10 @@ class plist(list):  # pylint: disable=invalid-name
       else:
         # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
         return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
-    return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+    if paslist:
+      return plist([plist(func(x.aslist(), *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
+    else:
+      return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
 
   def __contains__(self, other):
@@ -624,6 +629,39 @@ class plist(list):  # pylint: disable=invalid-name
 
   def join(self):
     return plist([self])
+
+  def me(self, name_or_plist='me', call_pepth=0):
+    try:
+      call_pepth += 3
+      f = inspect.currentframe()
+      for _ in range(call_pepth):
+        f = f.f_back
+
+      if isinstance(name_or_plist, str):
+        frame_locals = f.f_locals
+        if name_or_plist in frame_locals:
+          me = frame_locals[name_or_plist]
+          if not isinstance(me, plist):
+            raise ValueError('To use plist.me(name_or_plist) with a local variable named %s, it must be a plist object. Got %r.' % (name_or_plist, me))
+        else:
+          me = plist()
+          f.f_globals[name_or_plist] = me
+      elif isinstance(name_or_plist, plist):
+        me = name_or_plist
+      else:
+        raise ValueError('plist.me(name_or_plist) requires that name_or_plist be either a str or a plist. Got %r.' % name_or_plist)
+
+      if hasattr(list, 'clear'):
+        list.clear(me)
+      else:
+        del me[:]
+      list.extend(me, self)
+      me.__root__ = self.__root__
+    finally:
+      # Delete the stack frame to ensure there are no memory leaks, as suggested
+      # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
+      del f
+    return self
 
   def nonempty(self, r=1):
     if r > 1 or r < 0:
