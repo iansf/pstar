@@ -46,32 +46,11 @@ class pdict(dict):  # pylint: disable=invalid-name
     dict.__init__(self, *a, **kw)
     self.__dict__ = self
 
-  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
-  # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  # def __cmp__(self, other):
-  #   return self is other
-
-  # __eq__ = __cmp__
-
-  # def __ne__(self, other):
-  #   return not self == other
-  # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
-
   def __getitem__(self, key):
     if isinstance(key, list):
       return plist([self[x] for x in key])
     else:
       return dict.__getitem__(self, key)
-#       try:
-#         return dict.__getitem__(self, key)
-#       except KeyError:
-#         try:
-#           if hasattr(self, key):
-#             return getattr(self, key)
-#         except AttributeError:
-#           raise KeyError('\'%s\' is neither a key nor an attribute in this \'%s\'' % (key, type(self)))
-
 
   def __setitem__(self, key, value):
     if isinstance(key, list) and not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(key):
@@ -107,18 +86,6 @@ class defaultpdict(defaultdict):  # pylint: disable=invalid-name
   def __setattr__(self, name, value):
     self[name] = value
 
-  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
-  # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-  # def __cmp__(self, other):
-  #   return self is other
-
-  # __eq__ = __cmp__
-
-  # def __ne__(self, other):
-  #   return not self == other
-  # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  # TODO(iansf): FIGURE OUT IF WE NEED TO OVERRIDE EQUALITY!
-
   def __str__(self):
     delim = ', ' if len(self) < 8 else ',\n '
     s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in sorted(self))
@@ -131,14 +98,6 @@ class defaultpdict(defaultdict):  # pylint: disable=invalid-name
       return plist([self[x] for x in key])
     else:
       return defaultdict.__getitem__(self, key)
-#       try:
-#         return defaultdict.__getitem__(self, key)
-#       except KeyError:
-#         try:
-#           if hasattr(self, key):
-#             return getattr(self, key)
-#         except AttributeError:
-#           raise KeyError('\'%s\' is neither a key nor an attribute in this \'%s\'' % (key, type(self)))
 
   def __setitem__(self, key, value):
     if isinstance(key, list) and not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(key):
