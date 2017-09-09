@@ -355,13 +355,13 @@ class plist(list):  # pylint: disable=invalid-name
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
-        return qj(plist([self[k] for k in key]), 'return self[%s]' % str(key), b=0)  # Don't pass root -- we are uprooting
+        return qj(plist([self[k] for k in key]), 'return self[%s]' % 'str(key)', b=0)  # Don't pass root -- we are uprooting
       elif isinstance(key, slice):
         if self is self.__root__:
           return plist(list.__getitem__(self, key))
         return plist(list.__getitem__(self, key), root=plist(list.__getitem__(self.__root__, key)))
       else:
-        return qj(list.__getitem__(self, key), 'return list[%s]' % str(key), b=0)
+        return qj(list.__getitem__(self, key), 'return list[%s]' % 'str(key)', b=0)
     except TypeError as first_exception:
       try:
         if isinstance(key, list):
@@ -680,6 +680,12 @@ class plist(list):  # pylint: disable=invalid-name
 
   def pset(self):
     return plist([pset(x) for x in self], root=self.__root__)
+
+  def pdepth(self):
+    try:
+      return plist([x.pdepth() + 1 for x in self], root=self.__root__)
+    except Exception:
+      return plist([0], root=self.__root__)
 
   def pfill(self, v=0, s=None):
     s = pdict(v=v, s=lambda: s.update(v=s.v + 1).v) if s is None else s

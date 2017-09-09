@@ -473,6 +473,8 @@ class PStarTest(unittest.TestCase):
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
+    self.assertEqual(foos.plen().aslist(),
+                     [5])
     self.assertEqual(by_bar_baz.plen().aslist(),
                      [2])
     self.assertEqual(by_bar_baz.plen(2).aslist(),
@@ -487,6 +489,8 @@ class PStarTest(unittest.TestCase):
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
+    self.assertEqual(foos.rlen().aslist(),
+                     [5])
     self.assertEqual(by_bar_baz.rlen().aslist(),
                      [2])
     self.assertEqual(by_bar_baz.rlen(2).aslist(),
@@ -501,12 +505,30 @@ class PStarTest(unittest.TestCase):
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
+    self.assertEqual(foos.pshape().aslist(),
+                     [5])
     self.assertEqual(by_bar_baz.pshape().aslist(),
                      [[[2]], [[1], [1], [1]]])
     self.assertEqual(by_bar_baz.pshape_().aslist(),
                      [[[2]], [[1], [1], [1]]])
     self.assertEqual(by_bar_baz.pshape__().aslist(),
                      [[[2]], [[1], [1], [1]]])
+
+  def test_plist_of_pdict_groupby_groupby_pdepth(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertEqual(foos.pdepth().aslist(),
+                     [0])
+    self.assertEqual(by_bar_baz.pdepth().aslist(),
+                     [[[2]], [[2], [2], [2]]])
+    self.assertEqual(by_bar_baz.pdepth_().aslist(),
+                     [[[1]], [[1], [1], [1]]])
+    self.assertEqual(by_bar_baz.pdepth__().aslist(),
+                     [[[0]], [[0], [0], [0]]])
 
   def test_plist_of_pdict_groupby_groupby_pfill(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
