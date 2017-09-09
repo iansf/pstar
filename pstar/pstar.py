@@ -387,6 +387,7 @@ class plist(list):  # pylint: disable=invalid-name
     else:
       for x in self:
         x.__setattr__(name, value)
+    return self
 
   def __setitem__(self, key, value):
     list.__setitem__(self, key, value)
