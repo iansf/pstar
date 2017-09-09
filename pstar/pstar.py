@@ -437,25 +437,6 @@ class plist(list):  # pylint: disable=invalid-name
     return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
 
-  def apply(self, func, *args, **kwargs):
-    paslist = kwargs.pop('paslist', False)
-    args = [_ensure_len(len(self), a) for a in args]
-    kwargs = {
-        k: _ensure_len(len(self), v) for k, v in kwargs.items()
-    }
-    if isinstance(func, str):
-      func = plist.__getattribute__(self, func)
-      if hasattr(func, '__len__') and len(func) == len(self):
-        return plist([func[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-      else:
-        # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
-        return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
-    if paslist:
-      return plist([plist(func(x.aslist(), *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
-    else:
-      return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-
-
   def __contains__(self, other):
     return list.__contains__(self, other)
 
@@ -601,6 +582,24 @@ class plist(list):  # pylint: disable=invalid-name
       if func(x, *args, **kwargs):
         return plist()
     return self
+
+  def apply(self, func, *args, **kwargs):
+    paslist = kwargs.pop('paslist', False)
+    args = [_ensure_len(len(self), a) for a in args]
+    kwargs = {
+        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+    }
+    if isinstance(func, str):
+      func = plist.__getattribute__(self, func)
+      if hasattr(func, '__len__') and len(func) == len(self):
+        return plist([func[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+      else:
+        # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
+        return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
+    if paslist:
+      return plist([plist(func(x.aslist(), *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
+    else:
+      return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
   def aslist(self):
     try:
