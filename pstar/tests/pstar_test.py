@@ -310,8 +310,7 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz.bar.preduce_eq__().aslist(),
                      [[[1]], [[0], [0], [0]]])
 
-    # TODO(iansf): This test fails because interior plists can't change the root of the outer plist.
-    self.assertEqual(by_bar_baz.bar.preduce_eq__().root().aslist(),
+    self.assertEqual(by_bar_baz.bar.preduce_eq__().root__().aslist(),
                      [[[{'baz': 6, 'foo': 1, 'bar': 1}]],
                       [[{'baz': 1, 'foo': 2, 'bar': 0}],
                        [{'baz': 2, 'foo': 4, 'bar': 0}],
