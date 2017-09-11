@@ -1538,14 +1538,12 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz.__class_____.aslist(),
                      [[[pdict], [pdict], [pdict]], [[pdict, pdict]]])
 
-
-
   def test_plist_generators(self):
     foos = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
     gen_foos = plist(pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5))
 
-    foos.qj('foos')
-    gen_foos.qj('gen_foos')
+    self.assertEqual(foos.aslist(),
+                     gen_foos.aslist())
 
   @unittest.skip('slow')
   def test_plist_of_pdict_timing(self):
