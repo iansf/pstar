@@ -1108,6 +1108,138 @@ class PStarTest(unittest.TestCase):
                        [4],
                        [5]]])
 
+  def test_plist_of_pdict_groupby_groupby_delitem_list_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    del foos[[0, 1, 2]]
+
+    self.assertEqual(foos.aslist(),
+                     [{'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+    del by_bar_baz[[[[0, 1]]]]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+  def test_plist_of_pdict_groupby_groupby_delitem_slice_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    del foos[:3]
+
+    self.assertEqual(foos.aslist(),
+                     [{'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+    del by_bar_baz[[[slice(0, 2)]]]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+  def test_plist_of_pdict_delitem_tuple_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    del foos[('bar', 'baz')]
+
+    self.assertEqual(foos.aslist(),
+                     [{'foo': 1}, {'foo': 3}, {'foo': 0}, {'foo': 2}, {'foo': 4}])
+
+  def test_plist_of_pdict_groupby_groupby_delitem_tuple_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    del by_bar_baz[('bar', 'baz')]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'foo': 1},
+                        {'foo': 3}]],
+                      [[{'foo': 2}],
+                       [{'foo': 4}],
+                       [{'foo': 0}]]])
+
+  def test_plist_of_pdict_delitem_str_list_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # almost certainly inhomogeneous.
+    del foos[['foo', 'bar', 'baz', 'bar', 'foo']]
+
+    self.assertEqual(foos.aslist(),
+                     [{'bar': 1, 'baz': 6}, {'foo': 3, 'baz': 6}, {'foo': 0, 'bar': 0}, {'foo': 2, 'baz': 1}, {'bar': 0, 'baz': 2}])
+
+  def test_plist_of_pdict_groupby_groupby_delitem_str_list_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # almost certainly inhomogeneous.
+    del by_bar_baz[['foo', 'bar']]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'bar': 1, 'baz': 6},
+                        {'bar': 1, 'baz': 6}]],
+                      [[{'foo': 2, 'baz': 1}],
+                       [{'foo': 4, 'baz': 2}],
+                       [{'foo': 0, 'baz': 3}]]])
+
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    del by_bar_baz[[[['foo', 'baz']]]]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'bar': 1, 'baz': 6},
+                        {'foo': 3, 'bar': 1}]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    del by_bar_baz[[[['foo', 'baz']], [['foo'], ['bar'], ['baz']]]]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'bar': 1, 'baz': 6},
+                        {'foo': 3, 'bar': 1}]],
+                      [[{'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0}]]])
+
   def test_plist_of_pdict_groupby_groupby_filter_nonempty(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)

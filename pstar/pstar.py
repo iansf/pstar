@@ -410,12 +410,40 @@ class plist(list):  # pylint: disable=invalid-name
     return self
 
   def __delitem__(self, key):
-    list.__delitem__(self, key)
+    try:
+      if (isinstance(key, list)
+          and plist(key).all(isinstance, int)):
+        for k in sorted(key, reverse=True):
+          operator.__delitem__(self, k)
+      else:
+        # Handles slices and ints. Other key types will fail.
+        list.__delitem__(self, key)
+    except Exception as first_exception:
+      try:
+        if isinstance(key, list):
+          for i, k in enumerate(key):
+            operator.__delitem__(self[i], k)
+        elif isinstance(key, tuple):
+          try:
+            for x in self:
+              operator.__delitem__(x, key)
+          except Exception:
+            for x in self:
+              for k in key:
+                operator.__delitem__(x, k)
+        else:
+          for x in self:
+            operator.__delitem__(x, key)
+      except Exception as second_exception:
+        raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
+
+    # Allow chaining of set ops when using apply('__delitem__', k) and apply(operators.__delitem__, k)
     return self
 
   def __delslice__(self, i, j):
-    list.__delslice__(self, i, j)
+    plist.__delitem__(self, slice(i, j))
     return self
+
 
   __hash__ = None
 
