@@ -737,6 +737,377 @@ class PStarTest(unittest.TestCase):
     del globals()['me']
     del globals()['me2']
 
+  def test_plist_of_pdict_groupby_groupby_getitem_list_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertEqual(foos.baz[[0, 1, 2]].aslist(),
+                     [6, 6, 3])
+
+    self.assertEqual(by_bar_baz.baz[[0, 1]].aslist(),
+                     [[[6, 6]],
+                      [[1],
+                       [2],
+                       [3]]])
+
+    self.assertEqual(by_bar_baz.baz[
+                         [[[0, 1]]]
+                     ].aslist(),
+                     [[[6, 6]]])
+
+    self.assertEqual(by_bar_baz.baz[
+                         [[[0, 1]], [[0], [0], [0]]]
+                     ].aslist(),
+                     [[[6, 6]],
+                      [[1],
+                       [2],
+                       [3]]])
+
+  def test_plist_of_pdict_groupby_groupby_getitem_slice_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertEqual(foos.baz[:3].aslist(),
+                     [6, 6, 3])
+
+    self.assertEqual(by_bar_baz.baz[:2].aslist(),
+                     [[[6, 6]],
+                      [[1],
+                       [2],
+                       [3]]])
+
+    self.assertEqual(by_bar_baz.baz[:1].aslist(),
+                     [[[6, 6]]])
+
+    self.assertEqual(by_bar_baz.baz[[slice(0,2)]].aslist(),
+                     [[[6, 6]]])
+
+  def test_plist_of_pdict_groupby_groupby_getitem_tuple_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertEqual(foos[('bar', 'baz')].aslist(),
+                     [(1, 6), (1, 6), (0, 3), (0, 1), (0, 2)])
+
+    self.assertEqual(by_bar_baz[('bar', 'baz')].aslist(),
+                     [[[(1, 6),
+                        (1, 6)]],
+                      [[(0, 1)],
+                       [(0, 2)],
+                       [(0, 3)]]])
+
+  def test_plist_of_pdict_groupby_groupby_getitem_str_list_key(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # potentially inhomogeneous.
+    self.assertEqual(foos[['foo', 'bar', 'baz', 'bar', 'foo']].aslist(),
+                     [1, 1, 3, 0, 4])
+
+    self.assertEqual(by_bar_baz[['foo', 'bar']].aslist(),
+                     [[[1, 3]],
+                      [[0],
+                       [0],
+                       [0]]])
+
+    self.assertEqual(by_bar_baz[
+                         [[['foo', 'baz']]]
+                     ].aslist(),
+                     [[[1, 6]]])
+
+    self.assertEqual(by_bar_baz[
+                         [[['foo', 'baz']], [['foo'], ['bar'], ['baz']]]
+                     ].aslist(),
+                     [[[1, 6]],
+                      [[2],
+                       [0],
+                       [3]]])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_list_key_simple_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    foos[[0, 1, 2]] = 13
+
+    self.assertEqual(foos.aslist(),
+                     [13, 13, 13,
+                      {'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+    by_bar_baz[[[[0, 1]]]] = 19
+
+    self.assertEqual(by_bar_baz[[0, 1]].aslist(),
+                     [[[19, 19]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+  def test_plist_of_pdict_setitem_list_key_list_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    foos[[0, 1, 2]] = foos[[-1, -2, -3]]
+
+    self.assertEqual(foos.aslist(),
+                     [{'foo': 4, 'bar': 0, 'baz': 2},
+                      {'foo': 3, 'bar': 1, 'baz': 6},
+                      {'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 3, 'bar': 1, 'baz': 6},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_list_key_list_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertEqual(foos[-2:].aslist(),
+                     [{'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[{'foo': 1, 'bar': 1, 'baz': 6},
+                        {'foo': 3, 'bar': 1, 'baz': 6}]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+    by_bar_baz[[[[0, 1]]]] = foos[-2:]
+
+    self.assertEqual(by_bar_baz[[0, 1]].aslist(),
+                     [[[{'foo': 2, 'bar': 0, 'baz': 1},
+                        {'foo': 4, 'bar': 0, 'baz': 2}]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_slice_key_simple_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    foos[:3] = 13
+
+    self.assertEqual(foos.aslist(),
+                     [13, 13, 13,
+                      {'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+    by_bar_baz[[[slice(0, 2)]]] = 19
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[19, 19]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+  def test_plist_of_pdict_setitem_slice_key_list_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    foos[:3] = [13, 13, 13]
+
+    self.assertEqual(foos.aslist(),
+                     [13, 13, 13,
+                      {'foo': 2, 'bar': 0, 'baz': 1},
+                      {'foo': 4, 'bar': 0, 'baz': 2}])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_slice_key_list_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    by_bar_baz[[[slice(0, 2)]]] = [19, 19]
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     [[[19, 19]],
+                      [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                       [{'foo': 4, 'bar': 0, 'baz': 2}],
+                       [{'foo': 0, 'bar': 0, 'baz': 3}]]])
+
+  def test_plist_of_pdict_setitem_tuple_key_single_tuple_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    foos[('bar', 'baz')] = (1, 2)
+
+    self.assertEqual(foos[('bar', 'baz')].aslist(),
+                     [(1, 2), (1, 2), (1, 2), (1, 2), (1, 2)])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_tuple_key_single_tuple_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    by_bar_baz[('bar', 'baz')] = (1, 2)
+
+    self.assertEqual(by_bar_baz[('bar', 'baz')].aslist(),
+                     [[[(1, 2),
+                        (1, 2)]],
+                      [[(1, 2)],
+                       [(1, 2)],
+                       [(1, 2)]]])
+
+  def test_plist_of_pdict_setitem_tuple_key_list_tuple_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    foos[('bar', 'baz')] = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 10)]
+
+    self.assertEqual(foos[('bar', 'baz')].aslist(),
+                     [(1, 2), (3, 4), (5, 6), (7, 8), (9, 10)])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_tuple_key_list_tuple_val(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    by_bar_baz[('bar', 'baz')] = [[[(1, 2),
+                                    (3, 4)]],
+                                  [[(5, 6)],
+                                   [(7, 8)],
+                                   [(9, 10)]]]
+
+    self.assertEqual(by_bar_baz[('bar', 'baz')].aslist(),
+                     [[[(1, 2),
+                        (3, 4)]],
+                      [[(5, 6)],
+                       [(7, 8)],
+                       [(9, 10)]]])
+
+  def test_plist_of_pdict_setitem_str_list_key_single_value(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # potentially inhomogeneous.
+    foos[['foo', 'bar', 'baz', 'bar', 'foo']] = 1
+
+    self.assertEqual(foos[['foo', 'bar', 'baz', 'bar', 'foo']].aslist(),
+                     [1, 1, 1, 1, 1])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_str_list_key_single_value(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # potentially inhomogeneous.
+    by_bar_baz[['foo', 'bar']] = 1
+
+    self.assertEqual(by_bar_baz[['foo', 'bar']].aslist(),
+                     [[[1, 1]],
+                      [[1],
+                       [1],
+                       [1]]])
+
+    by_bar_baz[[[['foo', 'baz']]]] = 2
+
+    self.assertEqual(by_bar_baz[
+                         [[['foo', 'baz']]]
+                     ].aslist(),
+                     [[[2, 2]]])
+
+
+    by_bar_baz[[[['foo', 'baz']], [['foo'], ['bar'], ['baz']]]] = 3
+
+    self.assertEqual(by_bar_baz[
+                         [[['foo', 'baz']], [['foo'], ['bar'], ['baz']]]
+                     ].aslist(),
+                     [[[3, 3]],
+                      [[3],
+                       [3],
+                       [3]]])
+
+  def test_plist_of_pdict_setitem_str_list_key_list_value(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # potentially inhomogeneous.
+    foos[['foo', 'bar', 'baz', 'bar', 'foo']] = [1, 2, 3, 4, 5]
+
+    self.assertEqual(foos[['foo', 'bar', 'baz', 'bar', 'foo']].aslist(),
+                     [1, 2, 3, 4, 5])
+
+  def test_plist_of_pdict_groupby_groupby_setitem_str_list_key_list_value(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
+    # potentially inhomogeneous.
+    by_bar_baz[['foo', 'bar']] = [1, 2]
+
+    self.assertEqual(by_bar_baz[['foo', 'bar']].aslist(),
+                     [[[1, 1]],
+                      [[2],
+                       [2],
+                       [2]]])
+
+    by_bar_baz[[[['foo', 'baz']]]] = [3, 4]
+
+    self.assertEqual(by_bar_baz[
+                         [[['foo', 'baz']]]
+                     ].aslist(),
+                     [[[3, 4]]])
+
+
+    by_bar_baz[[[['foo', 'baz']], [['foo'], ['bar'], ['baz']]]] = [[[1, 2]], [[3], [4], [5]]]
+
+    self.assertEqual(by_bar_baz[
+                         [[['foo', 'baz']], [['foo'], ['bar'], ['baz']]]
+                     ].aslist(),
+                     [[[1, 2]],
+                      [[3],
+                       [4],
+                       [5]]])
+
   def test_plist_of_pdict_groupby_groupby_filter_nonempty(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)

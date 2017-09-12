@@ -348,24 +348,61 @@ class plist(list):  # pylint: disable=invalid-name
   def __getslice__(self, i, j):
     return plist.__getitem__(self, slice(i, j))
 
-  def __setattr__(self, name, value):
+
+  def __setattr__(self, name, val):
     if name == '__root__':
-      list.__setattr__(self, name, value)
-    elif not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(self):
-      for x, v in zip(self, value):
-        x.__setattr__(name, v)
+      list.__setattr__(self, name, val)
     else:
-      for x in self:
-        x.__setattr__(name, value)
+      lval = _ensure_len(len(self), val)
+      for i, x in enumerate(self):
+        x.__setattr__(name, lval[i])
     return self
 
-  def __setitem__(self, key, value):
-    list.__setitem__(self, key, value)
+  def __setitem__(self, key, val):
+    try:
+      if (isinstance(key, list)
+          and plist(key).all(isinstance, int)):
+        lval = _ensure_len(len(key), val)
+        for i, k in enumerate(key):
+          operator.__setitem__(self, k, lval[i])
+      elif isinstance(key, slice):
+        lval = val
+        if not isinstance(val, collections.Iterable):
+          slice_len = len([i for i in range(*key.indices(len(self)))])
+          lval = _ensure_len(slice_len, val)
+        list.__setitem__(self, key, lval)
+      else:
+        list.__setitem__(self, key, val)
+    except Exception as first_exception:
+      try:
+        if isinstance(key, list):
+          lval = _ensure_len(len(key), val)
+          for i, k in enumerate(key):
+            operator.__setitem__(self[i], k, lval[i])
+        elif isinstance(key, tuple):
+          lval = _ensure_len(len(self), val)
+          try:
+            for i, x in enumerate(self):
+              operator.__setitem__(x, key, lval[i])
+          except Exception:
+            qj(d=1)
+            for i, x in enumerate(self):
+              for j, k in enumerate(key):
+                operator.__setitem__(x, k, lval[i][j])
+        else:
+          lval = _ensure_len(len(self), val)
+          for i, x in enumerate(self):
+            operator.__setitem__(x, key, lval[i])
+      except Exception as second_exception:
+        raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
+
+    # Allow chaining of set ops when using apply('__setitem__', k, v) and apply(operators.__setitem__, k, v)
     return self
 
   def __setslice__(self, i, j, sequence):
-    list.__setslice__(self, i, j, sequence)
+    plist.__setitem__(self, slice(i, j), sequence)
     return self
+
 
   def __delattr__(self, name):
     for x in self:
@@ -794,7 +831,7 @@ pist = plist
 
 
 def _ensure_len(length, x):
-  if not isinstance(x, type) and not isinstance(x, str) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
+  if not isinstance(x, type) and not isinstance(x, STRING_TYPES) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
     return x
   return [x for _ in range(length)]
 
