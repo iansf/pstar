@@ -606,30 +606,29 @@ class PStarTest(unittest.TestCase):
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
-    self.assertEqual(by_bar_baz.ungroup_().aslist(),
+    self.assertEqual(by_bar_baz.ungroup().aslist(),
                      [[{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}],
                       [{'baz': 1, 'foo': 2, 'bar': 0}, {'baz': 2, 'foo': 4, 'bar': 0}, {'baz': 3, 'foo': 0, 'bar': 0}]])
-    self.assertEqual(by_bar_baz.ungroup_().ungroup().aslist(),
+    self.assertEqual(by_bar_baz.ungroup().ungroup().aslist(),
                      [{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}, {'baz': 1, 'foo': 2, 'bar': 0}, {'baz': 2, 'foo': 4, 'bar': 0}, {'baz': 3, 'foo': 0, 'bar': 0}])
     self.assertEqual(by_bar_baz.ungroup(2).aslist(),
                      [{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}, {'baz': 1, 'foo': 2, 'bar': 0}, {'baz': 2, 'foo': 4, 'bar': 0}, {'baz': 3, 'foo': 0, 'bar': 0}])
     self.assertEqual(by_bar_baz.ungroup(-1).aslist(),
                      [{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}, {'baz': 1, 'foo': 2, 'bar': 0}, {'baz': 2, 'foo': 4, 'bar': 0}, {'baz': 3, 'foo': 0, 'bar': 0}])
 
-  def test_plist_of_pdict_groupby_groupby_ungroup_root_uproot(self):
+  def test_plist_of_pdict_groupby_groupby_ungroup_root(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
-    # TODO(iansf): Think about which of these two outputs should be the result of ungroup_.root.
     self.assertEqual(by_bar_baz.ungroup_().root().aslist(),
                      [[[{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}]],
                       [[{'baz': 1, 'foo': 2, 'bar': 0}],
                        [{'baz': 2, 'foo': 4, 'bar': 0}],
                        [{'baz': 3, 'foo': 0, 'bar': 0}]]])
-    self.assertEqual(by_bar_baz.ungroup_().uproot().root().aslist(),
+    self.assertEqual(by_bar_baz.ungroup().root().aslist(),
                      [[{'baz': 6, 'foo': 1, 'bar': 1}, {'baz': 6, 'foo': 3, 'bar': 1}],
                       [{'baz': 1, 'foo': 2, 'bar': 0}, {'baz': 2, 'foo': 4, 'bar': 0}, {'baz': 3, 'foo': 0, 'bar': 0}]])
 
@@ -646,7 +645,7 @@ class PStarTest(unittest.TestCase):
                      [[[11, 11]], [[11], [11], [11]]])
     self.assertEqual(by_bar_baz.values_like_(12).aslist(),
                      [[[12, 12]], [[12], [12], [12]]])
-    self.assertEqual(by_bar_baz.ungroup_().values_like('a').aslist(),
+    self.assertEqual(by_bar_baz.ungroup().values_like('a').aslist(),
                      [['a', 'a'], ['a', 'a', 'a']])
     self.assertEqual(by_bar_baz.values_like(by_bar_baz.foo + by_bar_baz.bar).aslist(),
                      [[[2, 4]], [[2], [4], [0]]])
@@ -1431,14 +1430,14 @@ class PStarTest(unittest.TestCase):
 
     by_bar_bin = by_bar.bin.groupby().bin.sortby__().root()
 
-    self.assertEqual(by_bar_bin.ungroup_().ungroup().aslist(),
+    self.assertEqual(by_bar_bin.ungroup().ungroup().aslist(),
                      [{'bin': -1, 'baz': 3, 'foo': 0, 'bar': 0},
                       {'bin': -1, 'baz': 5, 'foo': 2, 'bar': 0},
                       {'bin': 13, 'baz': 7, 'foo': 4, 'bar': 0},
                       {'bin': 13, 'baz': 6, 'foo': 1, 'bar': 1},
                       {'bin': 13, 'baz': 6, 'foo': 3, 'bar': 1}])
 
-    self.assertEqual(str(by_bar_bin.ungroup_().ungroup().pd(index='foo')),
+    self.assertEqual(str(by_bar_bin.ungroup().ungroup().pd(index='foo')),
                      '     bar  baz  bin\n'
                      'foo               \n'
                      '0      0    3   -1\n'
@@ -2068,7 +2067,7 @@ class PStarTest(unittest.TestCase):
     by.baz = by.foo % (by.bin + by.bun + 1)
     qj(tic=1, toc=1)
 
-    by.baz.qj(by[fields].preduce_eq__().ungroup_().pstr(), n=10, pepth=2)
+    by.baz.qj(by[fields].preduce_eq__().ungroup().pstr(), n=10, pepth=2)
     qj(tic=1, toc=1)
 
 

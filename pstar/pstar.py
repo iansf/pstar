@@ -129,6 +129,11 @@ pet = pset
 dbg = 0
 
 
+def _successor(v):
+  s = pdict(v=v, p=lambda: s.update(v=s.v - 1).v, s=lambda: s.update(v=s.v + 1).v)
+  return s
+
+
 def _build_comparator(op, merge_op, shortcut):
   def comparator(self, other, return_inds=False):
     if self is other:
@@ -814,37 +819,30 @@ class plist(list):  # pylint: disable=invalid-name
       self[:] = self[sorted_inds]
     return self
 
-  def ungroup(self, r=1):
+  def ungroup(self, v=1, s=None):
+    s = _successor(v) if s is None else s
+    if s.v == 0:
+      return self
     new_items = []
-    for g in self:
-      if not isinstance(g, list):
-        if r < 0:
-          return self
+    try:
+      cs = s
+      new_xs = []
+      for x in self:
+        cs = _successor(s.v)
+        new_xs.append(x.ungroup(cs.v, cs))
+      s.v = cs.v
+      if s.v == 0:
+        new_plist = plist(new_xs)
+        return new_plist
+      for x in new_xs:
+        new_items.extend(x)
+    except Exception:
+      if s.v == 0:
         raise ValueError('Called ungroup on a plist that has non-group children')
-      for x in g:
-        new_items.append(x)
-    if r > 1 or r < 0 and len(new_items):
-      return plist(new_items).ungroup(r - 1)
-    return plist(new_items)
-
-#   def ungroup(self, r=1):
-#     if r != 0:
-#       try:
-#         return plist([x.ungroup(r - 1) for x in self.__root__])
-#       except Exception:
-#         pass
-
-#     new_items = []
-#     for g in self.__root__:
-#       if not isinstance(g, list):
-#         if r < 0:
-#           return self
-#         raise ValueError('Called ungroup on a plist that has non-group children')
-#       for x in g:
-#         new_items.append(x)
-#     if r > 1 or r < 0:
-#       return plist(new_items).ungroup(r - 1)
-#     return plist(new_items)
+      return self
+    s.p()
+    new_plist = plist(new_items)
+    return new_plist
 
   def values_like(self, value=0):
     values = _ensure_len(len(self), value)
