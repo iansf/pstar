@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""pstar
+"""pstar: replacements for common container classes.
 
 Import with:
   from pstar import *
@@ -23,7 +23,6 @@ import collections
 from collections import defaultdict
 import inspect
 import operator
-import os
 import sys
 import types
 
@@ -32,6 +31,7 @@ import pandas as pd
 from qj import qj
 
 
+# pylint: disable=line-too-long,invalid-name,g-explicit-length-test,broad-except,g-long-lambda
 if sys.version_info[0] < 3:
   STRING_TYPES = types.StringTypes
   PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 1
@@ -41,7 +41,8 @@ else:
 
 NONCALLABLE_ATTRS = ['__class__', '__dict__', '__doc__', '__module__']
 
-class pdict(dict):  # pylint: disable=invalid-name
+
+class pdict(dict):
   """Dict where everything is automatically a property."""
 
   def __init__(self, *a, **kw):
@@ -72,7 +73,7 @@ class pdict(dict):  # pylint: disable=invalid-name
 pict = pdict
 
 
-class defaultpdict(defaultdict):  # pylint: disable=invalid-name
+class defaultpdict(defaultdict):
   """Default dict where everything is automatically a property."""
 
   def __init__(self, *a, **kw):
@@ -217,7 +218,7 @@ def _build_unary_op(op):
   return unary_op
 
 
-class plist(list):  # pylint: disable=invalid-name
+class plist(list):
   """List where everything is automatically a property that is applied to its elements.  Guaranteed to surprise, if not delight."""
 
   __slots__ = ['__root__']
@@ -229,7 +230,15 @@ class plist(list):  # pylint: disable=invalid-name
       list.__init__(self, *args, **kwargs)
     else:
       # Don't pass root through when making nested plists, because that doesn't make any sense.
-      plist.__init__(self, [plist(*args, depth=depth - 1, **kwargs)])
+      plist.__init__(self, [plist(*args, depth=depth - 1, **kwargs)])  # pylint: disable=non-parent-init-called
+
+  ##############################################################################
+  ##############################################################################
+  ##############################################################################
+  # Private methods.
+  ##############################################################################
+  ##############################################################################
+  ##############################################################################
 
   def __getattribute__(self, name):
     if name == '__root__':
@@ -264,7 +273,9 @@ class plist(list):  # pylint: disable=invalid-name
     except Exception as e:
       raise AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e)))
 
-
+  ##############################################################################
+  # __getattr__
+  ##############################################################################
   def __getattr__(self, name, _pepth=0):
     attr = list.__getattribute__(self, name)
 
@@ -315,7 +326,9 @@ class plist(list):  # pylint: disable=invalid-name
 
     return wrap
 
-
+  ##############################################################################
+  # __get*__
+  ##############################################################################
   def __getitem__(self, key):
     try:
       if (isinstance(key, list)
@@ -343,7 +356,9 @@ class plist(list):  # pylint: disable=invalid-name
   def __getslice__(self, i, j):
     return plist.__getitem__(self, slice(i, j))
 
-
+  ##############################################################################
+  # __set*__
+  ##############################################################################
   def __setattr__(self, name, val):
     if name == '__root__':
       list.__setattr__(self, name, val)
@@ -397,7 +412,9 @@ class plist(list):  # pylint: disable=invalid-name
     plist.__setitem__(self, slice(i, j), sequence)
     return self
 
-
+  ##############################################################################
+  # __del*__
+  ##############################################################################
   def __delattr__(self, name):
     for x in self:
       x.__delattr__(name)
@@ -438,10 +455,9 @@ class plist(list):  # pylint: disable=invalid-name
     plist.__delitem__(self, slice(i, j))
     return self
 
-
-  __hash__ = None
-
-
+  ##############################################################################
+  # __call__
+  ##############################################################################
   def __call__(self, *args, **kwargs):
     pepth = kwargs.pop('pepth', 0)
     call_pepth = kwargs.pop('call_pepth', 0)
@@ -465,11 +481,15 @@ class plist(list):  # pylint: disable=invalid-name
 
     return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
-
+  ##############################################################################
+  # __contains__
+  ##############################################################################
   def __contains__(self, other):
     return list.__contains__(self, other)
 
-
+  ##############################################################################
+  # Comparison operators -- ALL PERFORM FILTERING!
+  ##############################################################################
   __cmp__ = _build_comparator(
       operator.__eq__,
       operator.__or__,
@@ -507,7 +527,9 @@ class plist(list):  # pylint: disable=invalid-name
           self.lfill(-1, pepth=-1)
           if return_inds else self))
 
-
+  ##############################################################################
+  # Logical operators -- ALL PERFORM SET OPERATIONS!
+  ##############################################################################
   __and__ = _build_logical_op(operator.__and__)
   __rand__ = _build_binary_rop(operator.__and__)
   __iand__ = _build_binary_op(operator.__iand__)
@@ -520,32 +542,32 @@ class plist(list):  # pylint: disable=invalid-name
   __rxor__ = _build_binary_rop(operator.__xor__)
   __ixor__ = _build_binary_op(operator.__ixor__)
 
-
+  ##############################################################################
+  # Binary operators
+  ##############################################################################
   __add__, __radd__, __iadd__ = _build_binary_ops(operator.__add__, operator.__iadd__)
-
   __sub__, __rsub__, __isub__ = _build_binary_ops(operator.__sub__, operator.__isub__)
-
   __mul__, __rmul__, __imul__ = _build_binary_ops(operator.__mul__, operator.__imul__)
+  __truediv__, __rtruediv__, __itruediv__ = _build_binary_ops(operator.__truediv__, operator.__itruediv__)
 
   if sys.version_info[0] < 3:
     __div__, __rdiv__, __idiv__ = _build_binary_ops(operator.__div__, operator.__idiv__)
 
-  __mod__, __rmod__, __imod__ = _build_binary_ops(operator.__mod__, operator.__imod__)
+  __pow__, __rpow__, __ipow__ = _build_binary_ops(operator.__pow__, operator.__ipow__)
 
-  __floordiv__, __rfloordiv__, __ifloordiv__ = _build_binary_ops(operator.__floordiv__, operator.__ifloordiv__)
+  __mod__, __rmod__, __imod__ = _build_binary_ops(operator.__mod__, operator.__imod__)
 
   __divmod__ = _build_binary_op(divmod)
   __rdivmod__ = _build_binary_rop(divmod)
 
-  __pow__, __rpow__, __ipow__ = _build_binary_ops(operator.__pow__, operator.__ipow__)
+  __floordiv__, __rfloordiv__, __ifloordiv__ = _build_binary_ops(operator.__floordiv__, operator.__ifloordiv__)
 
   __lshift__, __rlshift__, __ilshift__ = _build_binary_ops(operator.__lshift__, operator.__ilshift__)
-
   __rshift__, __rrshift__, __irshift__ = _build_binary_ops(operator.__rshift__, operator.__irshift__)
 
-  __truediv__, __rtruediv__, __itruediv__ = _build_binary_ops(operator.__truediv__, operator.__itruediv__)
-
-
+  ##############################################################################
+  # Unary operators
+  ##############################################################################
   __neg__ = _build_unary_op(operator.__neg__)
 
   __pos__ = _build_unary_op(operator.__pos__)
@@ -567,19 +589,35 @@ class plist(list):  # pylint: disable=invalid-name
 
   __hex__ = _build_unary_op(hex)
 
+  ##############################################################################
+  # Ensure plists can't be hashed.
+  ##############################################################################
+  __hash__ = None
 
   # Nope.  Crashes when trying to index by plists of lists of ints.
-#   def __index__(self):
-#     return plist([x.__index__() for x in self], root=self.__root__)
+  # def __index__(self):
+  #   return plist([x.__index__() for x in self], root=self.__root__)
 
-
+  ##############################################################################
+  # Allow plist use as context managers.
+  ##############################################################################
   def __enter__(self):
     return plist([x.__enter__() for x in self], root=self.__root__)
 
   def __exit__(self, exc_type, exc_value, traceback):
     return plist([x.__exit__(exc_type, exc_value, traceback) for x in self], root=self.__root__).all(bool)
 
+  ##############################################################################
+  ##############################################################################
+  ##############################################################################
+  # Public methods.
+  ##############################################################################
+  ##############################################################################
+  ##############################################################################
 
+  ##############################################################################
+  # __root__ pointer management.
+  ##############################################################################
   def root(self):
     return self.__root__
 
@@ -587,35 +625,41 @@ class plist(list):  # pylint: disable=invalid-name
     self.__root__ = self
     return self
 
-  def pand(self, name='__plist_and_var__', call_pepth=0):
+  ##############################################################################
+  # Conversion methods.
+  ##############################################################################
+  def aslist(self):
     try:
-      call_pepth += 3
-      f = inspect.currentframe()
-      for _ in range(call_pepth):
-        f = f.f_back
+      return [x.aslist() for x in self]
+    except Exception:
+      pass
+    return [x for x in self]
 
-      frame_locals = f.f_locals
-      if name in frame_locals:
-        and_var = frame_locals[name]
-        if not isinstance(and_var, plist):
-          raise ValueError('plist.pand() expected a plist object with the name %s in the calling frame. Got %r.' % (name, and_var))
-        if not self.pshape().pequal(and_var.pshape()):
-          raise ValueError('plist.pand() found a previous plist object with an incompatible shape.\n'
-                           '\tMake sure that all calls to plist.pand() in the same stack frame operate on plists with the same shape,'
-                           ' or are called with different `name` arguments.\n'
-                           '\tExpected %r, got %r.' % (self.pshape(), and_var.pshape()))
-      else:
-        and_var = self.values_like(tuple())
-      and_var = and_var.apply(list, pepth=-1).apply(lambda x, y: x.append(y) or x, self, pepth=-1).apply(tuple, pepth=-1)
+  def astuple(self):
+    try:
+      return tuple([x.astuple() for x in self])
+    except Exception:
+      pass
+    return tuple([x for x in self])
 
-      frame_locals[name] = and_var
+  def np(self, *args, **kwargs):
+    return plist([np.array(x, *args, **kwargs) for x in self], root=self.__root__)
 
-      return and_var
-    finally:
-      # Delete the stack frame to ensure there are no memory leaks, as suggested
-      # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
-      del f
+  def pd(self, *args, **kwargs):
+    return pd.DataFrame.from_records(self.aslist(), *args, **kwargs)
 
+  def pset(self):
+    return plist([pset(x) for x in self], root=self.__root__)
+
+  def pstr(self):
+    try:
+      return plist([x.pstr() for x in self], root=self.__root__)
+    except Exception:
+      return plist([str(x) for x in self], root=self.__root__)
+
+  ##############################################################################
+  # Shortcutting boolean test methods.
+  ##############################################################################
   def all(self, func, *args, **kwargs):
     for x in self:
       if not func(x, *args, **kwargs):
@@ -634,6 +678,9 @@ class plist(list):  # pylint: disable=invalid-name
         return plist()
     return self
 
+  ##############################################################################
+  # Equality checking that returns bool instead of plist.
+  ##############################################################################
   def pequal(self, other):
     if not isinstance(other, plist):
       return False
@@ -649,6 +696,9 @@ class plist(list):  # pylint: disable=invalid-name
           return False
     return True
 
+  ##############################################################################
+  # Function application methods.
+  ##############################################################################
   def apply(self, func, *args, **kwargs):
     paslist = kwargs.pop('paslist', False)
     args = [_ensure_len(len(self), a) for a in args]
@@ -667,20 +717,13 @@ class plist(list):  # pylint: disable=invalid-name
     else:
       return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
-  def aslist(self):
-    try:
-      return [x.aslist() for x in self]
-    except Exception as e:
-      pass
-    return [x for x in self]
+  def qj(self, *args, **kwargs):
+    call_pepth = kwargs.pop('call_pepth', 0)
+    return qj(self, _depth=4 + call_pepth, *args, **kwargs)
 
-  def astuple(self):
-    try:
-      return tuple([x.astuple() for x in self])
-    except Exception as e:
-      pass
-    return tuple([x for x in self])
-
+  ##############################################################################
+  # Grouping and sorting methods.
+  ##############################################################################
   def groupby(self):
     try:
       return plist([x.groupby() for x in self])
@@ -694,151 +737,6 @@ class plist(list):  # pylint: disable=invalid-name
 
   def join(self):
     return plist([self])
-
-  def me(self, name_or_plist='me', call_pepth=0):
-    try:
-      call_pepth += 3
-      f = inspect.currentframe()
-      for _ in range(call_pepth):
-        f = f.f_back
-
-      if isinstance(name_or_plist, str):
-        frame_locals = f.f_locals
-        if name_or_plist in frame_locals:
-          me = frame_locals[name_or_plist]
-          if not isinstance(me, plist):
-            raise ValueError('To use plist.me(name_or_plist) with a local variable named %s, it must be a plist object. Got %r.' % (name_or_plist, me))
-        else:
-          me = plist()
-          f.f_globals[name_or_plist] = me
-      elif isinstance(name_or_plist, plist):
-        me = name_or_plist
-      else:
-        raise ValueError('plist.me(name_or_plist) requires that name_or_plist be either a str or a plist. Got %r.' % name_or_plist)
-
-      if hasattr(list, 'clear'):
-        list.clear(me)
-      else:
-        del me[:]
-      list.extend(me, self)
-      me.__root__ = self.__root__
-    finally:
-      # Delete the stack frame to ensure there are no memory leaks, as suggested
-      # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
-      del f
-    return self
-
-  def nonempty(self, r=1):
-    if r > 1 or r < 0:
-      try:
-        new_plist = plist([x.nonempty(r=r - 1) for x in self if len(x)])
-      except Exception:
-        new_plist = self
-    else:
-      new_plist = self
-    return plist([x for x in new_plist if len(x)])
-
-  def np(self, *args, **kwargs):
-    return plist([np.array(x, *args, **kwargs) for x in self], root=self.__root__)
-
-  def pd(self, *args, **kwargs):
-    return pd.DataFrame.from_records(self.aslist(), *args, **kwargs)
-
-  def pset(self):
-    return plist([pset(x) for x in self], root=self.__root__)
-
-  def pdepth(self):
-    try:
-      return plist([x.pdepth() + 1 for x in self], root=self.__root__)
-    except Exception:
-      return plist([0], root=self.__root__)
-
-  def pfill(self, v=0, s=None):
-    s = _successor(v) if s is None else s
-    try:
-      return plist([x.pfill(s=s) for i, x in enumerate(self)], root=self.__root__)
-    except Exception:
-      return plist([s.s() for _ in range(len(self))], root=self.__root__)
-
-  def lfill(self, v=0, s=None):
-    s = _successor(v) if s is None else s
-    try:
-      return [x.lfill(s=s) for i, x in enumerate(self)]
-    except Exception:
-      return [s.s() for _ in range(len(self))]
-
-  def pleft(self):
-    return -self.pfill() + self.plen(-1).ungroup(-1)[0]
-
-  def plen(self, r=1):
-    if r > 1 or r < 0:
-      try:
-        return plist([sum(x.plen(r - 1) for x in self)], root=self.__root__)
-      except Exception:
-        pass
-    return plist([len(self)], root=self.__root__)
-
-  def rlen(self, r=1):
-    if r > 1 or r < 0:
-      try:
-        return plist([x.plen(r - 1) for x in self], root=self.__root__)
-      except Exception:
-        pass
-    return plist([len(self)], root=self.__root__)
-
-  def pshape(self):
-    try:
-      return plist([x.pshape() for x in self], root=self.__root__)
-    except Exception:
-      return plist([len(self)], root=self.__root__)
-
-  def preduce_eq(self):
-    try:
-      return plist([x.preduce_eq() for x in self], root=self.__root__)
-    except Exception:
-      pass
-    vals = pset()
-    new_items = []
-    new_roots = []
-    not_root = (self is not self.__root__)
-    for i, x in enumerate(self):
-      if x in vals:
-        continue
-      vals.add(x)
-      new_items.append(x)
-      if not_root:
-        new_roots.append(self.__root__[i])
-    if not_root:
-      return plist(new_items, root=plist(new_roots))
-    return plist(new_items)
-
-  puniq = preduce_eq
-
-  def pstr(self):
-    try:
-      return plist([x.pstr() for x in self], root=self.__root__)
-    except Exception:
-      return plist([str(x) for x in self], root=self.__root__)
-
-  def qj(self, *args, **kwargs):
-    call_pepth = kwargs.pop('call_pepth', 0)
-    return qj(self, _depth=4 + call_pepth, *args, **kwargs)
-
-  def remix(self, *args, **kwargs):
-    kwargs = {
-        k: _ensure_len(len(self), v) for k, v in kwargs.items()
-    }
-    new_items = []
-    for i, x in enumerate(self):
-      y = pdict(
-          **{
-              a: (hasattr(x, a) and getattr(x, a)) or x[a]
-              for a in args
-          }
-      )
-      y.update({k: v[i] for k, v in kwargs.items()})
-      new_items.append(y)
-    return plist(new_items)
 
   def sortby(self, key=None, reverse=False):
     key = key or (lambda x: x)
@@ -873,6 +771,109 @@ class plist(list):  # pylint: disable=invalid-name
     s.p()
     return plist(new_items)
 
+  ##############################################################################
+  # Additional filtering methods.
+  ##############################################################################
+  def nonempty(self, r=1):
+    if r > 1 or r < 0:
+      try:
+        new_plist = plist([x.nonempty(r=r - 1) for x in self if len(x)])
+      except Exception:
+        new_plist = self
+    else:
+      new_plist = self
+    return plist([x for x in new_plist if len(x)])
+
+  def preduce_eq(self):
+    try:
+      return plist([x.preduce_eq() for x in self], root=self.__root__)
+    except Exception:
+      pass
+    vals = pset()
+    new_items = []
+    new_roots = []
+    not_root = (self is not self.__root__)
+    for i, x in enumerate(self):
+      if x in vals:
+        continue
+      vals.add(x)
+      new_items.append(x)
+      if not_root:
+        new_roots.append(self.__root__[i])
+    if not_root:
+      return plist(new_items, root=plist(new_roots))
+    return plist(new_items)
+
+  puniq = preduce_eq
+
+  def remix(self, *args, **kwargs):
+    kwargs = {
+        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+    }
+    new_items = []
+    for i, x in enumerate(self):
+      y = pdict(
+          **{
+              a: (hasattr(x, a) and getattr(x, a)) or x[a]
+              for a in args
+          }
+      )
+      y.update({k: v[i] for k, v in kwargs.items()})
+      new_items.append(y)
+    return plist(new_items)
+
+  ##############################################################################
+  # Shape-relevant methods
+  ##############################################################################
+
+  # Shape and depth.
+  def pdepth(self):
+    try:
+      return plist([x.pdepth() + 1 for x in self], root=self.__root__)
+    except Exception:
+      return plist([0], root=self.__root__)
+
+  def pshape(self):
+    try:
+      return plist([x.pshape() for x in self], root=self.__root__)
+    except Exception:
+      return plist([len(self)], root=self.__root__)
+
+  # Length.
+  def plen(self, r=1):
+    if r > 1 or r < 0:
+      try:
+        return plist([sum(x.plen(r - 1) for x in self)], root=self.__root__)
+      except Exception:
+        pass
+    return plist([len(self)], root=self.__root__)
+
+  def rlen(self, r=1):
+    if r > 1 or r < 0:
+      try:
+        return plist([x.plen(r - 1) for x in self], root=self.__root__)
+      except Exception:
+        pass
+    return plist([len(self)], root=self.__root__)
+
+  # Fill with different values.
+  def lfill(self, v=0, s=None):
+    s = _successor(v) if s is None else s
+    try:
+      return [x.lfill(s=s) for x in self]
+    except Exception:
+      return [s.s() for _ in range(len(self))]
+
+  def pfill(self, v=0, s=None):
+    s = _successor(v) if s is None else s
+    try:
+      return plist([x.pfill(s=s) for x in self], root=self.__root__)
+    except Exception:
+      return plist([s.s() for _ in range(len(self))], root=self.__root__)
+
+  def pleft(self):
+    return -self.pfill() + self.plen(-1).ungroup(-1)[0]
+
   def values_like(self, value=0):
     values = _ensure_len(len(self), value)
     try:
@@ -880,6 +881,71 @@ class plist(list):  # pylint: disable=invalid-name
     except Exception:
       pass
     return plist([v for v in values], root=self.__root__)
+
+  ##############################################################################
+  # Calling-frame-modifying utility methods.
+  ##############################################################################
+  def me(self, name_or_plist='me', call_pepth=0):
+    try:
+      call_pepth += 3
+      f = inspect.currentframe()
+      for _ in range(call_pepth):
+        f = f.f_back
+
+      if isinstance(name_or_plist, str):
+        frame_locals = f.f_locals
+        if name_or_plist in frame_locals:
+          me = frame_locals[name_or_plist]
+          if not isinstance(me, plist):
+            raise ValueError('To use plist.me(name_or_plist) with a local variable named %s, it must be a plist object. Got %r.' % (name_or_plist, me))
+        else:
+          me = plist()
+          f.f_globals[name_or_plist] = me
+      elif isinstance(name_or_plist, plist):
+        me = name_or_plist
+      else:
+        raise ValueError('plist.me(name_or_plist) requires that name_or_plist be either a str or a plist. Got %r.' % name_or_plist)
+
+      if hasattr(list, 'clear'):
+        list.clear(me)
+      else:
+        del me[:]
+      list.extend(me, self)
+      me.__root__ = self.__root__
+    finally:
+      # Delete the stack frame to ensure there are no memory leaks, as suggested
+      # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
+      del f
+    return self
+
+  def pand(self, name='__plist_and_var__', call_pepth=0):
+    try:
+      call_pepth += 3
+      f = inspect.currentframe()
+      for _ in range(call_pepth):
+        f = f.f_back
+
+      frame_locals = f.f_locals
+      if name in frame_locals:
+        and_var = frame_locals[name]
+        if not isinstance(and_var, plist):
+          raise ValueError('plist.pand() expected a plist object with the name %s in the calling frame. Got %r.' % (name, and_var))
+        if not self.pshape().pequal(and_var.pshape()):
+          raise ValueError('plist.pand() found a previous plist object with an incompatible shape.\n'
+                           '\tMake sure that all calls to plist.pand() in the same stack frame operate on plists with the same shape,'
+                           ' or are called with different `name` arguments.\n'
+                           '\tExpected %r, got %r.' % (self.pshape(), and_var.pshape()))
+      else:
+        and_var = self.values_like(tuple())
+      and_var = and_var.apply(list, pepth=-1).apply(lambda x, y: x.append(y) or x, self, pepth=-1).apply(tuple, pepth=-1)
+
+      frame_locals[name] = and_var
+
+      return and_var
+    finally:
+      # Delete the stack frame to ensure there are no memory leaks, as suggested
+      # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
+      del f
 
 
 pist = plist
@@ -910,3 +976,5 @@ def _merge_indices(left, right, op):
   return [left, right]
 
 
+# pylint: enable=line-too-long,invalid-name,g-explicit-length-test
+# pylint: enable=broad-except,g-long-lambda
