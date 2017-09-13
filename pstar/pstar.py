@@ -220,6 +220,8 @@ def _build_unary_op(op):
 class plist(list):  # pylint: disable=invalid-name
   """List where everything is automatically a property that is applied to its elements.  Guaranteed to surprise, if not delight."""
 
+  __slots__ = ['__root__']
+
   def __init__(self, *args, **kwargs):
     depth = kwargs.pop('depth', 1)
     self.__root__ = kwargs.pop('root', self)

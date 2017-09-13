@@ -77,6 +77,12 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl.aslist(),
                      [[[0, 1, 2, 3, 4]]])
 
+  def test_plist_of_int_to_float(self):
+    pl = plist([1, 2, 3])
+
+    self.assertEqual(pl.apply(float).pstr().aslist(),
+                     ['1.0', '2.0', '3.0'])
+
   def test_plist_of_filename_context_manager(self):
     path = os.path.dirname(__file__)
     filenames = plist(['__init__.py', 'pstar_test.py']).apply(lambda f: os.path.join(path, f))
@@ -2066,8 +2072,8 @@ class PStarTest(unittest.TestCase):
 
     self.assertEqual(foos.__class__,
                      plist)
-    self.assertEqual(foos.__dict__,
-                     dict(__root__=foos))
+    self.assertIs(foos.__root__,
+                  foos)
     self.assertIn('List where',
                   foos.__doc__)
     self.assertEqual(foos.__module__,
@@ -2075,8 +2081,8 @@ class PStarTest(unittest.TestCase):
 
     self.assertEqual(by_bar_baz.__class__,
                      plist)
-    self.assertEqual(by_bar_baz.__dict__,
-                     dict(__root__=foos))
+    self.assertIs(by_bar_baz.__root__,
+                  by_bar_baz)
     self.assertIn('List where',
                   by_bar_baz.__doc__)
     self.assertEqual(by_bar_baz.__module__,
@@ -2096,7 +2102,7 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos.aslist(),
                      gen_foos.aslist())
 
-  # @unittest.skip('slow')
+  @unittest.skip('slow')
   def test_plist_of_pdict_timing(self):
     qj(tic=1, toc=1)
     large_input = [pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(100000)]
