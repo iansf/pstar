@@ -139,7 +139,6 @@ def _build_comparator(op, merge_op, shortcut):
   def comparator(self, other, return_inds=False):
     if self is other:
       return shortcut(self, return_inds)
-    # qj((self, other), '(self, other)', b=0)
     inds = []
     if isinstance(other, list) and len(self) == len(other):
       for i, (x, o) in enumerate(zip(self, other)):
@@ -152,7 +151,6 @@ def _build_comparator(op, merge_op, shortcut):
       inds = comparator(self, other[0], return_inds=True)
       for o in other[1:]:
         inds = _merge_indices(inds, comparator(self, o, return_inds=True), merge_op)
-      # qj((inds, self, other), 'inds self %s other)' % op.__name__, b=0)
     else:
       for i, x in enumerate(self):
         if isinstance(x, plist):
@@ -161,11 +159,10 @@ def _build_comparator(op, merge_op, shortcut):
         elif op(x, other):
           inds.append(i)
 
-    # qj(inds, 'inds %s self: %s other: %s' % (op.__name__, 'str(self)', 'str(other)'), b=0)
     if return_inds:
-      return qj(inds, 'return inds %s self: %s other: %s' % (op.__name__, 'str(self)', 'str(other)'), b=0)
+      return inds
 
-    return qj(self.__root__[inds], 'return %s self: %s other: %s' % (op.__name__, 'str(self)', 'str(other)'), b=0)
+    return self.__root__[inds]
 
   return comparator
 
@@ -239,12 +236,10 @@ class plist(list):  # pylint: disable=invalid-name
     if name == '__root__':
       return list.__getattribute__(self, name)
     if not name.endswith('___') and name.startswith('__') and name.endswith('__'):
-      raise qj(AttributeError('\'%s\' objects cannot call reserved members of their elements: \'%s\'' % (type(self), name)), l=lambda _: self, b=0*dbg)
-    # qj(self, name, b=dbg)
+      raise AttributeError('\'%s\' objects cannot call reserved members of their elements: \'%s\'' % (type(self), name))
     try:
-      return qj(plist.__getattr__(self, name), name, b=dbg)
+      return plist.__getattr__(self, name)
     except AttributeError:
-      # qj(self, 'caught AttributeError for %s' % name, b=dbg)
       pass
     if ((name.startswith('__') and name.endswith('___'))
         or (not name.startswith('__') and name.endswith('_'))):
@@ -259,25 +254,19 @@ class plist(list):  # pylint: disable=invalid-name
           else:
             break
         ending_unders -= starting_unders
-        return qj(plist.__getattr__(self, name[:-ending_unders], _pepth=ending_unders), name, b=dbg)
+        return plist.__getattr__(self, name[:-ending_unders], _pepth=ending_unders)
       except AttributeError:
         pass
       name = name[:-1]
     try:
-      # qj(name, 'trying', b=0)
-      return qj(
-          plist([
-            (qj(hasattr(*qj((x, name), 'calling hasattr', l=lambda y: (self, y[0], type(y[0])), b=dbg)), 'hasattr %s' % name, l=lambda _: (self, x, type(x)), b=dbg)
-             and getattr(x, name))
-            or x[name] for x in self],
-            root=self.__root__)
-          , name, b=dbg)
+      if plist.all(self, hasattr, name):
+        return plist([getattr(x, name) for x in self], root=self.__root__)
+      return plist([x[name] for x in self], root=self.__root__)
     except Exception as e:
-      raise qj(AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e))), l=lambda _: self, b=dbg)
+      raise AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e)))
 
 
   def __getattr__(self, name, _pepth=0):
-    # qj(self, name, b=dbg * (not name.startswith('__')))
     attr = list.__getattribute__(self, name)
 
     def call_attr(self, attr, *args, **kwargs):
@@ -292,19 +281,20 @@ class plist(list):  # pylint: disable=invalid-name
         pkwargs = {
             k: _ensure_len(len(self), v) for k, v in kwargs.items()
         }
-        # qj(self, 'About to try calling attr %r (%s) at pepth %d' % (attr, name, pepth), b=dbg * (not name.startswith('__')))
-        if pepth < 0:
-          try:
-            attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
-            return plist([call_attr(x, attrs[i], pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-          except Exception as e:
-            # qj(self, 'caught %s calling attr %r (%s) at pepth %d:\n%r' % (type(e), attr, name, pepth, e), b=dbg * (not name.startswith('__')))
-            pass
-        else:
+        try:
           attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
-          return plist([call_attr(x, attrs[i], pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+          return plist([call_attr(x,
+                                  attrs[i],
+                                  pepth=pepth - 1,
+                                  call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
+                                  *[a[i] for a in pargs],
+                                  **{k: v[i] for k, v in pkwargs.items()})
+                        for i, x in enumerate(self)],
+                       root=self.__root__)
+        except Exception as e:
+          if pepth > 0:
+            raise e
 
-      # qj(self, 'Directly calling attr %r (%s) at pepth %d' % (attr, name, pepth), b=dbg * (not name.startswith('__')))
       if name in ['qj', 'me']:
         result = attr(call_pepth=call_pepth, *args, **kwargs)
       elif name in NONCALLABLE_ATTRS:
@@ -331,23 +321,23 @@ class plist(list):  # pylint: disable=invalid-name
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
-        return qj(plist([self[k] for k in key]), 'return self[%s]' % 'str(key)', b=0)  # Don't pass root -- we are uprooting
+        return plist([self[k] for k in key])  # Don't pass root -- we are uprooting
       elif isinstance(key, slice):
         if self is self.__root__:
           return plist(list.__getitem__(self, key))
         return plist(list.__getitem__(self, key), root=plist(list.__getitem__(self.__root__, key)))
       else:
-        return qj(list.__getitem__(self, key), 'return list[%s]' % 'str(key)', b=0)
+        return list.__getitem__(self, key)
     except TypeError as first_exception:
       try:
         if isinstance(key, list):
-          return qj(plist([self[i][k] for i, k in enumerate(key)]), 'return self[i][%s]' % 'str(key)', b=0)  # Don't pass root -- we are uprooting
+          return plist([self[i][k] for i, k in enumerate(key)])  # Don't pass root -- we are uprooting
         if isinstance(key, tuple):
           try:
             return plist([x[key] for x in self], root=self.__root__)
           except Exception:
-            return qj(plist([tuple(x[k] for k in key) for x in self], root=self.__root__), 'return self[%s]' % 'str(key)', b=0)
-        return qj(plist([x[key] for x in self], root=self.__root__), 'return elements[%s]' % 'str(key)', b=0)
+            return plist([tuple(x[k] for k in key) for x in self], root=self.__root__)
+        return plist([x[key] for x in self], root=self.__root__)
       except Exception as second_exception:
         raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
 
@@ -391,7 +381,6 @@ class plist(list):  # pylint: disable=invalid-name
             for i, x in enumerate(self):
               operator.__setitem__(x, key, lval[i])
           except Exception:
-            qj(d=1)
             for i, x in enumerate(self):
               for j, k in enumerate(key):
                 operator.__setitem__(x, k, lval[i][j])
@@ -463,19 +452,18 @@ class plist(list):  # pylint: disable=invalid-name
     }
     if pepth != 0:
       if not isinstance(self, plist):
-        raise Exception  # ('Attempting to plist.__call__ object of type %s' % type(self))
-      # qj(self, 'About to try calling at pepth %d' %  pepth, b=dbg)
-      pargs = args
-      pkwargs = kwargs
-      if pepth < 0:
-        try:
-          return plist([x(pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-        except Exception as e:
-          pass
-      else:
-        return plist([x(pepth=pepth - 1, call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA, *[a[i] for a in pargs], **{k: v[i] for k, v in pkwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+        raise ValueError
+      try:
+        return plist([x(pepth=pepth - 1,
+                        call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
+                        *[a[i] for a in args],
+                        **{k: v[i] for k, v in kwargs.items()})
+                      for i, x in enumerate(self)],
+                     root=self.__root__)
+      except Exception as e:
+        if pepth > 0:
+          raise e
 
-    # qj(self, 'Directly calling at pepth %d' %  pepth, b=dbg)
     return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
 
@@ -583,17 +571,14 @@ class plist(list):  # pylint: disable=invalid-name
 
   # Nope.  Crashes when trying to index by plists of lists of ints.
 #   def __index__(self):
-#     qj(d=1)
 #     return plist([x.__index__() for x in self], root=self.__root__)
 
 
   def __enter__(self):
-    qj(d=1)
     return plist([x.__enter__() for x in self], root=self.__root__)
 
   def __exit__(self, exc_type, exc_value, traceback):
-    qj(d=1)
-    return plist([x.__exit__(exc_type, exc_value, traceback) for x in self], root=self.__root__)
+    return plist([x.__exit__(exc_type, exc_value, traceback) for x in self], root=self.__root__).all(bool)
 
 
   def root(self):
@@ -603,9 +588,35 @@ class plist(list):  # pylint: disable=invalid-name
     self.__root__ = self
     return self
 
-#   def and(self, root=True):
-#     # Interesting idea, but definitely doesn't work like this
-#     return plist([x.__root__.append(x) if isinstance(x, plist) else plist([x], root=self) for x in self], root=self.__root__)
+  def pand(self, name='__plist_and_var__', call_pepth=0):
+    try:
+      # qj(d=1)
+      call_pepth += 3
+      f = inspect.currentframe()
+      for _ in range(call_pepth):
+        f = f.f_back
+
+      frame_locals = f.f_locals
+      if name in frame_locals:
+        and_var = frame_locals[name]
+        if not isinstance(and_var, plist):
+          raise ValueError('plist.pand() expected a plist object with the name %s in the calling frame. Got %r.' % (name, and_var))
+        if not self.pshape().pequal(and_var.pshape()):
+          raise ValueError('plist.pand() found a previous plist object with an incompatible shape.\n'
+                           '\tMake sure that all calls to plist.pand() in the same stack frame operate on plists with the same shape,'
+                           ' or are called with different `name` arguments.\n'
+                           '\tExpected %r, got %r.' % (self.pshape(), and_var.pshape()))
+      else:
+        and_var = self.values_like(tuple())
+      and_var = and_var.apply(list, pepth=-1).apply(lambda x, y: x.append(y) or x, self, pepth=-1).apply(tuple, pepth=-1)
+
+      frame_locals[name] = and_var
+
+      return and_var
+    finally:
+      # Delete the stack frame to ensure there are no memory leaks, as suggested
+      # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
+      del f
 
   def all(self, func, *args, **kwargs):
     for x in self:
@@ -624,6 +635,21 @@ class plist(list):  # pylint: disable=invalid-name
       if func(x, *args, **kwargs):
         return plist()
     return self
+
+  def pequal(self, other):
+    if not isinstance(other, plist):
+      return False
+    if len(self) != len(other):
+      return False
+    try:
+      for x, y in zip(self, other):
+        if not x.pequal(y):
+          return False
+    except Exception:
+      for x, y in zip(self, other):
+        if x != y:
+          return False
+    return True
 
   def apply(self, func, *args, **kwargs):
     paslist = kwargs.pop('paslist', False)
@@ -868,22 +894,21 @@ def _ensure_len(length, x):
 
 
 def _merge_indices(left, right, op):
-  # qj((left, right), 'l,r', b=0)
   try:
     left_empty_or_ints = len(left) == 0 or plist(left).all(isinstance, int)
     right_empty_or_ints = len(right) == 0 or plist(right).all(isinstance, int)
     if left_empty_or_ints and right_empty_or_ints:
       sl = set(left)
       sr = set(right)
-      return qj(sorted(list(op(sl, sr))), 'ret left op right', b=0)
+      return sorted(list(op(sl, sr)))
   except Exception:
     pass
   try:
-    return qj([_merge_indices(left[i], right[i], op) for i in range(max(len(left), len(right)))], 'ret merge(l[i], r[i])', b=0)
+    return [_merge_indices(left[i], right[i], op) for i in range(max(len(left), len(right)))]
   except Exception:
     pass
   if isinstance(left, list) and isinstance(right, list):
-    return qj(left.extend(right) or left, 'ret left.extend(right)', b=0)
-  return qj([left, right], 'ret [l, r]', b=1, d=1)
+    return left.extend(right) or left
+  return [left, right]
 
 

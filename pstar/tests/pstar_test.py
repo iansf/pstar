@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import logging
+import os
 import re
 import sys
 
@@ -75,6 +76,14 @@ class PStarTest(unittest.TestCase):
     pl.append__(4)
     self.assertEqual(pl.aslist(),
                      [[[0, 1, 2, 3, 4]]])
+
+  def test_plist_of_filename_context_manager(self):
+    path = os.path.dirname(__file__)
+    filenames = plist(['__init__.py', 'pstar_test.py']).apply(lambda f: os.path.join(path, f))
+    with filenames.apply(open, 'r') as f:
+      texts = f.read()
+    self.assertEqual(len(texts), 2)
+    self.assertTrue(texts.all(isinstance, str))
 
   def test_plist_of_defaultpdict(self):
     foos = plist([defaultpdict(lambda: defaultpdict(plist)) for _ in range(3)])
@@ -735,6 +744,46 @@ class PStarTest(unittest.TestCase):
     # Clean up the globals.
     del globals()['me']
     del globals()['me2']
+
+  def test_plist_of_pdict_groupby_groupby_pand(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertEqual(foos.bar.pand().root().baz.pand().aslist(),
+                     [(1, 6), (1, 6), (0, 3), (0, 1), (0, 2)])
+    self.assertEqual(by_bar_baz.bar.pand('other_pand').root().baz.pand('other_pand').aslist(),
+                     [[[(1, 6),
+                        (1, 6)]],
+                      [[(0, 1)],
+                       [(0, 2)],
+                       [(0, 3)]]])
+
+    self.assertRaises(ValueError, lambda: foos.bar.pand() and by_bar_baz.bar.pand())
+
+
+  def test_plist_of_pdict_groupby_groupby_pand_apply_as_args(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    def foo_func(foo, bar, baz):
+      assert isinstance(foo, str) and isinstance(bar, float) and isinstance(baz, int)
+      return '%s %.2f %d' % (foo, bar, baz)
+
+    me = plist()
+    foos_out = by_bar_baz.bar.apply(float, pepth=-1).pand().root().baz.pand().me().root().foo.pstr().apply(lambda x, args: foo_func(x, *args), me, pepth=2)
+
+    self.assertEqual(foos_out.aslist(),
+                     [[['1 1.00 6', '3 1.00 6']],
+                      [['2 0.00 1'],
+                       ['4 0.00 2'],
+                       ['0 0.00 3']]])
+
 
   def test_plist_of_pdict_groupby_groupby_getitem_list_key(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
