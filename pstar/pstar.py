@@ -590,7 +590,6 @@ class plist(list):  # pylint: disable=invalid-name
 
   def pand(self, name='__plist_and_var__', call_pepth=0):
     try:
-      # qj(d=1)
       call_pepth += 3
       f = inspect.currentframe()
       for _ in range(call_pepth):
