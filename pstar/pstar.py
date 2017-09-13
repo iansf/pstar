@@ -126,9 +126,6 @@ class pset(set):
 pet = pset
 
 
-dbg = 0
-
-
 def _successor(v):
   """Returns a successor/predecessor object starting at value v."""
   s = pdict(v=v, p=lambda: s.update(v=s.v - 1).v, s=lambda: s.update(v=s.v + 1).v)
