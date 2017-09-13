@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# pylint: disable=line-too-long
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import os
 import re
 import sys
@@ -27,13 +27,12 @@ import mock
 
 import numpy as np
 
-from pstar import *
+from pstar import defaultpdict, pdict, plist  # pylint: disable=g-multiple-import
 from qj import qj
 
 DEBUG_TESTS = False
 
 
-# pylint: disable=line-too-long
 class RegExp(object):
 
   def __init__(self, pattern, flags=0):
@@ -1209,7 +1208,7 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
-    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+    foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
     del foos[('bar', 'baz')]
 
@@ -1237,7 +1236,7 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
-    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+    foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
     # This kind of indexing is possible, but it's probably a bad idea to do it, since the resulting object is
     # almost certainly inhomogeneous.
@@ -1458,20 +1457,23 @@ class PStarTest(unittest.TestCase):
                       [[{'bin': 13, 'baz': 6, 'foo': 1, 'bar': 1},
                         {'bin': 13, 'baz': 6, 'foo': 3, 'bar': 1}]]])
 
+    # pylint: disable=bad-continuation
     self.assertEqual(by_bar_bin.pd__().pstr_().aslist(),
                      [[
-                         '   bar  baz  bin  foo\n'
-                         '0    0    3   -1    0\n'
-                         '1    0    5   -1    2',
+                          '   bar  baz  bin  foo\n'
+                          '0    0    3   -1    0\n'
+                          '1    0    5   -1    2',
 
-                         '   bar  baz  bin  foo\n'
-                         '0    0    7   13    4',
+                          '   bar  baz  bin  foo\n'
+                          '0    0    7   13    4',
                       ],
                       [
-                         '   bar  baz  bin  foo\n'
-                         '0    1    6   13    1\n'
-                         '1    1    6   13    3',
-                      ]])
+                          '   bar  baz  bin  foo\n'
+                          '0    1    6   13    1\n'
+                          '1    1    6   13    3',
+                      ]
+                     ])
+    # pylint: enable=bad-continuation
 
   def test_plist_of_pdict_groupby_groupby_sortby_ungroup_pd(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
@@ -1978,18 +1980,17 @@ class PStarTest(unittest.TestCase):
               mock.call(
                   RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:  10 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8\.4\d*, 5\.0\d*\), 21\.0\), array\(\[22, 23, 29, 11,  6\]\)')),
               mock.call(
-                  RegExp(r"qj: <pstar_test> test_sample_data_analysis_flow:  9 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8.3\d+, 5.1\d+\), 20.0\), array\(\[24, 12, 34, 14,  7\]\)")),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:  9 \(shape \(min \(mean std\) max\) hist\) <\d+>: \(\(91,\), \(0\.0, \(8.3\d+, 5.1\d+\), 20.0\), array\(\[24, 12, 34, 14,  7\]\)')),
           ],
           any_order=False)
       self.assertEqual(mock_log_fn.call_count, 12)
       mock_log_fn.reset_mock()
 
-
-      params = (rmx.bam == rmx.bam.np().max())[tuple(['bun'] + list(fields))].qj('max-yielding params').pshape().qj('maxes ps').root()
+      (rmx.bam == rmx.bam.np().max())[tuple(['bun'] + list(fields))].qj('max-yielding params').pshape().qj('maxes ps').root()
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r"qj: <pstar_test> test_sample_data_analysis_flow:   max-yielding params <\d+>: \[\[\(10, 11, 1\), \(10, 11, 1\), \(10, 11, 1\)\], ")),
+                  RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:   max-yielding params <\d+>: \[\[\(10, 11, 1\), \(10, 11, 1\), \(10, 11, 1\)\], ')),
               mock.call(
                   RegExp(r'qj: <pstar_test> test_sample_data_analysis_flow:    maxes ps <\d+>: \[\[3\], \[5\], \[1\], \[2\], \[1\], \[1\], \[2\], \[1\], \[1\], \[1\], \[7\]\]')),
           ],
@@ -2025,7 +2026,7 @@ class PStarTest(unittest.TestCase):
         (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
          .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
          .np().mean().qj('means').join().apply(
-              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
+             lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
          )
          .root()[0].root().apply('__getslice___', 0, 10).qj('bam top 10').join()
          .root()[0].root().__getslice___(0, 10).qj('bam top 10').join()
@@ -2036,7 +2037,7 @@ class PStarTest(unittest.TestCase):
         (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
          .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
          .np().mean().qj('means').join().apply(
-              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
+             lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
          )
          .root()[0].root().apply('__getitem___', slice(0, 10)).qj('bam top 10').join()
          .root()[0].root().__getitem___(slice(0, 10)).qj('bam top 10').join()
@@ -2124,7 +2125,6 @@ class PStarTest(unittest.TestCase):
 
     by.baz.qj(by[fields].preduce_eq().ungroup().pstr(), n=10, pepth=2)
     qj(tic=1, toc=1)
-
 
 
 # pylint: enable=line-too-long
