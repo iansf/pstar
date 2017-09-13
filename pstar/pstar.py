@@ -769,10 +769,14 @@ class plist(list):  # pylint: disable=invalid-name
       return plist([len(self)], root=self.__root__)
 
   def preduce_eq(self):
+    try:
+      return plist([x.preduce_eq() for x in self], root=self.__root__)
+    except Exception:
+      pass
     vals = pset()
     new_items = []
     new_roots = []
-    not_root = (not self is self.__root__)
+    not_root = (self is not self.__root__)
     for i, x in enumerate(self):
       if x in vals:
         continue

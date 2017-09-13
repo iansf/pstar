@@ -307,10 +307,10 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 1).baz = 6
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
-    self.assertEqual(by_bar_baz.bar.preduce_eq__().aslist(),
+    self.assertEqual(by_bar_baz.bar.preduce_eq().aslist(),
                      [[[1]], [[0], [0], [0]]])
 
-    self.assertEqual(by_bar_baz.bar.preduce_eq__().root__().aslist(),
+    self.assertEqual(by_bar_baz.bar.preduce_eq().root__().aslist(),
                      [[[{'baz': 6, 'foo': 1, 'bar': 1}]],
                       [[{'baz': 1, 'foo': 2, 'bar': 0}],
                        [{'baz': 2, 'foo': 4, 'bar': 0}],
@@ -2047,7 +2047,7 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos.aslist(),
                      gen_foos.aslist())
 
-  @unittest.skip('slow')
+  # @unittest.skip('slow')
   def test_plist_of_pdict_timing(self):
     qj(tic=1, toc=1)
     large_input = [pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(100000)]
@@ -2067,7 +2067,7 @@ class PStarTest(unittest.TestCase):
     by.baz = by.foo % (by.bin + by.bun + 1)
     qj(tic=1, toc=1)
 
-    by.baz.qj(by[fields].preduce_eq__().ungroup().pstr(), n=10, pepth=2)
+    by.baz.qj(by[fields].preduce_eq().ungroup().pstr(), n=10, pepth=2)
     qj(tic=1, toc=1)
 
 
