@@ -130,6 +130,7 @@ dbg = 0
 
 
 def _successor(v):
+  """Returns a successor/predecessor object starting at value v."""
   s = pdict(v=v, p=lambda: s.update(v=s.v - 1).v, s=lambda: s.update(v=s.v + 1).v)
   return s
 
@@ -729,14 +730,14 @@ class plist(list):  # pylint: disable=invalid-name
       return plist([0], root=self.__root__)
 
   def pfill(self, v=0, s=None):
-    s = pdict(v=v, s=lambda: s.update(v=s.v + 1).v) if s is None else s
+    s = _successor(v) if s is None else s
     try:
       return plist([x.pfill(s=s) for i, x in enumerate(self)], root=self.__root__)
     except Exception:
       return plist([s.s() for _ in range(len(self))], root=self.__root__)
 
   def lfill(self, v=0, s=None):
-    s = pdict(v=v, s=lambda: s.update(v=s.v + 1).v) if s is None else s
+    s = _successor(v) if s is None else s
     try:
       return [x.lfill(s=s) for i, x in enumerate(self)]
     except Exception:
@@ -830,10 +831,11 @@ class plist(list):  # pylint: disable=invalid-name
       for x in self:
         cs = _successor(s.v)
         new_xs.append(x.ungroup(cs.v, cs))
+      # Assumes that all children have the same depth.
+      # The plist is malformed if that isn't the case, and things will crash at some point.
       s.v = cs.v
       if s.v == 0:
-        new_plist = plist(new_xs)
-        return new_plist
+        return plist(new_xs)
       for x in new_xs:
         new_items.extend(x)
     except Exception:
@@ -841,8 +843,7 @@ class plist(list):  # pylint: disable=invalid-name
         raise ValueError('Called ungroup on a plist that has non-group children')
       return self
     s.p()
-    new_plist = plist(new_items)
-    return new_plist
+    return plist(new_items)
 
   def values_like(self, value=0):
     values = _ensure_len(len(self), value)
