@@ -56,6 +56,71 @@ class PStarTest(unittest.TestCase):
   def setUp(self):
     pass
 
+  def test_empty_pdict(self):
+    self.assertFalse(pdict())
+
+  def test_pdict_assignment(self):
+    p = pdict()
+    p.foo = 1
+    self.assertEqual(p['foo'], 1)
+
+    p = pdict(foo=1, bar=2)
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [1, 2])
+
+    p = pdict()
+    p[['foo', 'bar']] = 1
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [1, 1])
+
+    p[['foo', 'bar']] = [1, 2]
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [1, 2])
+
+  def test_pdict_update(self):
+    p = pdict(foo=1, bar=2)
+    p.update(bar=3).baz = 4
+    self.assertEqual(p.bar, 3)
+    self.assertIn('baz', p.keys())
+
+  def test_empty_defaultpdict(self):
+    self.assertFalse(defaultpdict())
+
+  def test_defaultpdict_int_default(self):
+    p = defaultpdict(int)
+    self.assertEqual(p.foo, 0)
+
+  def test_defaultpdict_nested_constructor(self):
+    p = defaultpdict(lambda: defaultpdict(list))
+    p.foo = 1
+    p.stats.bar.append(2)
+    self.assertEqual(p['foo'], 1)
+    self.assertEqual(p.stats.bar, [2])
+
+  def test_defaultpdict_assignment(self):
+    p = pdict()
+    p.foo = 1
+    self.assertEqual(p['foo'], 1)
+
+    p = pdict(foo=1, bar=2)
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [1, 2])
+
+    p = pdict()
+    p[['foo', 'bar']] = 1
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [1, 1])
+
+    p[['foo', 'bar']] = [1, 2]
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [1, 2])
+
+  def test_defaultpdict_update(self):
+    p = pdict(foo=1, bar=2)
+    p.update(bar=3).baz = 4
+    self.assertEqual(p.bar, 3)
+    self.assertIn('baz', p.keys())
+
   def test_empty_plist(self):
     self.assertFalse(plist())
 

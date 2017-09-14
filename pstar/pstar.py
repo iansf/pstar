@@ -32,18 +32,47 @@ from qj import qj
 
 
 # pylint: disable=line-too-long,invalid-name,g-explicit-length-test,broad-except,g-long-lambda
-if sys.version_info[0] < 3:
-  STRING_TYPES = types.StringTypes
-  PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 1
-else:
-  STRING_TYPES = str
-  PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 2
 
-NONCALLABLE_ATTRS = ['__class__', '__dict__', '__doc__', '__module__']
-
-
+################################################################################
+################################################################################
+################################################################################
+# pdict class
+################################################################################
+################################################################################
+################################################################################
 class pdict(dict):
-  """Dict where everything is automatically a property."""
+  """dict where everything is automatically a property.
+
+  Use with dot notation or subscript notation:
+  ```
+    p = pdict()
+    p.foo = 1
+    assert p['foo'] == 1
+  ```
+
+  List subscripts also work and return a plist of the corresponding keys:
+  ```
+    p = pdict(foo=1, bar=2)
+    assert p[['foo', 'bar']].aslist() == [1, 2]
+  ```
+
+  Setting with a list subscript also works, using a single element or a matching list for the values:
+  ```
+    p = pdict()
+    p[['foo', 'bar']] = 1
+    assert p[['foo', 'bar']].aslist() == [1, 1]
+    p[['foo', 'bar']] = [1, 2]
+    assert p[['foo', 'bar']].aslist() == [1, 2]
+  ```
+
+  pdict.update() returns self, rather than None, to support chaining:
+  ```
+    p = pdict(foo=1, bar=2)
+    p.update(bar=3).baz = 4
+    assert p.bar == 3
+    assert 'baz' in p.keys()
+  ```
+  """
 
   def __init__(self, *a, **kw):
     dict.__init__(self, *a, **kw)
@@ -56,7 +85,8 @@ class pdict(dict):
       return dict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
-    if isinstance(key, list) and not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(key):
+    if isinstance(key, list):
+      value = _ensure_len(len(key), value)
       for k, v in zip(key, value):
         dict.__setitem__(self, k, v)
     else:
@@ -73,8 +103,61 @@ class pdict(dict):
 pict = pdict
 
 
+################################################################################
+################################################################################
+################################################################################
+# defaultpdict class
+################################################################################
+################################################################################
+################################################################################
 class defaultpdict(defaultdict):
-  """Default dict where everything is automatically a property."""
+  """defaultdict where everything is automatically a property.
+
+  Use with dot notation or subscript notation:
+  ```
+    p = defaultpdict()
+    p.foo = 1
+    assert p['foo'] == 1
+  ```
+
+  List subscripts also work and return a plist of the corresponding keys:
+  ```
+    p = defaultpdict(foo=1, bar=2)
+    assert p[['foo', 'bar']].aslist() == [1, 2]
+  ```
+
+  Setting with a list subscript also works, using a single element or a matching list for the values:
+  ```
+    p = defaultpdict()
+    p[['foo', 'bar']] = 1
+    assert p[['foo', 'bar']].aslist() == [1, 1]
+    p[['foo', 'bar']] = [1, 2]
+    assert p[['foo', 'bar']].aslist() == [1, 2]
+  ```
+
+  defaultpdict.update() returns self, rather than None, to support chaining:
+  ```
+    p = defaultpdict(foo=1, bar=2)
+    p.update(bar=3).baz = 4
+    assert p.bar == 3
+    assert 'baz' in p.keys()
+  ```
+
+  Set the desired defualt constructor as normal to avoid having to construct individual values:
+  ```
+    p = defaultpdict(int)
+    assert p.foo == 0
+  ```
+
+  Nested defaultpdicts make nice lightweight objects:
+  ```
+    p = defaultpdict(lambda: defaultpdict(list))
+    p.foo = 1
+    p.stats.bar.append(2)
+    assert p['foo'] == 1
+    assert p.stats.bar == [2]
+  ```
+  """
 
   def __init__(self, *a, **kw):
     defaultdict.__init__(self, *a, **kw)
@@ -103,7 +186,8 @@ class defaultpdict(defaultdict):
       return defaultdict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
-    if isinstance(key, list) and not isinstance(value, STRING_TYPES) and hasattr(value, '__len__') and len(value) == len(key):
+    if isinstance(key, list):
+      value = _ensure_len(len(key), value)
       for k, v in zip(key, value):
         defaultdict.__setitem__(self, k, v)
     else:
@@ -120,21 +204,53 @@ class defaultpdict(defaultdict):
 defaultpict = defaultpdict
 
 
+################################################################################
+################################################################################
+################################################################################
+# pset class
+################################################################################
+################################################################################
+################################################################################
 class pset(set):
+  """Placeholder set subclass. Not yet implemented."""
   pass
 
 
 pet = pset
 
 
-def _successor(v):
-  """Returns a successor/predecessor object starting at value v."""
-  s = pdict(v=v, p=lambda: s.update(v=s.v - 1).v, s=lambda: s.update(v=s.v + 1).v)
-  return s
-
-
+################################################################################
+################################################################################
+################################################################################
+# plist method builder functions.
+################################################################################
+################################################################################
+################################################################################
 def _build_comparator(op, merge_op, shortcut):
+  """Builds a plist comparator operation.
+
+  Args:
+    op: Comparison operation, such as operator.__eq__.
+    merge_op: Set-like operation for merging sets of intermediate results, such as operator.__and__.
+    shortcut: Function to call to shortcut comparison if `self is other`.
+
+  Returns:
+    comparator: The comparison function.
+  """
   def comparator(self, other, return_inds=False):
+    """plist-compatible comparison operator -- comparisons are filters for plists.
+
+    Args:
+      self: plist object.
+      other: Object to compare against.
+      return_inds: Optional bool. When True, causes the comparison to return the plist indices
+                   of the matching items. When False (the default), causes the comparison to
+                   return a plist of the matching values.
+
+    Returns:
+      A new plist, filtered from self and other according to the operation provided to _build_comparator,
+      if return_inds is False. Otherwise, returns the corresponding indices into self.
+    """
     if self is other:
       return shortcut(self, return_inds)
     inds = []
@@ -166,7 +282,24 @@ def _build_comparator(op, merge_op, shortcut):
 
 
 def _build_logical_op(op):
+  """Builds a plist logical operation.
+
+  Args:
+    op: Logical operation, such as operator.__and__.
+
+  Returns:
+    logical_op: The logical operation function.
+  """
   def logical_op(self, other):
+    """plist-compatible logical operation -- logical ops perform set operations on plists.
+
+    Args:
+      self: plist object.
+      other: Object to perform the logical operation with.
+
+    Returns:
+      A new plist, merging self and other according to the operation provided to _build_logical_op.
+    """
     if isinstance(other, plist):
       if len(self) == len(other):
         try:
@@ -191,7 +324,25 @@ def _build_logical_op(op):
 
 
 def _build_binary_op(op):
+  """Builds a plist binary operation.
+
+  Args:
+    op: Binary operation, such as operator.__add__.
+
+  Returns:
+    binary_op: The binary operation function.
+  """
   def binary_op(self, other):
+    """plist-compatible binary operation -- binary operations apply to the elements of the plist.
+
+    Args:
+      self: plist object.
+      other: Object to perform the binary operation with.
+
+    Returns:
+      A new plist, where each element of self had the operation passed to _build_binary_op
+      applied to it and other, or the corresponding element of other, if their lengths match.
+    """
     if isinstance(other, plist):
       if len(self) == len(other):
         return plist([op(x, o) for x, o in zip(self, other)], root=self.__root__)
@@ -201,6 +352,14 @@ def _build_binary_op(op):
 
 
 def _build_binary_rop(op):
+  """Builds a plist binary operation where the plist is only the right side.
+
+  Args:
+    op: Left-side binary operation, such as operator.__add__.
+
+  Returns:
+    binary_rop: The corresponding right-side binary operation function.
+  """
   def binary_rop(self, other):
     return plist([op(other, x) for x in self], root=self.__root__)
 
@@ -208,22 +367,200 @@ def _build_binary_rop(op):
 
 
 def _build_binary_ops(op, iop):
+  """Builds all three variants of plist binary operation: op, rop, and iop.
+
+  Args:
+    op: Binary operation, such as operator.__add__.
+    iop: Binary assignment operation, such as operator.__iadd__.
+
+  Returns:
+    The plist binary operation and its right-side and assignment variants.
+  """
   return _build_binary_op(op), _build_binary_rop(op), _build_binary_op(iop)
 
 
 def _build_unary_op(op):
+  """Builds a plist unary operation.
+
+  Args:
+    op: Unary operation, such as operator.__not__.
+
+  Returns:
+    unary_op: The unary operation function.
+  """
   def unary_op(self):
     return plist([op(x) for x in self], root=self.__root__)
 
   return unary_op
 
 
+################################################################################
+################################################################################
+################################################################################
+# plist helper functions and constants.
+################################################################################
+################################################################################
+################################################################################
+if sys.version_info[0] < 3:
+  STRING_TYPES = types.StringTypes
+  PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 1
+else:
+  STRING_TYPES = str
+  PLIST_CALL_ATTR_CALL_PEPTH_DELTA = 2
+
+NONCALLABLE_ATTRS = ['__class__', '__dict__', '__doc__', '__module__']
+
+
+def _call_attr(obj, name, attr, *args, **kwargs):
+  """Recursive function to call the desired attribute.
+
+  Args:
+    obj: Object that the attribute will be called on. May not be a plist
+         if `pepth != 0`.
+    name: Name of the attribute being called.
+    attr: Bound attribute found by a __getattribute__ or getattr call.
+    *args: Arguments passed directly to the attribute.
+    **kwargs: Keyword arguments passed directly to the attribute, except
+              `pepth` and `call_pepth`, which are removed.
+              `pepth` tracks the desired depth in the plist of the
+              attribute. When `pepth == 0`, the attribute is called or
+              returned (for non-callable attributes).
+              `call_pepth` tracks the actual depth the call occurs at. It is
+              only passed on to a known list of plist methods that need it
+              in order to correctly handle stack frames between the original
+              caller and the final call.
+
+  Returns:
+    Either the value of the attribute, if the attribute is a known
+    non-callable attribute, or the value of calling the attribute with the
+    provided arguments.
+  """
+  pepth = kwargs.pop('pepth', 0)
+  call_pepth = kwargs.pop('call_pepth', 0)
+  if pepth != 0:
+    if not isinstance(obj, plist):
+      if name in NONCALLABLE_ATTRS:
+        return attr
+      return attr(*args, **kwargs)
+    pargs = [_ensure_len(len(obj), a) for a in args]
+    pkwargs = {
+        k: _ensure_len(len(obj), v) for k, v in kwargs.items()
+    }
+    try:
+      attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in obj]
+      return plist([_call_attr(x,
+                               name,
+                               attrs[i],
+                               pepth=pepth - 1,
+                               call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
+                               *[a[i] for a in pargs],
+                               **{k: v[i] for k, v in pkwargs.items()})
+                    for i, x in enumerate(obj)],
+                   root=obj.__root__)
+    except Exception as e:
+      if pepth > 0:
+        raise e
+
+  if name in ['qj', 'me']:
+    result = attr(call_pepth=call_pepth, *args, **kwargs)
+  elif name in NONCALLABLE_ATTRS:
+    return attr
+  else:
+    result = attr(*args, **kwargs)
+
+  if result is None and isinstance(obj, plist):
+    return obj
+  return result
+
+
+def _ensure_len(length, x):
+  """Convert x to a list of length `length` if necessary and return it.
+
+  This function is the core of plist 'deepcasting', which is conceptually
+  similar to 'broadcasting' in numpy and tensorflow, but is intentionally much
+  more permissive. Deepcasting relies on the fact that most functions will
+  crash if they receive a list when they were expecting a scalar value. Allowing
+  the called function to crash, rather than crashing in plist, allows plist to
+  be optimistic, and avoids plist having to guess how a user-supplied function
+  is meant to be called.
+
+  Args:
+    length: int.
+    x: object to convert.
+
+  Returns:
+    `x` if `x` is a non-string sequence and `len(x) == length`.
+    Otherwise a list with `length` copies of `x`.
+  """
+  if not isinstance(x, type) and not isinstance(x, STRING_TYPES) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
+    return x
+  return [x for _ in range(length)]
+
+
+def _merge_indices(left, right, op):
+  """Merge index arrays using set operation `op`.
+
+  This is the core of the filtering that happens in the plist comparators.
+
+  Args:
+    left: List of integer indices.
+    right: List of integer indices.
+    op: Set operation to merge the two lists. E.g., operator.__and__.
+
+  Returns:
+    List containing merged indices.
+  """
+  try:
+    left_empty_or_ints = len(left) == 0 or plist(left).all(isinstance, int)
+    right_empty_or_ints = len(right) == 0 or plist(right).all(isinstance, int)
+    if left_empty_or_ints and right_empty_or_ints:
+      sl = set(left)
+      sr = set(right)
+      return sorted(list(op(sl, sr)))
+  except Exception:
+    pass
+  try:
+    return [_merge_indices(left[i], right[i], op) for i in range(max(len(left), len(right)))]
+  except Exception:
+    pass
+  if isinstance(left, list) and isinstance(right, list):
+    return left.extend(right) or left
+  return [left, right]
+
+
+def _successor(v):
+  """Returns a successor/predecessor object starting at value v."""
+  s = pdict(v=v, p=lambda: s.update(v=s.v - 1).v, s=lambda: s.update(v=s.v + 1).v)
+  return s
+
+
+################################################################################
+################################################################################
+################################################################################
+# plist class
+################################################################################
+################################################################################
+################################################################################
 class plist(list):
-  """List where everything is automatically a property that is applied to its elements.  Guaranteed to surprise, if not delight."""
+  """List where everything is automatically a property that is applied to its elements. Guaranteed to surprise, if not delight.
+
+  See README.md for a detailed overview of ways plist can be used.
+  See tests/pstar_test.py for usage examples ranging from simple to complex.
+  """
 
   __slots__ = ['__root__']
 
   def __init__(self, *args, **kwargs):
+    """Constructs plist.
+
+    Args:
+      *args: Passed directly to list constructor.
+      **kwargs: Should only contain 'depth' and 'root' as optional keywords. All
+                other keys are passed directly to list constructor.
+
+    Returns:
+      None. plist is initialized.
+    """
     depth = kwargs.pop('depth', 1)
     self.__root__ = kwargs.pop('root', self)
     if depth == 1:
@@ -241,6 +578,27 @@ class plist(list):
   ##############################################################################
 
   def __getattribute__(self, name):
+    """Returns a plist of the attribute for self, or for each element.
+
+    Args:
+      name: Name of the attribute.
+
+    Returns:
+      If `name` exists as an attribute of plist, that attribute is returned.
+      Otherwise, removes trailing underscores from `name` (apart from those
+      normally part of a `__*__` name), and uses the count of underscores to
+      indicate how deep into the plist `name` should be searched for. Attempts
+      to find the modified `name` on plist first, and then looks for `name` on
+      each element of self.
+
+      When attempting to find `name` on the elements of self, first it checks
+      if the elements all have `name` as an attribute. If so, it returns that
+      attribute (`[getattr(x, name) for x in self]`). Otherwise, it attempts to
+      return `name` as an index of each element (`[x[name] for x in self]`).
+
+    Raises:
+      AttributeError: If `name` is not found on self or the elements of self.
+    """
     if name == '__root__':
       return list.__getattribute__(self, name)
     if not name.endswith('___') and name.startswith('__') and name.endswith('__'):
@@ -265,6 +623,7 @@ class plist(list):
         return plist.__getattr__(self, name[:-ending_unders], _pepth=ending_unders)
       except AttributeError:
         pass
+      # Fall back to recursing through plist.__getattribute__ calls until all extra trailing underscores have been removed.
       name = name[:-1]
     try:
       if plist.all(self, hasattr, name):
@@ -274,62 +633,66 @@ class plist(list):
       raise AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e)))
 
   ##############################################################################
-  # __getattr__
+  # __get*__
   ##############################################################################
   def __getattr__(self, name, _pepth=0):
+    """Recursively attempt to get the attribute `name`.
+
+    Args:
+      name: Attribute name.
+      _pepth: plist depth at which the found attribute should be applied.
+              If _pepth < 0, the attribute is applied as deep as possible, which
+              may be on the deepest non-plist children. This permits calling,
+              for example, list methods on lists nested inside of plists.
+              If _pepth > 0, the attribute is applied after that many recursive
+              calls, and any exception generated is propogated back.
+
+    Returns:
+      Either the value of the attribute, for known non-callable attributes like
+      `__class__`, or a callable wrapping the final attributes.
+    """
     attr = list.__getattribute__(self, name)
 
-    def call_attr(self, attr, *args, **kwargs):
-      pepth = kwargs.pop('pepth', 0)
-      call_pepth = kwargs.pop('call_pepth', 0)
-      if pepth != 0:
-        if not isinstance(self, plist):
-          if name in NONCALLABLE_ATTRS:
-            return attr
-          return attr(*args, **kwargs)
-        pargs = [_ensure_len(len(self), a) for a in args]
-        pkwargs = {
-            k: _ensure_len(len(self), v) for k, v in kwargs.items()
-        }
-        try:
-          attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in self]
-          return plist([call_attr(x,
-                                  attrs[i],
-                                  pepth=pepth - 1,
-                                  call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
-                                  *[a[i] for a in pargs],
-                                  **{k: v[i] for k, v in pkwargs.items()})
-                        for i, x in enumerate(self)],
-                       root=self.__root__)
-        except Exception as e:
-          if pepth > 0:
-            raise e
-
-      if name in ['qj', 'me']:
-        result = attr(call_pepth=call_pepth, *args, **kwargs)
-      elif name in NONCALLABLE_ATTRS:
-        return attr
-      else:
-        result = attr(*args, **kwargs)
-
-      if result is None:
-        return self
-      return result
-
     if _pepth:
-      wrap = lambda *a, **k: call_attr(self, attr, pepth=_pepth, *a, **k)
+      wrap = lambda *a, **k: _call_attr(self, name, attr, pepth=_pepth, *a, **k)
     else:
-      wrap = lambda *a, **k: call_attr(self, attr, *a, **k)
+      wrap = lambda *a, **k: _call_attr(self, name, attr, *a, **k)
 
     if name in NONCALLABLE_ATTRS:
       return wrap()
 
     return wrap
 
-  ##############################################################################
-  # __get*__
-  ##############################################################################
   def __getitem__(self, key):
+    """Returns a new plist using a variety of potential indexing styles.
+
+    Args:
+      key: The key to index by.
+           The key can be applied to self directly as:
+             A list of ints: Returns a plist using those ints as indices.
+             A slice: Returns a plist based on the slice.
+             An int: Returns the value at that index (may not be a plist).
+           The key can be applied to elements of self individually:
+             A generic list: Returns a plist using the elements of the key in
+                             order on the elements of self.
+             A tuple when the elements of self can be indexed by tuple:
+                      Returns a plist applying that tuple to each element of
+                      self.
+             A tuple, otherwise:
+                      Returns a plist where each element of the new plist is a
+                      tuple of each value in the key tuple applied to each
+                      element of self. E.g., `foo[('bar', 'baz')]` might return
+                      `plist([(1, 2), (3, 4), ...])`.
+             Anything else: Returns a plist of the key applied to each of its
+                            elements.
+
+    Returns:
+      A plist based on the order of attempting to apply the key described above.
+
+    Raises:
+      TypeError: If the key fails to be applied directly to self and fails to be
+                 applied to its elements individually.
+    """
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
@@ -354,12 +717,24 @@ class plist(list):
         raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
 
   def __getslice__(self, i, j):
+    """Delegates to __getitem__ for compatibility with python 2.7."""
     return plist.__getitem__(self, slice(i, j))
 
   ##############################################################################
   # __set*__
   ##############################################################################
   def __setattr__(self, name, val):
+    """Sets an attribute on a plist or its elements to `val`.
+
+    Args:
+      name: Name of the attribute to set.
+      val: Value to set the attribute to. If val is a sequence and its length
+           matches len(self), the elements of val are set on the elements of
+           self. Otherwise, the elements of self are all set to val.
+
+    Returns:
+      self, in order to allow chaining through `pl.__setattr__(name, val).foo`.
+    """
     if name == '__root__':
       list.__setattr__(self, name, val)
     else:
@@ -369,6 +744,37 @@ class plist(list):
     return self
 
   def __setitem__(self, key, val):
+    """Sets items of self using a variety of potential indexing styles.
+
+    Args:
+      key: The key to index by.
+           The key can be applied to self directly as:
+             A list of ints: Sets items using those ints as indices.
+             A slice: Sets items based on the slice.
+             An int: Sets the item at that index.
+           The key can be applied to elements of self individually:
+             A generic list: Sets the items of self using the elements of the
+                             key in order.
+             A tuple when the elements of self can be indexed by tuple:
+                      Sets the elements of self using that tuple to index into
+                      each element.
+             A tuple, otherwise:
+                      Sets the elements of self using each element of the tuple
+                      key tuple on each element. E.g., `foo[('bar', 'baz')] = 1`
+                      will set the `bar` and `baz` keys of `foo` to `1`.
+             Anything else: Sets the elements of self indexed by key to `val`.
+      val: Value to assign. If val is a sequence and its length matches either
+           `len(self)` (in most cases described above for `key`) or `len(key)`,
+           each element of val is applied to each corresponding element of
+           `self` or `self[k]`.
+
+    Returns:
+      self, in order to allow chaining through `pl.__setitem__(key, val).foo`.
+
+    Raises:
+      TypeError: If the key fails to be applied directly to self and fails to be
+                 applied to its elements individually.
+    """
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
@@ -409,6 +815,7 @@ class plist(list):
     return self
 
   def __setslice__(self, i, j, sequence):
+    """Delegates to __setitem__ for compatibility with python 2.7."""
     plist.__setitem__(self, slice(i, j), sequence)
     return self
 
@@ -416,11 +823,48 @@ class plist(list):
   # __del*__
   ##############################################################################
   def __delattr__(self, name):
+    """Recursively attempt to get the attribute `name`.
+
+    Args:
+      name: Name of attribute to delete.
+
+    Returns:
+      self, in order to allow chaining through `pl.__delattr__(name).foo`.
+    """
     for x in self:
       x.__delattr__(name)
     return self
 
   def __delitem__(self, key):
+    """Deletes items of self using a variety of potential indexing styles.
+
+    Args:
+      key: The key to index by.
+           The key can be applied to self directly as:
+             A list of ints: Deletes from self using those ints as indices.
+             A slice: Deletes from self based on the slice.
+             An int: Deletes the value at that index.
+           The key can be applied to elements of self individually:
+             A generic list: Deletes from the elements of self using the
+                             elements of the key in order on the elements of
+                             self.
+             A tuple when the elements of self can be indexed by tuple:
+                      Deletes from the elements of self by applying that tuple
+                      to each element of self.
+             A tuple, otherwise:
+                      Deletes from the elements of self where each element gets
+                      each element in the key tuple deleted. E.g.,
+                      `del foo[('bar', 'baz')]` deletes all `'bar'` and `'baz'`
+                      keys from each element of foo.
+             Anything else: Deletes the key from each of its elements.
+
+    Returns:
+      self, in order to allow chaining through `pl.__delitem__(key).foo`.
+
+    Raises:
+      TypeError: If the key fails to be applied directly to self and fails to be
+                 applied to its elements individually.
+    """
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
@@ -452,6 +896,7 @@ class plist(list):
     return self
 
   def __delslice__(self, i, j):
+    """Delegates to __delitem__ for compatibility with python 2.7."""
     plist.__delitem__(self, slice(i, j))
     return self
 
@@ -459,6 +904,16 @@ class plist(list):
   # __call__
   ##############################################################################
   def __call__(self, *args, **kwargs):
+    """Call each element of self, possibly recusively.
+
+    Args:
+      *args: The arguments to apply to the callables in self.
+      **kwargs: The keyword arguments to apply to the callables in self.
+                pepth and call_pepth are updated before calling the callables.
+
+    Returns:
+      A new plist with the return values of calling each callable in self.
+    """
     pepth = kwargs.pop('pepth', 0)
     call_pepth = kwargs.pop('call_pepth', 0)
     args = [_ensure_len(len(self), a) for a in args]
@@ -466,8 +921,6 @@ class plist(list):
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
     }
     if pepth != 0:
-      if not isinstance(self, plist):
-        raise ValueError
       try:
         return plist([x(pepth=pepth - 1,
                         call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
@@ -602,9 +1055,11 @@ class plist(list):
   # Allow plist use as context managers.
   ##############################################################################
   def __enter__(self):
+    """Allow the use of plists in `with` statements."""
     return plist([x.__enter__() for x in self], root=self.__root__)
 
   def __exit__(self, exc_type, exc_value, traceback):
+    """Allow the use of plists in `with` statements."""
     return plist([x.__exit__(exc_type, exc_value, traceback) for x in self], root=self.__root__).all(bool)
 
   ##############################################################################
@@ -619,9 +1074,15 @@ class plist(list):
   # __root__ pointer management.
   ##############################################################################
   def root(self):
+    """Returns the root of the plist.
+
+    Most plist methods maintain the root pointer so that it is possible to
+    return to the plist from which later results are generated.
+    """
     return self.__root__
 
   def uproot(self):
+    """Sets the root to `self` so future `root()` calls return this plist."""
     self.__root__ = self
     return self
 
@@ -629,6 +1090,7 @@ class plist(list):
   # Conversion methods.
   ##############################################################################
   def aslist(self):
+    """Recursively convert all nested plists from self to lists, inclusive."""
     try:
       return [x.aslist() for x in self]
     except Exception:
@@ -636,6 +1098,7 @@ class plist(list):
     return [x for x in self]
 
   def astuple(self):
+    """Recursively convert all nested plists from self to tuples, inclusive."""
     try:
       return tuple([x.astuple() for x in self])
     except Exception:
@@ -643,15 +1106,19 @@ class plist(list):
     return tuple([x for x in self])
 
   def np(self, *args, **kwargs):
+    """Converts the elements of self to numpy arrays, forwarding passed args."""
     return plist([np.array(x, *args, **kwargs) for x in self], root=self.__root__)
 
   def pd(self, *args, **kwargs):
+    """Converts self into a pandas DataFrame, forwarding passed args."""
     return pd.DataFrame.from_records(self.aslist(), *args, **kwargs)
 
   def pset(self):
+    """Converts the elements of self into pset objects."""
     return plist([pset(x) for x in self], root=self.__root__)
 
   def pstr(self):
+    """Returns a plist with leaf elements converted to strings."""
     try:
       return plist([x.pstr() for x in self], root=self.__root__)
     except Exception:
@@ -661,18 +1128,54 @@ class plist(list):
   # Shortcutting boolean test methods.
   ##############################################################################
   def all(self, func, *args, **kwargs):
+    """Returns self if func evaluates to True for all elements.
+
+    Shortcuts if func ever evaluates to False.
+
+    Args:
+      func: Function to call on each element of self.
+      *args: Passed through to func.
+      **kwargs: Passed through to func.
+
+    Returns:
+      self or an empty plist (which evaluates to False).
+    """
     for x in self:
       if not func(x, *args, **kwargs):
         return plist()
     return self
 
   def any(self, func, *args, **kwargs):
+    """Returns self if func evaluates to True for any elements.
+
+    Shortcuts as soon as func evaluates to True.
+
+    Args:
+      func: Function to call on each element of self.
+      *args: Passed through to func.
+      **kwargs: Passed through to func.
+
+    Returns:
+      self or an empty plist (which evaluates to False).
+    """
     for x in self:
       if func(x, *args, **kwargs):
         return self
     return plist()
 
   def none(self, func, *args, **kwargs):
+    """Returns self if func evaluates to False for all elements.
+
+    Shortcuts if func ever evaluates to evaluates to True.
+
+    Args:
+      func: Function to call on each element of self.
+      *args: Passed through to func.
+      **kwargs: Passed through to func.
+
+    Returns:
+      self or an empty plist (which evaluates to False).
+    """
     for x in self:
       if func(x, *args, **kwargs):
         return plist()
@@ -682,6 +1185,15 @@ class plist(list):
   # Equality checking that returns bool instead of plist.
   ##############################################################################
   def pequal(self, other):
+    """Shortcutting recursive equality function.
+
+    Args:
+      other: Object to check equality against.
+
+    Returns:
+      True if all elements of self and other are recursively equal.
+      False otherwise.
+    """
     if not isinstance(other, plist):
       return False
     if len(self) != len(other):
@@ -700,6 +1212,25 @@ class plist(list):
   # Function application methods.
   ##############################################################################
   def apply(self, func, *args, **kwargs):
+    """Apply an arbitrary function to elements of self, forwarding arguments.
+
+    Args:
+      func: callable or string name of method in plist class.
+      *args: Arguments to pass to func.
+      **kwargs: Keyword arguments to pass to `func`, after extracting:
+                `paslist`: Boolean (default `False`). If `True`, converts
+                           elements of self to list using `plist.aslist()`
+                           before passing them to `func`, and reconverts the
+                           result of each call to a plist. Note that this does
+                           not guarantee that the returned plist has the same
+                           shape as `self`, as plist.aslist() recursively
+                           converts all contained plists to lists, but `func`
+                           might return any arbitrary result, so the same
+                           conversion cannot be inverted automatically.
+
+    Returns:
+      plist resulting from applying func to each element of self.
+    """
     paslist = kwargs.pop('paslist', False)
     args = [_ensure_len(len(self), a) for a in args]
     kwargs = {
@@ -718,6 +1249,15 @@ class plist(list):
       return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
   def qj(self, *args, **kwargs):
+    """Applies logging function qj to self for easy in-chain logging.
+
+    Args:
+      *args: Arguments to pass to qj.
+      **kwargs: Keyword arguments to pass to qj.
+
+    Returns:
+      self
+    """
     call_pepth = kwargs.pop('call_pepth', 0)
     return qj(self, _depth=4 + call_pepth, *args, **kwargs)
 
@@ -725,6 +1265,54 @@ class plist(list):
   # Grouping and sorting methods.
   ##############################################################################
   def groupby(self):
+    """Group self.root() by the values in self.
+
+    Given a plist:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foo_by_bar = foo.bar.groupby()
+      => [[{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}],
+          [{'foo': 1, 'bar': 1}]]
+    ```
+    Note that foo_by_bar now has two nested plists. The first inner plist has
+    the two pdicts where `foo.bar == 0`. The second inner plist has the
+    remaining pdict where `foo.bar == 1`.
+
+    Calling groupby again:
+    ```
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+     => [[[{'bar': 0, 'foo': 0}],
+          [{'bar': 0, 'foo': 2}]],
+         [[{'bar': 1, 'foo': 1}]]]
+    ```
+    Now foo_by_bar_foo has two nested layers of inner plists. The outer nest
+    groups the values by `bar`, and the inner nest groups them by `foo`.
+
+    groupby always operates with leaf children of the plist, and it always adds
+    new groups as subgroups of the current innermost group.
+
+    Grouping relies on the values being hashable. If, for some reason, you need
+    to group by a non-hashable value, you should convert it to a hashable
+    representation first, for example using plist.pstr() or plist.apply(id):
+    ```
+    foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
+    foo_by_bar = foo.bar.groupby()  # CRASHES!
+    foo_by_bar = foo.bar.pstr().groupby()
+     => [[{'bar': [1, 2, 3]},
+          {'bar': [1, 2, 3]}]]
+    foo_by_bar = foo.bar.apply(id).groupby()
+     => [[{'bar': [1, 2, 3]}],
+         [{'bar': [1, 2, 3]}]]
+    ```
+    Note that in the example above, using `pstr()` probably gives the intended
+    result of grouping both elements together, whereas `apply(id)` gives the
+    unsurprising result of putting each element into its own group.
+
+    Returns:
+      plist with one additional layer of internal plists, where each such plist
+      groups together the root elements based on the values in this plist.
+    """
     try:
       return plist([x.groupby() for x in self])
     except Exception:
@@ -736,9 +1324,59 @@ class plist(list):
       return plist(groups.values())
 
   def join(self):
+    """Adds and returns an outer plist around self.
+
+    `join` is useful when you wish to call a function on the top-level plist,
+    but you don't want to stop your call chain:
+    ```
+    foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
+    arr1 = np.array(foo.bar.pstr().groupby().bar)
+     => array([[[1, 2, 3],
+                [1, 2, 3]]])
+    arr2 = foo.bar.pstr().groupby().bar.np()
+     => [array([[1, 2, 3],
+                [1, 2, 3]])]
+    arr3 = foo.bar.pstr().groupby().bar.join().np()
+     => [array([[[1, 2, 3],
+                 [1, 2, 3]]])]
+    assert arr1 == arr2[0]  # FALSE!
+    assert arr1 == arr3[0]  # TRUE!
+    ```
+    In the example above, calling `np.array` on the grouped plist gives a
+    particular array structure, but it does not return a plist, so you can't as
+    naturally use that array in ongoing computations while keeping track of
+    the correspondence of the array with the original data in `foo`.
+
+    Calling plist.np() directly on the grouped plist gives a different result,
+    however, as shown in `arr2`. The array is missing one dimension relative to
+    the call that generated `arr1`.
+
+    Instead, it is easy to call `plist.join()` before calling `plist.np()` in
+    this case in order to get the same result of passing `self` to `np.array()`,
+    but the advantage is that the numpy array is still wrapped in a plist, so it
+    can be used in follow-on computations.
+
+    Returns:
+      plist with one additional level of nesting.
+    """
     return plist([self])
 
   def sortby(self, key=None, reverse=False):
+    """Sorts self and self.root() in-place and returns self.
+
+    `sortby` and `groupby` work together nicely to create sorted, nested plists.
+    Note that `sortby` modifies and returns self, whereas `groupby` returns a
+    new plist with a new root. This is because `sortby` doesn't change the
+    structure of the plist, only the order of its (or its children's) elements.
+
+    Args:
+      key: Key function to pass to `sorted`. Defaults to the identity function.
+           See the python documentation for `sorted` for more information.
+      reverse: Boolean specifying whether to sort in reverse order or not.
+
+    Returns:
+      self, sorted.
+    """
     key = key or (lambda x: x)
     sorted_inds = [i for i, _ in sorted(enumerate(self), key=lambda x: key(x[1]), reverse=reverse)]
     self.__root__[:] = self.__root__[sorted_inds]
@@ -747,6 +1385,19 @@ class plist(list):
     return self
 
   def ungroup(self, v=1, s=None):
+    """Inverts the last grouping operation applied and returns a new plist.
+
+    Args:
+      v: Integer value for the number of groups to remove. If `v == 0`, no
+         groups are removed. If it is positive, that many groups must be
+         removed, or `upgroup` throws a `ValueError`. If `v < 0`, all groups in
+         this plist are removed, returning a flat plist.
+      s: Successor object. Do not pass -- used to track how many ungroupings
+         have happened so that `ungroup` knows when to stop.
+
+    Returns:
+      New plist with one or more fewer inner groups, if there were any.
+    """
     s = _successor(v) if s is None else s
     if s.v == 0:
       return self
@@ -949,31 +1600,6 @@ class plist(list):
 
 
 pist = plist
-
-
-def _ensure_len(length, x):
-  if not isinstance(x, type) and not isinstance(x, STRING_TYPES) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
-    return x
-  return [x for _ in range(length)]
-
-
-def _merge_indices(left, right, op):
-  try:
-    left_empty_or_ints = len(left) == 0 or plist(left).all(isinstance, int)
-    right_empty_or_ints = len(right) == 0 or plist(right).all(isinstance, int)
-    if left_empty_or_ints and right_empty_or_ints:
-      sl = set(left)
-      sr = set(right)
-      return sorted(list(op(sl, sr)))
-  except Exception:
-    pass
-  try:
-    return [_merge_indices(left[i], right[i], op) for i in range(max(len(left), len(right)))]
-  except Exception:
-    pass
-  if isinstance(left, list) and isinstance(right, list):
-    return left.extend(right) or left
-  return [left, right]
 
 
 # pylint: enable=line-too-long,invalid-name,g-explicit-length-test
