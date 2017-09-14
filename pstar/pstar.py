@@ -1270,6 +1270,9 @@ class plist(list):
     Given a plist:
     ```
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
     foo_by_bar = foo.bar.groupby()
       => [[{'foo': 0, 'bar': 0},
            {'foo': 2, 'bar': 0}],
@@ -1282,9 +1285,9 @@ class plist(list):
     Calling groupby again:
     ```
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-     => [[[{'bar': 0, 'foo': 0}],
-          [{'bar': 0, 'foo': 2}]],
-         [[{'bar': 1, 'foo': 1}]]]
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
     ```
     Now foo_by_bar_foo has two nested layers of inner plists. The outer nest
     groups the values by `bar`, and the inner nest groups them by `foo`.
@@ -1294,16 +1297,16 @@ class plist(list):
 
     Grouping relies on the values being hashable. If, for some reason, you need
     to group by a non-hashable value, you should convert it to a hashable
-    representation first, for example using plist.pstr() or plist.apply(id):
+    representation first, for example using `plist.pstr()` or `plist.apply(id)`:
     ```
     foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
-    foo_by_bar = foo.bar.groupby()  # CRASHES!
-    foo_by_bar = foo.bar.pstr().groupby()
-     => [[{'bar': [1, 2, 3]},
-          {'bar': [1, 2, 3]}]]
-    foo_by_bar = foo.bar.apply(id).groupby()
-     => [[{'bar': [1, 2, 3]}],
-         [{'bar': [1, 2, 3]}]]
+    foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
+    foo_by_bar_pstr = foo.bar.pstr().groupby()
+      => [[{'bar': [1, 2, 3]},
+           {'bar': [1, 2, 3]}]]
+    foo_by_bar_id = foo.bar.apply(id).groupby()
+      => [[{'bar': [1, 2, 3]}],
+          [{'bar': [1, 2, 3]}]]
     ```
     Note that in the example above, using `pstr()` probably gives the intended
     result of grouping both elements together, whereas `apply(id)` gives the
@@ -1329,16 +1332,18 @@ class plist(list):
     `join` is useful when you wish to call a function on the top-level plist,
     but you don't want to stop your call chain:
     ```
-    foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
+    foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
+      => [{'bar': [1, 2, 3]},
+          {'bar': [4, 5, 6]}]
     arr1 = np.array(foo.bar.pstr().groupby().bar)
-     => array([[[1, 2, 3],
-                [1, 2, 3]]])
+      => array([[[1, 2, 3],
+                 [4, 5, 6]]])
     arr2 = foo.bar.pstr().groupby().bar.np()
-     => [array([[1, 2, 3],
-                [1, 2, 3]])]
+      => [array([[1, 2, 3],
+                 [4, 5, 6]])]
     arr3 = foo.bar.pstr().groupby().bar.join().np()
-     => [array([[[1, 2, 3],
-                 [1, 2, 3]]])]
+      => [array([[[1, 2, 3],
+                  [4, 5, 6]]])]
     assert arr1 == arr2[0]  # FALSE!
     assert arr1 == arr3[0]  # TRUE!
     ```
@@ -1384,21 +1389,24 @@ class plist(list):
       self[:] = self[sorted_inds]
     return self
 
-  def ungroup(self, v=1, s=None):
+  def ungroup(self, r=1, s=None):
     """Inverts the last grouping operation applied and returns a new plist.
 
     Args:
-      v: Integer value for the number of groups to remove. If `v == 0`, no
+      r: Integer value for the number of groups to remove. If `r == 0`, no
          groups are removed. If it is positive, that many groups must be
-         removed, or `upgroup` throws a `ValueError`. If `v < 0`, all groups in
+         removed, or `upgroup` throws a `ValueError`. If `r < 0`, all groups in
          this plist are removed, returning a flat plist.
       s: Successor object. Do not pass -- used to track how many ungroupings
          have happened so that `ungroup` knows when to stop.
 
     Returns:
       New plist with one or more fewer inner groups, if there were any.
+
+    Raises:
+      ValueError: If there are fewer groups to ungroup than requested.
     """
-    s = _successor(v) if s is None else s
+    s = _successor(r) if s is None else s
     if s.v == 0:
       return self
     new_items = []
@@ -1425,8 +1433,83 @@ class plist(list):
   ##############################################################################
   # Additional filtering methods.
   ##############################################################################
-  def nonempty(self, r=1):
-    if r > 1 or r < 0:
+  def nonempty(self, r=0):
+    """Returns a new plist with empty sublists removed.
+
+    `nonempty` is useful in combination with grouping and filtering:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    foo_by_bar = foo.bar.groupby()
+      => [[{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}],
+          [{'foo': 1, 'bar': 1}]]
+    filtered = foo_by_bar.foo != 1
+      => [[{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}],
+          []]
+    filtered_nonempty = filtered.nonempty()
+      => [[{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}]]
+    ```
+
+    If the plist is deep, multiple levels of empty sublists can be removed at
+    the same time:
+    ```
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    filtered = foo_by_bar_foo.foo != 1
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[]]]
+    filtered_nonempty_0 = filtered.nonempty()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[]]]
+    filtered_nonempty_1 = filtered.nonempty(1)
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]]]
+    filtered_nonempty_n1 = filtered.nonempty(-1)
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]]]
+    ```
+    Note that `filtered_nonempty_0` is identical to `filteed`, since there are
+    no empty sublists at the top level. In this example, `filtered_nonempty_1`
+    and `filtered_nonempty_n1` give the same result -- the deepest empty sublist
+    is removed, and then the next deepest empty sublist is removed.
+
+    It is also possible to remove empty sublists only at deeper levels, using
+    the two ways to call functions on sublists -- passing `pepth` and adding `_`
+    to the method name:
+    ```
+    filtered_nonempty_p1 = filtered.nonempty(pepth=1)
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          []]
+    filtered_nonempty_u1 = filtered.nonempty_()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          []]
+    ```
+    `filtered_nonempty_p1` and `filtered_nonempty_u1` both remove a single layer
+    of empty sublists starting from one layer into `filtered`.
+
+    Args:
+      r: Integer value for the number of times to recurse. Defaults to 0, which
+         causes only empty direct children of `self` to be removed. If `r > 0`,
+         `nonempty` recurses `r` times, and then removes empty sublists at that
+         depth and empty sublists back up the recursive call chain. If `r < 0`,
+         `nonempty` recurses as deep as it can, and then removes empty sublists
+         back up the recursive call chain.
+
+    Returns:
+      New plist with empty sublist removed.
+    """
+    if r != 0:
       try:
         new_plist = plist([x.nonempty(r=r - 1) for x in self if len(x)])
       except Exception:
@@ -1436,11 +1519,86 @@ class plist(list):
     return plist([x for x in new_plist if len(x)])
 
   def preduce_eq(self):
+    """Returns a new plist with only a single element of each value in self.
+
+    `preduce_eq` reduces the values of the groups of self using an equality
+    check:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    reduced = foo.bar.preduce_eq()
+      => [0, 1]
+    reduced.root()
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1}]
+    ```
+
+    Grouped plists
+    ```
+    foo_by_bar = foo.bar.groupby()
+      => [[{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}],
+          [{'foo': 1, 'bar': 1}]]
+    reduced = foo_by_bar.bar.preduce_eq()
+      => [[0], [1]]
+    reduced.root()
+      => [[{'foo': 0, 'bar': 0}],
+          [{'foo': 1, 'bar': 1}]]
+    ```
+
+    The equality check respects the subgroups of self:
+    ```
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    reduced_no_effect = foo_by_bar_foo.bar.preduce_eq()
+      => [[[0], [0]], [[1]]]
+    reduced_no_effect.root()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    ```
+
+    As with `plist.groupby`, `preduce_eq` relies on the values being hashable.
+    If, for some reason, you need to reduce by a non-hashable value, you should
+    convert it to a hashable representation first, for example using
+    `plist.pstr()` or `plist.apply(id)`:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 0, 'bar': 0}]
+    reduced_crash = foo.preduce_eq()  # CRASHES!
+    reduced_pstr = foo.pstr().preduce_eq()
+      => ["{'foo': 0, 'bar': 0}",
+          "{'foo': 1, 'bar': 1}"]
+    reduced_pstr.root()
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1}]
+    reduced_id = foo.apply(id).preduce_eq()
+      => [4689112496, 4689260040, 4689258368]
+    reduced_id.root()
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 0, 'bar': 0}]
+    ```
+    In this case, since each of the elements of `foo` are unique pdicts,
+    reducing by `plist.apply(id)` has no useful effect, but if there had been
+    any duplicates in the elements of `foo`, they would have been removed.
+
+    Returns:
+      New plist with a new `root` where there is only one example of each value
+      in each sublist. The corresponding `root` element is the first element in
+      `self.root()` that has that value.
+    """
     try:
       return plist([x.preduce_eq() for x in self], root=self.__root__)
     except Exception:
       pass
-    vals = pset()
+    vals = set()
     new_items = []
     new_roots = []
     not_root = (self is not self.__root__)
@@ -1458,6 +1616,58 @@ class plist(list):
   puniq = preduce_eq
 
   def remix(self, *args, **kwargs):
+    """Returns a new plist of pdicts based on selected data from self.
+
+    `remix` allows you to easily restructure your data into a manageable form:
+    ```
+    foo = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
+                 {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
+                 {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
+    rmx = foo.remix('foo', baz=foo.bar.baz)
+      => [{'foo': 0, 'baz': 13},
+          {'foo': 1, 'baz': 42},
+          {'foo': 2, 'baz': -9}]
+    ```
+    Note that `rmx.baz` gets its values from `foo.bar.baz` in a natural manner.
+
+    If `remix` is called on a grouped plist, the result is still a flat plist
+    of flat pdicts, but the values in the pdicts are themselves pdicts:
+    ```
+    foo_by_bam = foo.bar.bam.groupby()
+      => [[{'foo': 0, 'bar': {'bam': 0, 'baz': 13, 'bin': 'not'}},
+           {'foo': 2, 'bar': {'bam': 0, 'baz': -9, 'bin': 'data'}}],
+          [{'foo': 1, 'bar': {'bam': 1, 'baz': 42, 'bin': 'good'}}]]
+    rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz)
+      => [{'foo': [0, 2], 'baz': [13, -9]},
+          {'foo': [1],    'baz': [42]}]
+    ```
+
+    This behavior can be useful when integrating with pandas, for example:
+    ```
+    df = rmx_by_bam.pd()
+      =>         baz     foo
+         0  [13, -9]  [0, 2]
+         1      [42]     [1]
+    ```
+
+    If you instead want `remix` to return grouped pdicts, just pass `pepth=-1`
+    to have it execute on the deepest plists, as with any other call to a plist:
+    ```
+    rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz, pepth=-1)
+      => [[{'foo': 0, 'baz': 13},
+           {'foo': 2, 'baz': -9}],
+          [{'foo': 1, 'baz': 42}]]
+    ```
+
+    Args:
+      *args: List of property names of items in `self` to include in the remix.
+      **kwargs: Key/value pairs where the key will be a new property on items in
+                the remix and the value is a deepcast and set to that key.
+
+    Returns:
+      Flat plist of flat pdicts based on data from self and the passed arguments
+      and keyword arguments.
+    """
     kwargs = {
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
     }
@@ -1478,11 +1688,61 @@ class plist(list):
   ##############################################################################
 
   # Shape and depth.
-  def pdepth(self):
+  def pdepth(self, s=False):
+    """Returns a plist of the depth recursive depth of each element, 0-indexed.
+
+    `pdepth` returns a plist of the same structure as self:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    depth = foo.pdepth()
+      => [0]
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    depth = foo_by_bar_foo.pdepth()
+      => [[[2], [2]], [[2]]]
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    filtered.pdepth()
+      => [[[2], [2]], [[]]]
+    ```
+
+    Since the depth values are always equal or empty in well-formed plists, it
+    is sometimes more convenient to get the depth as a scalar value. Pass a True
+    value to the first parameter (`s` for 'scalar'):
+    ```
+    depth = foo.pdepth(s=1)
+      => 0
+    depth = foo_by_bar_foo.pdepth(1)
+      => 2
+    depth = filtered.pdepth(True)
+      => 2
+    ```
+
+    Args:
+      s: Boolean that controls whether a scalar is returned (when `True`) or a
+         plist of the same structure as self (when `False`, the default).
+
+    Returns:
+      plist whose elements are the recursive depth of the leaf children, or a
+      scalar representing the maximum depth encountered in self.
+    """
     try:
-      return plist([x.pdepth() + 1 for x in self], root=self.__root__)
+      d = plist([x.pdepth() + 1 for x in self], root=self.__root__)
     except Exception:
-      return plist([0], root=self.__root__)
+      d = plist([0], root=self.__root__)
+    if s:
+      d = d.ungroup(-1).preduce_eq()
+      if d:
+        return max(d)
+      return 0
+    return d
 
   def pshape(self):
     try:
@@ -1491,16 +1751,16 @@ class plist(list):
       return plist([len(self)], root=self.__root__)
 
   # Length.
-  def plen(self, r=1):
-    if r > 1 or r < 0:
+  def plen(self, r=0):
+    if r != 0:
       try:
         return plist([sum(x.plen(r - 1) for x in self)], root=self.__root__)
       except Exception:
         pass
     return plist([len(self)], root=self.__root__)
 
-  def rlen(self, r=1):
-    if r > 1 or r < 0:
+  def rlen(self, r=0):
+    if r != 0:
       try:
         return plist([x.plen(r - 1) for x in self], root=self.__root__)
       except Exception:

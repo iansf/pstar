@@ -555,7 +555,7 @@ class PStarTest(unittest.TestCase):
                      [5])
     self.assertEqual(by_bar_baz.plen().aslist(),
                      [2])
-    self.assertEqual(by_bar_baz.plen(2).aslist(),
+    self.assertEqual(by_bar_baz.plen(1).aslist(),
                      [[4]])
     self.assertEqual(by_bar_baz.plen(-1).aslist(),
                      [[[5]]])
@@ -571,7 +571,7 @@ class PStarTest(unittest.TestCase):
                      [5])
     self.assertEqual(by_bar_baz.rlen().aslist(),
                      [2])
-    self.assertEqual(by_bar_baz.rlen(2).aslist(),
+    self.assertEqual(by_bar_baz.rlen(1).aslist(),
                      [[1], [3]])
     self.assertEqual(by_bar_baz.rlen(-1).aslist(),
                      [[[2]], [[3]]])
@@ -598,6 +598,7 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 1).baz = 6
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+    by_bar_baz_filtered = by_bar_baz.bar == 0
 
     self.assertEqual(foos.pdepth().aslist(),
                      [0])
@@ -607,6 +608,23 @@ class PStarTest(unittest.TestCase):
                      [[[1]], [[1], [1], [1]]])
     self.assertEqual(by_bar_baz.pdepth__().aslist(),
                      [[[0]], [[0], [0], [0]]])
+    self.assertEqual(by_bar_baz.pdepth__().aslist(),
+                     by_bar_baz.pdepth(pepth=2).aslist())
+    self.assertEqual(by_bar_baz_filtered.pdepth().aslist(),
+                     [[[]], [[2], [2], [2]]])
+
+    self.assertEqual(foos.pdepth(1),
+                     0)
+    self.assertEqual(by_bar_baz.pdepth(s=1),
+                     2)
+    self.assertEqual(by_bar_baz.pdepth_(True),
+                     1)
+    self.assertEqual(by_bar_baz.pdepth__(1),
+                     0)
+    self.assertEqual(by_bar_baz.pdepth__(1),
+                     by_bar_baz.pdepth(s=1, pepth=2))
+    self.assertEqual(by_bar_baz_filtered.pdepth(s=1),
+                     2)
 
   def test_plist_of_pdict_groupby_groupby_pfill(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
