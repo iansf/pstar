@@ -147,6 +147,84 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl.apply(float).pstr().aslist(),
                      ['1.0', '2.0', '3.0'])
 
+  def test_plist_comparators(self):
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    self.assertEqual(foo.aslist(),
+                     [{'foo': 0, 'bar': 0},
+                      {'foo': 1, 'bar': 1},
+                      {'foo': 2, 'bar': 0}])
+    zero_bars = foo.bar == 0
+    self.assertEqual(zero_bars.aslist(),
+                     [{'foo': 0, 'bar': 0},
+                      {'foo': 2, 'bar': 0}])
+    nonzero_bars = foo.bar != 0
+    self.assertEqual(nonzero_bars.aslist(),
+                     [{'foo': 1, 'bar': 1}])
+
+    foo_eq_zero_bars = foo == zero_bars
+    self.assertEqual(foo_eq_zero_bars.aslist(),
+                     [{'foo': 0, 'bar': 0},
+                      {'foo': 2, 'bar': 0}])
+    foo_gt_bar = foo.foo > foo.bar
+    self.assertEqual(foo_gt_bar.aslist(),
+                     [{'foo': 2, 'bar': 0}])
+
+    foo_eq_list = foo.foo == [0, 1, 3]
+    self.assertEqual(foo_eq_list.aslist(),
+                     [{'foo': 0, 'bar': 0},
+                      {'foo': 1, 'bar': 1}])
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+    self.assertEqual(foo_by_bar_foo.aslist(),
+                     [[[{'foo': 0, 'bar': 0}],
+                       [{'foo': 2, 'bar': 0}]],
+                      [[{'foo': 1, 'bar': 1}]]])
+    nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
+    self.assertEqual(nonzero_foo_by_bar_foo.aslist(),
+                     [[[],
+                       []],
+                      [[{'bar': 1, 'foo': 1}]]])
+    zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
+    self.assertEqual(zero_foo_by_bar_foo.aslist(),
+                     [[[{'foo': 0, 'bar': 0}],
+                       [{'foo': 2, 'bar': 0}]],
+                      [[]]])
+    foo_by_bar_foo_eq_list = foo_by_bar_foo.foo == [[[0], [3]], [[1]]]
+    self.assertEqual(foo_by_bar_foo_eq_list.aslist(),
+                     [[[{'foo': 0, 'bar': 0}],
+                       []],
+                      [[{'foo': 1, 'bar': 1}]]])
+
+    foo_eq_list = foo.foo == [0, 1, 3, 4]
+    self.assertEqual(foo_eq_list.aslist(),
+                     [{'foo': 0, 'bar': 0},
+                      {'foo': 1, 'bar': 1}])
+    foo_by_bar_foo_eq_list = foo_by_bar_foo.foo == [0, 1, 3, 4]
+    self.assertEqual(foo_by_bar_foo_eq_list.aslist(),
+                     [[[{'foo': 0, 'bar': 0}],
+                       []],
+                      [[{'foo': 1, 'bar': 1}]]])
+
+    foo_eq_empty = foo.foo == []
+    self.assertEqual(foo_eq_empty.aslist(),
+                     [])
+    foo_lt_empty = foo.foo < []
+    self.assertEqual(foo_lt_empty.aslist(),
+                     [{'foo': 0, 'bar': 0},
+                      {'foo': 1, 'bar': 1},
+                      {'foo': 2, 'bar': 0}])
+    foo_by_bar_foo_eq_nonzero = foo_by_bar_foo == nonzero_foo_by_bar_foo
+    self.assertEqual(foo_by_bar_foo_eq_nonzero.aslist(),
+                     [[[],
+                       []],
+                      [[{'foo': 1, 'bar': 1}]]])
+    foo_by_bar_foo_gt_nonzero = foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo
+    self.assertEqual(foo_by_bar_foo_gt_nonzero.aslist(),
+                     [[[{'foo': 0, 'bar': 0}],
+                       [{'foo': 2, 'bar': 0}]],
+                      [[]]])
+
+
   def test_plist_of_filename_context_manager(self):
     path = os.path.dirname(__file__)
     filenames = plist(['__init__.py', 'pstar_test.py']).apply(lambda f: os.path.join(path, f))

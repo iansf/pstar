@@ -42,13 +42,13 @@ from qj import qj
 ################################################################################
 ################################################################################
 class pdict(dict):
-  """dict where everything is automatically a property.
+  """dict subclass where everything is automatically a property.
 
   Use with dot notation or subscript notation:
   ```
     p = pdict()
     p.foo = 1
-    assert p['foo'] == 1
+    assert p['foo'] == p.foo == 1
   ```
 
   List subscripts also work and return a plist of the corresponding keys:
@@ -57,7 +57,8 @@ class pdict(dict):
     assert p[['foo', 'bar']].aslist() == [1, 2]
   ```
 
-  Setting with a list subscript also works, using a single element or a matching list for the values:
+  Setting with a list subscript also works, using a single element or a matching
+  list for the values:
   ```
     p = pdict()
     p[['foo', 'bar']] = 1
@@ -112,7 +113,7 @@ pict = pdict
 ################################################################################
 ################################################################################
 class defaultpdict(defaultdict):
-  """defaultdict where everything is automatically a property.
+  """defaultdict subclass where everything is automatically a property.
 
   Use with dot notation or subscript notation:
   ```
@@ -127,7 +128,8 @@ class defaultpdict(defaultdict):
     assert p[['foo', 'bar']].aslist() == [1, 2]
   ```
 
-  Setting with a list subscript also works, using a single element or a matching list for the values:
+  Setting with a list subscript also works, using a single element or a matching
+  list for the values:
   ```
     p = defaultpdict()
     p[['foo', 'bar']] = 1
@@ -144,7 +146,8 @@ class defaultpdict(defaultdict):
     assert 'baz' in p.keys()
   ```
 
-  Set the desired defualt constructor as normal to avoid having to construct individual values:
+  Set the desired defualt constructor as normal to avoid having to construct
+  individual values:
   ```
     p = defaultpdict(int)
     assert p.foo == 0
@@ -227,30 +230,117 @@ pet = pset
 ################################################################################
 ################################################################################
 ################################################################################
-def _build_comparator(op, merge_op, shortcut):
+def _build_comparator(op, merge_op, shortcut, return_self_if_empty_other):
   """Builds a plist comparator operation.
 
   Args:
     op: Comparison operation, such as operator.__eq__.
-    merge_op: Set-like operation for merging sets of intermediate results, such as operator.__and__.
+    merge_op: Set-like operation for merging sets of intermediate results, such
+              as operator.__and__.
     shortcut: Function to call to shortcut comparison if `self is other`.
+    return_self_if_empty_other: Boolean for how to handle `other` being an empty
+                                list. If `True`, `self` is returned. If `False`,
+                                an empty list is returned.
 
   Returns:
     comparator: The comparison function.
   """
   def comparator(self, other, return_inds=False):
-    """plist-compatible comparison operator -- comparisons are filters for plists.
+    """plist-compatible comparison operator. Note: comparisons filter plists.
+
+    plist comparators can filter on leaf values:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    zero_bars = foo.bar == 0
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 2, 'bar': 0}]
+    nonzero_bars = foo.bar != 0
+      => [{'foo': 1, 'bar': 1}]
+    ```
+
+    They can also filter on other plists so long as the structures are
+    compatible:
+    ```
+    foo == zero_bars
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 2, 'bar': 0}]
+    foo.foo > foo.bar
+      => [{'foo': 2, 'bar': 0}]
+    ```
+
+    The same is true when comparing against lists with compatible structure:
+    ```
+    foo.foo == [0, 1, 3]
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1}]
+    ```
+
+    This all generalizes naturally to plists that have been grouped:
+    ```
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
+      => [[[],
+           []],
+          [[{'bar': 1, 'foo': 1}]]]
+    zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[]]]
+    foo_by_bar_foo.foo == [[[0], [3]], [[1]]]
+      => [[[{'foo': 0, 'bar': 0}],
+           []],
+          [[{'foo': 1, 'bar': 1}]]]
+    ```
+
+    Lists with incompatible structure are compared to `self` one-at-a-time,
+    resulting in set-like filtering where the two sets are merged with an 'or':
+    ```
+    foo.foo == [0, 1, 3, 4]
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1}]
+    foo_by_bar_foo.foo == [0, 1, 3, 4]
+      => [[[{'foo': 0, 'bar': 0}],
+           []],
+          [[{'foo': 1, 'bar': 1}]]]
+    ```
+
+    When comparing against an empty list, `==` always returns an empty list, but
+    all other comparisons return self:
+    ```
+    foo.foo == []
+      => []
+    foo.foo < []
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    foo_by_bar_foo == nonzero_foo_by_bar_foo
+      => [[[],
+           []],
+          [[{'foo': 1, 'bar': 1}]]]
+    foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[]]]
+    ```
 
     Args:
       self: plist object.
       other: Object to compare against.
-      return_inds: Optional bool. When True, causes the comparison to return the plist indices
-                   of the matching items. When False (the default), causes the comparison to
-                   return a plist of the matching values.
+      return_inds: Optional bool. When `True`, causes the comparison to return
+                   the plist indices of the matching items. When `False`
+                   (the default), causes the comparison to return a plist of the
+                   matching values.
 
     Returns:
-      A new plist, filtered from self and other according to the operation provided to _build_comparator,
-      if return_inds is False. Otherwise, returns the corresponding indices into self.
+      A new plist, filtered from `self` and `other` according to the operation
+      provided to `_build_comparator`, if `return_inds` is `False`. Otherwise,
+      returns the corresponding indices into self.
     """
     if self is other:
       return shortcut(self, return_inds)
@@ -266,6 +356,8 @@ def _build_comparator(op, merge_op, shortcut):
       inds = comparator(self, other[0], return_inds=True)
       for o in other[1:]:
         inds = _merge_indices(inds, comparator(self, o, return_inds=True), merge_op)
+    elif isinstance(other, list) and len(other) == 0:
+      inds = self.lfill(pepth=-1) if return_self_if_empty_other else []
     else:
       for i, x in enumerate(self):
         if isinstance(x, plist):
@@ -949,37 +1041,43 @@ class plist(list):
       operator.__or__,
       lambda self, return_inds: (
           self.lfill(pepth=-1)
-          if return_inds else self))
+          if return_inds else self),
+      False)
   __eq__ = __cmp__
 
   __ne__ = _build_comparator(
       operator.__ne__,
       operator.__and__,
-      lambda self, return_inds: ([] if return_inds else plist()))
+      lambda self, return_inds: ([] if return_inds else plist()),
+      True)
 
   __gt__ = _build_comparator(
       operator.__gt__,
       operator.__and__,
-      lambda self, return_inds: ([] if return_inds else plist()))
+      lambda self, return_inds: ([] if return_inds else plist()),
+      True)
 
   __ge__ = _build_comparator(
       operator.__ge__,
       operator.__and__,
       lambda self, return_inds: (
           self.lfill(pepth=-1)
-          if return_inds else self))
+          if return_inds else self),
+      True)
 
   __lt__ = _build_comparator(
       operator.__lt__,
       operator.__and__,
-      lambda self, return_inds: ([] if return_inds else plist()))
+      lambda self, return_inds: ([] if return_inds else plist()),
+      True)
 
   __le__ = _build_comparator(
       operator.__le__,
       operator.__and__,
       lambda self, return_inds: (
           self.lfill(pepth=-1)
-          if return_inds else self))
+          if return_inds else self),
+      True)
 
   ##############################################################################
   # Logical operators -- ALL PERFORM SET OPERATIONS!
@@ -1139,7 +1237,7 @@ class plist(list):
       **kwargs: Passed through to func.
 
     Returns:
-      self or an empty plist (which evaluates to False).
+      `self` or an empty plist (which evaluates to False).
     """
     for x in self:
       if not func(x, *args, **kwargs):
@@ -1157,7 +1255,7 @@ class plist(list):
       **kwargs: Passed through to func.
 
     Returns:
-      self or an empty plist (which evaluates to False).
+      `self` or an empty plist (which evaluates to False).
     """
     for x in self:
       if func(x, *args, **kwargs):
@@ -1175,7 +1273,7 @@ class plist(list):
       **kwargs: Passed through to func.
 
     Returns:
-      self or an empty plist (which evaluates to False).
+      `self` or an empty plist (which evaluates to False).
     """
     for x in self:
       if func(x, *args, **kwargs):
@@ -1187,6 +1285,24 @@ class plist(list):
   ##############################################################################
   def pequal(self, other):
     """Shortcutting recursive equality function.
+
+    `pequal` always returns `True` or `False` rather than a plist. This is a
+    convenience method for cases when the filtering that happens with `==` is
+    undesirable or inconvenient.
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    zero_bars = foo.bar == 0
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 2, 'bar': 0}]
+    foo == zero_bars
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 2, 'bar': 0}]
+    foo.pequal(zero_bars)
+      => False
+    ```
 
     Args:
       other: Object to check equality against.
