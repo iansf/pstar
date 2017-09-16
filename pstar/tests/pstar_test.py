@@ -654,20 +654,20 @@ class PStarTest(unittest.TestCase):
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
     self.assertEqual(by_bar_baz.pfill().aslist(),
-                     [[[1, 2]], [[3], [4], [5]]])
-    self.assertEqual(by_bar_baz.pfill(-1).aslist(),
                      [[[0, 1]], [[2], [3], [4]]])
-    self.assertEqual(by_bar_baz.pfill(5).aslist(),
+    self.assertEqual(by_bar_baz.pfill(1).aslist(),
+                     [[[1, 2]], [[3], [4], [5]]])
+    self.assertEqual(by_bar_baz.pfill(6).aslist(),
                      [[[6, 7]], [[8], [9], [10]]])
     self.assertEqual(by_bar_baz.pfill_().aslist(),
-                     [[[1, 2]], [[1], [2], [3]]])
+                     [[[0, 1]], [[0], [1], [2]]])
     self.assertEqual(by_bar_baz.pfill__().aslist(),
-                     [[[1, 2]], [[1], [1], [1]]])
+                     [[[0, 1]], [[0], [0], [0]]])
     # Generates a complete index plist into the source plist.
-    self.assertEqual(by_bar_baz.apply('pfill', -1, pepth=-1).aslist(),
+    self.assertEqual(by_bar_baz.apply('pfill', 0, pepth=-1).aslist(),
                      [[[0, 1]], [[0], [0], [0]]])
     # Better way of generating a complete index with pfill.
-    self.assertEqual(by_bar_baz.pfill(-1, pepth=-1).aslist(),
+    self.assertEqual(by_bar_baz.pfill(pepth=-1).aslist(),
                      [[[0, 1]], [[0], [0], [0]]])
 
   def test_plist_of_pdict_groupby_groupby_lfill(self):
@@ -678,29 +678,29 @@ class PStarTest(unittest.TestCase):
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
     self.assertEqual(by_bar_baz.lfill(),
-                     [[[1, 2]], [[3], [4], [5]]])
-    self.assertNotIsInstance(by_bar_baz.lfill(), plist)
-    self.assertEqual(by_bar_baz.lfill(-1),
                      [[[0, 1]], [[2], [3], [4]]])
-    self.assertEqual(by_bar_baz.lfill(5),
+    self.assertNotIsInstance(by_bar_baz.lfill(), plist)
+    self.assertEqual(by_bar_baz.lfill(1),
+                     [[[1, 2]], [[3], [4], [5]]])
+    self.assertEqual(by_bar_baz.lfill(6),
                      [[[6, 7]], [[8], [9], [10]]])
 
     self.assertEqual(by_bar_baz.lfill_().aslist(),
-                     [[[1, 2]], [[1], [2], [3]]])
+                     [[[0, 1]], [[0], [1], [2]]])
     self.assertIsInstance(by_bar_baz.lfill_(), plist)
     self.assertEqual(by_bar_baz.lfill__().aslist(),
-                     [[[1, 2]], [[1], [1], [1]]])
+                     [[[0, 1]], [[0], [0], [0]]])
 
     self.assertEqual(by_bar_baz.lfill__().aslist(),
                      by_bar_baz.lfill(pepth=2).aslist())
 
     # Generates a complete index list into the source plist.
-    self.assertEqual(by_bar_baz.apply('lfill', -1, pepth=-1).aslist(),
+    self.assertEqual(by_bar_baz.apply('lfill', 0, pepth=-1).aslist(),
                      [[[0, 1]], [[0], [0], [0]]])
-    self.assertIsInstance(by_bar_baz.apply('lfill', -1, pepth=-1), plist)
+    self.assertIsInstance(by_bar_baz.apply('lfill', 0, pepth=-1), plist)
 
-    self.assertEqual(by_bar_baz.apply('lfill', -1, pepth=-1).aslist(),
-                     by_bar_baz.lfill(-1, pepth=-1).aslist())
+    self.assertEqual(by_bar_baz.apply('lfill', 0, pepth=-1).aslist(),
+                     by_bar_baz.lfill(pepth=-1).aslist())
 
   def test_plist_of_pdict_groupby_groupby_pleft(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])

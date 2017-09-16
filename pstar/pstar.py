@@ -947,7 +947,7 @@ class plist(list):
       operator.__eq__,
       operator.__or__,
       lambda self, return_inds: (
-          self.lfill(-1, pepth=-1)
+          self.lfill(pepth=-1)
           if return_inds else self))
   __eq__ = __cmp__
 
@@ -965,7 +965,7 @@ class plist(list):
       operator.__ge__,
       operator.__and__,
       lambda self, return_inds: (
-          self.lfill(-1, pepth=-1)
+          self.lfill(pepth=-1)
           if return_inds else self))
 
   __lt__ = _build_comparator(
@@ -977,7 +977,7 @@ class plist(list):
       operator.__le__,
       operator.__and__,
       lambda self, return_inds: (
-          self.lfill(-1, pepth=-1)
+          self.lfill(pepth=-1)
           if return_inds else self))
 
   ##############################################################################
@@ -1691,7 +1691,7 @@ class plist(list):
   def pdepth(self, s=False):
     """Returns a plist of the recursive depth of each leaf element, from 0.
 
-    `pdepth` returns a plist of the same structure as self:
+    `pdepth` returns a plist of the same plist structure as self:
     ```
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
@@ -1823,36 +1823,286 @@ class plist(list):
     return l
 
   def pshape(self):
+    """Returns a plist of the same structure as self, filled with leaf lengths.
+
+    `pshape` returns a plist of the same structure as self:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    shape = foo.pshape()
+      => [3]
+
+    foo_by_bar = foo.bar.groupby()
+      => [[{'bar': 0, 'foo': 0},
+           {'bar': 0, 'foo': 2}],
+          [{'bar': 1, 'foo': 1}]]
+    shape = foo_by_bar.pshape()
+      => [[2], [1]]
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    shape = foo_by_bar_foo.pshape()
+      => [[[1], [1]], [[1]]]
+
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    shape = filtered.pshape()
+      => [[[1], [1]], [[]]]
+    ```
+
+    Returns:
+      plist of the same structure as self, where each leaf plist has a single
+      element, which is the length of the corresponding leaf plist in `self`.
+    """
     try:
       return plist([x.pshape() for x in self], root=self.__root__)
     except Exception:
       return plist([len(self)], root=self.__root__)
 
   def pstructure(self):
+    """Returns a list of the number of elements in each layer of self.
+
+    Gives a snapshot view of the structure of `self`. The length of the returned
+    list is the depth of `self`. Each value in the list is the result of calling
+    `self.plen(r)`, where `r` ranges from 0 to `self.pdepth()`. `plen(r)` gives
+    the sum of the lengths of all plists at layer `r`.
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    structure = foo.pstructure()
+      => [3]
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    structure = foo_by_bar_foo.pstructure()
+      => [2, 3, 3]
+
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    structure = filtered.pstructure()
+      => [2, 3, 2]
+    ```
+
+    Returns:
+      A list (not a plist) of `self.pdepth()` integers, where each integer is
+      the number of elements in all plists at that layer, 0-indexed according to
+      depth.
+    """
     s = []
     for r in range(self.pdepth(True) + 1):
-      s.append(self.plen(r, s=True))
+      s.extend(self.plen(r).ungroup(-1))
     return plist(s, root=self.__root__)
 
   # Fill with different values.
   def lfill(self, v=0, s=None):
-    s = _successor(v) if s is None else s
+    """Returns a list with the structure of `self` filled in order from `v`.
+
+    Identical to `plist.pfill()`, but returns a list instead of a plist.
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    filled = foo.lfill()
+      => [0, 1, 2]
+    filled = foo.lfill(-7)
+      => [-7, -6, -5]
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    filled = foo_by_bar_foo.lfill()
+      => [[[0], [1]], [[2]]]
+    filled = foo_by_bar_foo.lfill_()
+      => [[[0], [1]], [[0]]]
+    filled = foo_by_bar_foo.lfill(pepth=2)
+      => [[[0], [0]], [[0]]]
+
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    filled = filtered.lfill(3)
+      => [[[3], [4]], [[]]]
+    ```
+
+    Args:
+      v: Integer. The value to start filling from. Defaults to 0.
+      s: Successor object. Do not pass -- used to track the count of calls
+         across the recursive traversal of `self`.
+
+    Returns:
+      A list (not a plist) of possibly nested plists where each leaf element is
+      an integer, starting with the value of `v` in the 'top left' element of
+      the structure.
+    """
+    s = _successor(v - 1) if s is None else s
     try:
       return [x.lfill(s=s) for x in self]
     except Exception:
       return [s.s() for _ in range(len(self))]
 
   def pfill(self, v=0, s=None):
-    s = _successor(v) if s is None else s
+    """Returns a plist with the structure of `self` filled in order from `v`.
+
+    Identical to `plist.lfill()`, but returns a plist instead of a list.
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    filled = foo.pfill()
+      => [0, 1, 2]
+    filled = foo.pfill(-7)
+      => [-7, -6, -5]
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    filled = foo_by_bar_foo.pfill()
+      => [[[0], [1]], [[2]]]
+    filled = foo_by_bar_foo.pfill_()
+      => [[[0], [1]], [[0]]]
+    filled = foo_by_bar_foo.pfill(pepth=2)
+      => [[[0], [0]], [[0]]]
+
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    filled = filtered.pfill(3)
+      => [[[3], [4]], [[]]]
+    ```
+
+    Args:
+      v: Integer. The value to start filling from. Defaults to 0.
+      s: Successor object. Do not pass -- used to track the count of calls
+         across the recursive traversal of `self`.
+
+    Returns:
+      A plist of possibly nested plists where each leaf element is an integer,
+      starting with the value of `v` in the 'top left' element of the structure.
+    """
+    s = _successor(v - 1) if s is None else s
     try:
       return plist([x.pfill(s=s) for x in self], root=self.__root__)
     except Exception:
       return plist([s.s() for _ in range(len(self))], root=self.__root__)
 
   def pleft(self):
-    return -self.pfill() + self.plen(-1).ungroup(-1)[0]
+    """Returns a plist with the structure of `self` filled `plen(-1)` to 0.
+
+    Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    remaining = foo.pleft()
+      => [2, 1, 0]
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    remaining = foo_by_bar_foo.pleft()
+      => [[[2], [1]], [[0]]]
+    remaining = foo_by_bar_foo.pleft_()
+      => [[[1], [0]], [[0]]]
+    remaining = foo_by_bar_foo.pleft(pepth=2)
+      => [[[0], [0]], [[0]]]
+
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    remaining = filtered.pleft()
+      => [[[1], [0]], [[]]]
+    ```
+    This is useful for calling functions that have some global state that should
+    change each time a new grouping is started, such as generating many plots
+    from a single grouped plist using pyplot, where the function would need to
+    call `plt.show()` after each group was completed:
+    ```
+    def plot(x, remaining):
+      plt.plot(x)
+
+      if remaining == 0:
+        plt.show()
+
+    by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
+    ```
+
+    Returns:
+      A plist of possibly nested plists where each leaf element is an integer,
+      starting with `self.plen(-1)` in the 'top left' element of the structure
+      and counting down to 0.
+    """
+    return -self.pfill(1) + self.plen(-1, s=True)
 
   def values_like(self, value=0):
+    """Returns a plist with the structure of `self` filled with `value`.
+
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    ones = foo.values_like(1)
+      => [1, 1, 1]
+
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+      => [[[{'foo': 0, 'bar': 0}],
+           [{'foo': 2, 'bar': 0}]],
+          [[{'foo': 1, 'bar': 1}]]]
+    strings = foo_by_bar_foo.values_like('foo')
+      => [[['foo'], ['foo']], [['foo']]]
+    all_the_same_dict = foo_by_bar_foo.values_like({}, pepth=2)
+      => [[[{}], [{}]], [[{}]]]
+    all_the_same_dict.ungroup(-1)[0].update(foo=1)
+      => None
+    all_the_same_dict
+      => [[[{'foo': 1}], [{'foo': 1}]], [[{'foo': 1}]]]
+
+    filtered = foo_by_bar_foo.bar == 0
+      => [[[{'bar': 0, 'foo': 0}],
+           [{'bar': 0, 'foo': 2}]],
+          [[]]]
+    tuples = filtered.values_like((1, 2, 3))
+      => [[[(1, 2, 3)], [(1, 2, 3)]], [[]]]
+    ```
+    Note the example above that filling with a mutable object like a dict gives
+    a plist filled that single object, which might be surprising, but is the
+    same as other common python idioms, such as:
+    ```
+    all_the_same_dict = [{}] * 3
+      => [{}, {}, {}]
+    all_the_same_dict[0].update(foo=1)
+      => None
+    all_the_same_dict
+      => [{'foo': 1}, {'foo': 1}, {'foo': 1}]
+    ```
+
+    Args:
+      value: Value to fill the returned plist with. Can by any python object.
+
+    Returns:
+      A plist with the structure of `self` filled with `value`.
+    """
     values = _ensure_len(len(self), value)
     try:
       return plist([x.values_like(v) for x, v in zip(self, values)], root=self.__root__)
