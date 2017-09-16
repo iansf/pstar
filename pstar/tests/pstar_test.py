@@ -871,7 +871,6 @@ class PStarTest(unittest.TestCase):
 
     self.assertRaises(ValueError, lambda: foos.bar.pand() and by_bar_baz.bar.pand())
 
-
   def test_plist_of_pdict_groupby_groupby_pand_apply_as_args(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
@@ -892,6 +891,25 @@ class PStarTest(unittest.TestCase):
                        ['4 0.00 2'],
                        ['0 0.00 3']]])
 
+  def test_plist_of_pdict_groupby_groupby_pand_apply_psplat(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    def foo_func(foo, bar, baz):
+      assert isinstance(foo, str) and isinstance(bar, float) and isinstance(baz, int)
+      return '%s %.2f %d' % (foo, bar, baz)
+
+    me = plist()
+    foos_out = by_bar_baz.foo.pstr().pand().root().bar.apply(float, pepth=-1).pand().root().baz.pand().apply(foo_func, psplat=True, pepth=2)
+
+    self.assertEqual(foos_out.aslist(),
+                     [[['1 1.00 6', '3 1.00 6']],
+                      [['2 0.00 1'],
+                       ['4 0.00 2'],
+                       ['0 0.00 3']]])
 
   def test_plist_of_pdict_groupby_groupby_getitem_list_key(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])

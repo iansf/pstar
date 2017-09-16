@@ -33,6 +33,7 @@ from qj import qj
 
 # pylint: disable=line-too-long,invalid-name,g-explicit-length-test,broad-except,g-long-lambda
 
+
 ################################################################################
 ################################################################################
 ################################################################################
@@ -1227,11 +1228,15 @@ class plist(list):
                            converts all contained plists to lists, but `func`
                            might return any arbitrary result, so the same
                            conversion cannot be inverted automatically.
+                `psplat`: Boolean (default `False`). If `True`, expands the
+                          arguments provided by `self` with the `*` operator
+                          (sometimes called the 'splat' operator).
 
     Returns:
       plist resulting from applying func to each element of self.
     """
     paslist = kwargs.pop('paslist', False)
+    psplat = kwargs.pop('psplat', False)
     args = [_ensure_len(len(self), a) for a in args]
     kwargs = {
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
@@ -1244,8 +1249,12 @@ class plist(list):
         # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
         return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
     if paslist:
+      if psplat:
+        return plist([plist(func(*x.aslist() + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
       return plist([plist(func(x.aslist(), *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
     else:
+      if psplat:
+        return plist([func(*list(x) + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
       return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
   def qj(self, *args, **kwargs):
@@ -2114,6 +2123,59 @@ class plist(list):
   # Calling-frame-modifying utility methods.
   ##############################################################################
   def me(self, name_or_plist='me', call_pepth=0):
+    """Sets the current plist as a variable available in the caller's context.
+
+    `me` is a convenience method to naturally enable long chaining to prepare
+    the data in the plist for a future call to `apply` or some other call. It
+    attempts to add the current plist to the caller's context, either as a
+    local variable, or as a global (module-level) variable. Because it modifies
+    the caller's frame, it is not recommended for production code, but can be
+    qutie useful in jupyter notebooks during exploration of datasets.
+
+    Using `me` with a local variable requires that the variable already exist in
+    the local context, and that it be a plist:
+    ```
+    me = plist()
+    foo.bar.groupby().baz.sortby_().me().groupby().apply_(plt.plot, me)
+    ```
+
+    The same can work with a name of your choice:
+    ```
+    baz = plist()
+    foo.bar.groupby().baz.sortby_().me('baz').groupby().apply_(plt.plot, baz)
+    ```
+
+    You can pass the plist you want to use instead:
+    ```
+    me2 = plist()
+    foo.bar.groupby().baz.sortby_().me(me2).groupby().apply_(plt.plot, me2)
+    ```
+
+    If there isn't a local variable of that name, `me()` will put the plist into
+    the caller's `globals()` dict under the requested name. The following both
+    work if there are no local or global variables named `me` or `baz`:
+    ```
+    foo.bar.groupby().baz.sortby_().me().groupby().apply_(plt.plot, me)
+    foo.bar.groupby().baz.sortby_().me('baz').groupby().apply_(plt.plot, baz)
+    ```
+
+    Args:
+      name_or_plist: String naming a variable in the caller's context or the
+                     global (module-level) context, or an existing plist. In
+                     both cases, the variable will be overwritten with a plist
+                     that is a shallow copy of `self`. Defaults to `'me'`.
+      call_pepth: Do not pass. Used by `plist.__call__` to keep track of how
+                  many stack frames occur between the caller and `me()`.
+
+    Returns:
+      `self`, permitting continued chaining.
+
+    Raises:
+      ValueError: If `name_or_plist` is a string, and that name appears in the
+                  caller's local variables, but does not evaluate to a plist.
+      ValueError: If something other than a string or a plist is passed to
+                  `name_or_plist`.
+    """
     try:
       call_pepth += 3
       f = inspect.currentframe()
@@ -2147,6 +2209,79 @@ class plist(list):
     return self
 
   def pand(self, name='__plist_and_var__', call_pepth=0):
+    """Stores `self` into a plist of tuples that gets extended with each call.
+
+    `pand` is meant to facilitate building up tuples of values to be sent as
+    a single block to a chained call to `apply`, or as `*args` when calling
+    `plist.apply(psplat=True)`. The name is `pand` to evoke conjunction: the
+    caller wants a plist with this *and* this *and* this.
+
+    `pand` stores a variable in the caller's frame that isn't visible to the
+    caller, but is visible to future calls to `pand` due to how `locals()`
+    works.
+
+    Basic usage might look like:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    foo.baz = 3 * foo.foo + foo.bar
+      => [{'foo': 0, 'bar': 0, 'baz': 0},
+          {'foo': 1, 'bar': 1, 'baz': 4},
+          {'foo': 2, 'bar': 0, 'baz': 6}]
+    (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
+        .apply_(qj, '(foo, bar)'))
+      => [[[(0, 0)],
+           [(2, 0)]],
+          [[(1, 1)]]]
+      Logs:
+        qj: <pstar> apply: (foo, bar) <1249>: (0, 0)
+        qj: <pstar> apply: (foo, bar) <1249>: (2, 0)
+        qj: <pstar> apply: (foo, bar) <1249>: (1, 1)
+    ```
+
+    The same construction can be used with methods that expect the arguments
+    individually, requiring the tuple to be expanded:
+    ```
+    (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
+        .ungroup().apply_(qj, psplat=True))
+    ```
+
+    Building multiple tuples in the same context requires passing `name` to keep
+    them separate:
+    ```
+    (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
+        .apply_(qj,
+               me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()))
+      => [[(0, 0),
+           (2, 0)],
+          [(1, 1)]]
+      Logs:
+        qj: <pstar> apply: (0, 0) <1249>: (0, 0)
+        qj: <pstar> apply: (2, 0) <1249>: (2, 0)
+        qj: <pstar> apply: (1, 1) <1249>: (1, 1)
+    ```
+    Note that the construction above is hard to understand, and probably
+    shouldn't be used.
+
+    Args:
+      name: String naming an available variable in the caller's context. Should
+            only be passed if the calling frame needs to create multiple
+            different tuples. Defaults to '__plist_and_var__'. If a variable of
+            the same name exists in the caller's context, `pand` will fail to
+            write to it.
+      call_pepth: Do not pass. Used by `plist.__call__` to keep track of how
+                  many stack frames occur between the caller and `pand()`.
+
+    Returns:
+      The current plist of tuples, with `self` added.
+
+    Raises:
+      ValueError: If the variable named by `name` is already present in the
+                  caller's frame and is not a plist, or has different `pshape()`
+                  than `self`.
+    """
     try:
       call_pepth += 3
       f = inspect.currentframe()
