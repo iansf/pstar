@@ -230,7 +230,7 @@ pet = pset
 ################################################################################
 ################################################################################
 ################################################################################
-def _build_comparator(op, merge_op, shortcut, return_self_if_empty_other):
+def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
   """Builds a plist comparator operation.
 
   Args:
@@ -238,9 +238,9 @@ def _build_comparator(op, merge_op, shortcut, return_self_if_empty_other):
     merge_op: Set-like operation for merging sets of intermediate results, such
               as operator.__and__.
     shortcut: Function to call to shortcut comparison if `self is other`.
-    return_self_if_empty_other: Boolean for how to handle `other` being an empty
-                                list. If `True`, `self` is returned. If `False`,
-                                an empty list is returned.
+    return_root_if_empty_other: Boolean for how to handle `other` being an empty
+                                list. If `True`, `self.__root__` is returned. If
+                                `False`, an empty plist is returned.
 
   Returns:
     comparator: The comparison function.
@@ -311,7 +311,7 @@ def _build_comparator(op, merge_op, shortcut, return_self_if_empty_other):
     ```
 
     When comparing against an empty list, `==` always returns an empty list, but
-    all other comparisons return self:
+    all other comparisons return `self`:
     ```
     foo.foo == []
       => []
@@ -345,19 +345,24 @@ def _build_comparator(op, merge_op, shortcut, return_self_if_empty_other):
     if self is other:
       return shortcut(self, return_inds)
     inds = []
-    if isinstance(other, list) and len(self) == len(other):
-      for i, (x, o) in enumerate(zip(self, other)):
-        if isinstance(x, plist):
-          child_inds = comparator(x, o, return_inds=True)
-          inds.append(child_inds)
-        elif op(x, o):
-          inds.append(i)
-    elif isinstance(other, list) and len(other) > 0:
-      inds = comparator(self, other[0], return_inds=True)
-      for o in other[1:]:
-        inds = _merge_indices(inds, comparator(self, o, return_inds=True), merge_op)
-    elif isinstance(other, list) and len(other) == 0:
-      inds = self.lfill(pepth=-1) if return_self_if_empty_other else []
+    if isinstance(other, list):
+      if len(self) == len(other):
+        for i, (x, o) in enumerate(zip(self, other)):
+          if isinstance(x, plist):
+            child_inds = comparator(x, o, return_inds=True)
+            inds.append(child_inds)
+          elif op(x, o):
+            inds.append(i)
+      elif len(other) > 0:
+        inds = comparator(self, other[0], return_inds=True)
+        for o in other[1:]:
+          inds = _merge_indices(inds, comparator(self, o, return_inds=True), merge_op)
+      else:
+        # len(other) == 0
+        if return_inds:
+          inds = self.lfill(pepth=-1) if return_root_if_empty_other else []
+        else:
+          return self.__root__ if return_root_if_empty_other else plist()
     else:
       for i, x in enumerate(self):
         if isinstance(x, plist):
@@ -384,14 +389,15 @@ def _build_logical_op(op):
     logical_op: The logical operation function.
   """
   def logical_op(self, other):
-    """plist-compatible logical operation -- logical ops perform set operations on plists.
+    """plist-compatible logical operation; performs a set operation on its args.
 
     Args:
       self: plist object.
       other: Object to perform the logical operation with.
 
     Returns:
-      A new plist, merging self and other according to the operation provided to _build_logical_op.
+      A new plist, merging `self` and other according to the operation provided
+      to `_build_logical_op`.
     """
     if isinstance(other, plist):
       if len(self) == len(other):
@@ -426,15 +432,16 @@ def _build_binary_op(op):
     binary_op: The binary operation function.
   """
   def binary_op(self, other):
-    """plist-compatible binary operation -- binary operations apply to the elements of the plist.
+    """plist-compatible binary operation; applied element-wise to its args.
 
     Args:
       self: plist object.
       other: Object to perform the binary operation with.
 
     Returns:
-      A new plist, where each element of self had the operation passed to _build_binary_op
-      applied to it and other, or the corresponding element of other, if their lengths match.
+      A new plist, where each element of `self` had the operation passed to
+      `_build_binary_op` applied to it and `other`, or the corresponding element
+      of `other`, if the lengths of `self` and `other` match.
     """
     if isinstance(other, plist):
       if len(self) == len(other):
@@ -482,6 +489,15 @@ def _build_unary_op(op):
     unary_op: The unary operation function.
   """
   def unary_op(self):
+    """plist-compatible unary operation; applied element-wise to its args.
+
+    Args:
+      self: plist object.
+
+    Returns:
+      A new plist, where each element of `self` had the operation passed to
+      `_build_unary_op` applied to it.
+    """
     return plist([op(x) for x in self], root=self.__root__)
 
   return unary_op
