@@ -1383,6 +1383,35 @@ class plist(list):
     new plist with a new root. This is because `sortby` doesn't change the
     structure of the plist, only the order of its (or its children's) elements.
 
+    A basic sort:
+    ```
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 1, 'bar': 1},
+          {'foo': 2, 'bar': 0}]
+    bar_sorted = foo.bar.sortby()
+      => [0, 0, 1]
+    foo_sorted_by_bar = bar_sorted.root()
+      => [{'foo': 0, 'bar': 0},
+          {'foo': 2, 'bar': 0},
+          {'foo': 1, 'bar': 1}]
+    ```
+
+    Sorting with groups works in the same way -- the sort is applied to each
+    group of `self`:
+    ```
+    foo_by_bar = foo.bar.groupby()
+      => [[{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}],
+          [{'foo': 1, 'bar': 1}]]
+    bar_by_bar_sorted = foo_by_bar.bar.sortby(reverse=True)
+      => [[1], [0, 0]]
+    foo_by_bar_sorted = bar_by_bar_sorted.root()
+      => [[{'foo': 1, 'bar': 1}],
+          [{'foo': 0, 'bar': 0},
+           {'foo': 2, 'bar': 0}]]
+    ```
+
     Args:
       key: Key function to pass to `sorted`. Defaults to the identity function.
            See the python documentation for `sorted` for more information.
@@ -2253,7 +2282,7 @@ class plist(list):
     ```
     (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
         .apply_(qj,
-               me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()))
+                me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()))
       => [[(0, 0),
            (2, 0)],
           [(1, 1)]]
