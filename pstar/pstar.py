@@ -827,7 +827,12 @@ class plist(list):
 
   def __getslice__(self, i, j):
     """Delegates to __getitem__ for compatibility with python 2.7."""
-    return plist.__getitem__(self, slice(i, j))
+    try:
+      if self is self.__root__:
+        return plist(list.__getslice__(self, i, j))
+      return plist(list.__getslice__(self, i, j), root=plist(list.__getslice__(self.__root__, i, j)))
+    except Exception:
+      return plist.__getitem__(self, slice(i, j))
 
   ##############################################################################
   # __set*__
