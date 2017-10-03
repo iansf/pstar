@@ -1222,7 +1222,6 @@ class plist(list):
   def _(self):
     self.__pepth__ = -1
     return self
-    return functools.partial(self, pepth=-1)
 
   ##############################################################################
   # __root__ pointer management.
