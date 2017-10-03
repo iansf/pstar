@@ -733,8 +733,6 @@ class plist(list):
         return plist.__getattr__(self, name[:-ending_unders], _pepth=ending_unders)
       except AttributeError:
         pass
-      # Fall back to recursing through plist.__getattribute__ calls until all extra trailing underscores have been removed.
-      name = name[:-1]
     try:
       if plist.all(self, hasattr, name):
         return plist([getattr(x, name) for x in self], root=self.__root__)

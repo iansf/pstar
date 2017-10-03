@@ -165,6 +165,16 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl._[0].aslist(),
                      [0, 1, 2])
 
+  def test_plist_with_obj_method_with_trailing_underscore(self):
+    class O(object):
+      def foo_(self):
+        return 1
+
+    pl = plist([O() for _ in range(3)])
+
+    self.assertEqual(pl.foo_().aslist(),
+                     [1, 1, 1])
+
   def test_plist_comparators(self):
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     self.assertEqual(foo.aslist(),
