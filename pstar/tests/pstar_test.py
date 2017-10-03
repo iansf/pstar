@@ -154,6 +154,17 @@ class PStarTest(unittest.TestCase):
       self.assertEqual(len(pl[-10:]),
                        min(10, len(pl)))
 
+  def test_plist_of_list_easy_indexing(self):
+    pl = plist([[i * 1, i * 2, i * 3] for i in range(3)])
+    self.assertEqual(pl.aslist(),
+                     [[0, 0, 0],
+                      [1, 2, 3],
+                      [2, 4, 6]])
+    self.assertEqual(pl[0],
+                     [0, 0, 0])
+    self.assertEqual(pl._[0].aslist(),
+                     [0, 1, 2])
+
   def test_plist_comparators(self):
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     self.assertEqual(foo.aslist(),

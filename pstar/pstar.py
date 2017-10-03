@@ -657,7 +657,7 @@ class plist(list):
   See tests/pstar_test.py for usage examples ranging from simple to complex.
   """
 
-  __slots__ = ['__root__']
+  __slots__ = ['__root__', '__pepth__']
 
   def __init__(self, *args, **kwargs):
     """Constructs plist.
@@ -670,6 +670,7 @@ class plist(list):
     Returns:
       None. plist is initialized.
     """
+    self.__pepth__ = 0
     depth = kwargs.pop('depth', 1)
     self.__root__ = kwargs.pop('root', self)
     if depth == 1:
@@ -708,7 +709,7 @@ class plist(list):
     Raises:
       AttributeError: If `name` is not found on self or the elements of self.
     """
-    if name == '__root__':
+    if name == '__root__' or name == '__pepth__':
       return list.__getattribute__(self, name)
     if not name.endswith('___') and name.startswith('__') and name.endswith('__'):
       raise AttributeError('\'%s\' objects cannot call reserved members of their elements: \'%s\'' % (type(self), name))
@@ -762,12 +763,17 @@ class plist(list):
     """
     attr = list.__getattribute__(self, name)
 
+    pepth_local = list.__getattribute__(self, '__pepth__')
+    if pepth_local:
+      _pepth = pepth_local
+      self.__pepth__ = 0
+
     if _pepth:
       wrap = lambda *a, **k: _call_attr(self, name, attr, pepth=_pepth, *a, **k)
     else:
       wrap = lambda *a, **k: _call_attr(self, name, attr, *a, **k)
 
-    if name in NONCALLABLE_ATTRS:
+    if name in NONCALLABLE_ATTRS or name == '_':
       return wrap()
 
     return wrap
@@ -802,6 +808,8 @@ class plist(list):
       TypeError: If the key fails to be applied directly to self and fails to be
                  applied to its elements individually.
     """
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__getitem__')(key)
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
@@ -827,6 +835,8 @@ class plist(list):
 
   def __getslice__(self, i, j):
     """Delegates to __getitem__ for compatibility with python 2.7."""
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__getslice__')(i, j)
     try:
       if self is self.__root__:
         return plist(list.__getslice__(self, i, j))
@@ -849,8 +859,10 @@ class plist(list):
     Returns:
       self, in order to allow chaining through `pl.__setattr__(name, val).foo`.
     """
-    if name == '__root__':
+    if name == '__root__' or name == '__pepth__':
       list.__setattr__(self, name, val)
+    elif self.__pepth__ != 0:
+      return plist.__setattr__(self, '__setattr__')(name, val)
     else:
       lval = _ensure_len(len(self), val)
       for i, x in enumerate(self):
@@ -889,6 +901,8 @@ class plist(list):
       TypeError: If the key fails to be applied directly to self and fails to be
                  applied to its elements individually.
     """
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__setitem__')(key, val)
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
@@ -930,7 +944,12 @@ class plist(list):
 
   def __setslice__(self, i, j, sequence):
     """Delegates to __setitem__ for compatibility with python 2.7."""
-    plist.__setitem__(self, slice(i, j), sequence)
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__setslice__')(i, j, sequence)
+    try:
+      list.__setslice__(self, i, j, sequence)
+    except Exception:
+      plist.__setitem__(self, slice(i, j), sequence)
     return self
 
   ##############################################################################
@@ -945,6 +964,8 @@ class plist(list):
     Returns:
       self, in order to allow chaining through `pl.__delattr__(name).foo`.
     """
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__delattr__')(name)
     for x in self:
       x.__delattr__(name)
     return self
@@ -979,6 +1000,8 @@ class plist(list):
       TypeError: If the key fails to be applied directly to self and fails to be
                  applied to its elements individually.
     """
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__delitem__')(key)
     try:
       if (isinstance(key, list)
           and plist(key).all(isinstance, int)):
@@ -1011,7 +1034,12 @@ class plist(list):
 
   def __delslice__(self, i, j):
     """Delegates to __delitem__ for compatibility with python 2.7."""
-    plist.__delitem__(self, slice(i, j))
+    if self.__pepth__ != 0:
+      return plist.__getattr__(self, '__delslice__')(i, j)
+    try:
+      list.__delslice__(self, i, j)
+    except Exception:
+      plist.__delitem__(self, slice(i, j))
     return self
 
   ##############################################################################
@@ -1028,7 +1056,8 @@ class plist(list):
     Returns:
       A new plist with the return values of calling each callable in self.
     """
-    pepth = kwargs.pop('pepth', 0)
+    pepth = kwargs.pop('pepth', self.__pepth__)
+    self.__pepth__ = 0
     call_pepth = kwargs.pop('call_pepth', 0)
     args = [_ensure_len(len(self), a) for a in args]
     kwargs = {
@@ -1189,6 +1218,11 @@ class plist(list):
   ##############################################################################
   ##############################################################################
   ##############################################################################
+
+  def _(self):
+    self.__pepth__ = -1
+    return self
+    return functools.partial(self, pepth=-1)
 
   ##############################################################################
   # __root__ pointer management.
