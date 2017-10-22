@@ -1290,6 +1290,20 @@ class plist(list):
       pass
     return tuple([x for x in self])
 
+  def aspset(self):
+    try:
+      return pset([x.aspset() for x in self])
+    except Exception:
+      pass
+    return pset([x for x in self])
+
+  def aspdict(self):
+    try:
+      return plist([x.aspdict() for x in self], root=self.__root__)
+    except Exception:
+      pass
+    return self.pdict()
+
   def np(self, *args, **kwargs):
     """Converts the elements of self to numpy arrays, forwarding passed args."""
     return plist([np.array(x, *args, **kwargs) for x in self], root=self.__root__)
