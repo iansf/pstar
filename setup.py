@@ -27,6 +27,7 @@ setuptools.setup(
     long_description=readme(),
     version='0.1.0',
     url='https://github.com/iansf/pstar',
+    download_url='https://github.com/iansf/pstar/archive/0.1.0.tar.gz',
     author='Ian Fischer, Google',
     author_email='iansf@google.com',
     packages=['pstar'],
