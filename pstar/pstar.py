@@ -868,6 +868,11 @@ class plist(list):
   def __getslice__(self, i, j):
     """Delegates to __getitem__ for compatibility with python 2.7."""
     if self.__pepth__ != 0:
+      if '__warned__' not in plist.__getslice__.__dict__:
+        qj('Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be corrected!\n'
+           'Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.\n'
+           'This avoids the broken code path in the python compiler.', 'WARNING!')
+        plist.__getslice__.__dict__['__warned__'] = True
       return plist.__getattr__(self, '__getslice__')(i, j)
     try:
       if self is self.__root__:

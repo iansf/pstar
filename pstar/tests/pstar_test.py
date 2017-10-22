@@ -96,7 +96,14 @@ class PStarTest(unittest.TestCase):
     self.assertEqual((p[p.peys()._[0] == 'f'] > 0).pdict(),
                      dict(foo=1))
 
-    p[p.peys()._[1:]] = p[p.peys()] * 3
+    # Supress warning message on python 2.7.
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      qj.COLOR = False
+      p[p.peys()._[1:]] = p[p.peys()] * 3
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
     self.assertEqual(p,
                      dict(foo=1, bar=2, floo=0, oo=3, ar=6, loo=0))
 
@@ -202,6 +209,36 @@ class PStarTest(unittest.TestCase):
                      [0, 0, 0])
     self.assertEqual(pl._[0].aslist(),
                      [0, 1, 2])
+
+  def test_plist_of_list_easy_slicing(self):
+    pl = plist([[i * 1, i * 2, i * 3] for i in range(3)])
+    self.assertEqual(pl.aslist(),
+                     [[0, 0, 0],
+                      [1, 2, 3],
+                      [2, 4, 6]])
+    self.assertEqual(pl[1:],
+                     [[1, 2, 3],
+                      [2, 4, 6]])
+    if sys.version_info[0] < 3:
+      self.assertEqual(pl._[1::1].aslist(),
+                       [[0, 0],
+                        [2, 3],
+                        [4, 6]])
+      del plist.__getslice__.__dict__['__warned__']
+      log_fn = qj.LOG_FN
+      with mock.patch('logging.info') as mock_log_fn:
+        qj.LOG_FN = mock_log_fn
+        qj.COLOR = False
+        pl._[1:]
+        mock_log_fn.assert_called_once_with(RegExp('qj: <pstar> __getslice__: WARNING!'))
+
+      qj.LOG_FN = log_fn
+      qj.COLOR = True
+    else:
+      self.assertEqual(pl._[1:].aslist(),
+                       [[0, 0],
+                        [2, 3],
+                        [4, 6]])
 
   def test_plist_all_any_none(self):
     foos = plist([pdict(foo=i, bar=i % 3) for i in range(5)])
