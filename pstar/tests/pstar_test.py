@@ -203,6 +203,27 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl._[0].aslist(),
                      [0, 1, 2])
 
+  def test_plist_all_any_none(self):
+    foos = plist([pdict(foo=i, bar=i % 3) for i in range(5)])
+
+    self.assertEqual(foos.bar.all().aslist(),
+                     [])
+
+    self.assertEqual(foos.bar.any().aslist(),
+                     foos.bar.aslist())
+
+    self.assertEqual(foos.bar.none().aslist(),
+                     [])
+
+    self.assertEqual(foos.all(isinstance, pdict).aslist(),
+                     foos.aslist())
+
+    self.assertEqual(foos.any(isinstance, pdict).aslist(),
+                     foos.aslist())
+
+    self.assertEqual(foos.none(isinstance, pdict).aslist(),
+                     [])
+
   def test_plist_with_obj_method_with_trailing_underscore(self):
     class O(object):
       def foo_(self):

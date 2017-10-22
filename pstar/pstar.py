@@ -1315,55 +1315,76 @@ class plist(list):
   ##############################################################################
   # Shortcutting boolean test methods.
   ##############################################################################
-  def all(self, func, *args, **kwargs):
-    """Returns self if func evaluates to True for all elements.
+  def all(self, *args, **kwargs):
+    """Returns self if args[0] evaluates to True for all elements of self.
 
-    Shortcuts if func ever evaluates to False.
+    Shortcuts if args[0] ever evaluates to False.
+    If args are not passed, the function evaluated is `bool`.
 
     Args:
-      func: Function to call on each element of self.
-      *args: Passed through to func.
-      **kwargs: Passed through to func.
+      *args: Optional. If present, the first entry must be a function to evaluate.
+             All other args are passed through to that function. If absent, the
+             function is set to bool.
+      **kwargs: Passed through to the function specified in *args.
 
     Returns:
       `self` or an empty plist (which evaluates to False).
     """
+    if len(args):
+      func = args[0]
+      args = args[1:]
+    else:
+      func = bool
     for x in self:
       if not func(x, *args, **kwargs):
         return plist()
     return self
 
-  def any(self, func, *args, **kwargs):
-    """Returns self if func evaluates to True for any elements.
+  def any(self, *args, **kwargs):
+    """Returns self if args[0] evaluates to True for any element of self.
 
-    Shortcuts as soon as func evaluates to True.
+    Shortcuts as soon as args[0] evaluates to True.
+    If args are not passed, the function evaluated is `bool`.
 
     Args:
-      func: Function to call on each element of self.
-      *args: Passed through to func.
+      *args: Optional. If present, the first entry must be a function to evaluate.
+             All other args are passed through to that function. If absent, the
+             function is set to bool.
       **kwargs: Passed through to func.
 
     Returns:
       `self` or an empty plist (which evaluates to False).
     """
+    if len(args):
+      func = args[0]
+      args = args[1:]
+    else:
+      func = bool
     for x in self:
       if func(x, *args, **kwargs):
         return self
     return plist()
 
-  def none(self, func, *args, **kwargs):
-    """Returns self if func evaluates to False for all elements.
+  def none(self, *args, **kwargs):
+    """Returns self if args[0] evaluates to False for all elements.
 
-    Shortcuts if func ever evaluates to evaluates to True.
+    Shortcuts if args[0] ever evaluates to evaluates to True.
+    If args are not passed, the function evaluated is `bool`.
 
     Args:
-      func: Function to call on each element of self.
-      *args: Passed through to func.
+      *args: Optional. If present, the first entry must be a function to evaluate.
+             All other args are passed through to that function. If absent, the
+             function is set to bool.
       **kwargs: Passed through to func.
 
     Returns:
       `self` or an empty plist (which evaluates to False).
     """
+    if len(args):
+      func = args[0]
+      args = args[1:]
+    else:
+      func = bool
     for x in self:
       if func(x, *args, **kwargs):
         return plist()
