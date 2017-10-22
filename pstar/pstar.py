@@ -33,6 +33,8 @@ from qj import qj
 
 # pylint: disable=line-too-long,invalid-name,g-explicit-length-test,broad-except,g-long-lambda
 
+KeyValue = collections.namedtuple('KeyValue', 'key value')
+
 
 ################################################################################
 ################################################################################
@@ -82,7 +84,7 @@ class pdict(dict):
 
   def __getitem__(self, key):
     if isinstance(key, list):
-      return plist([self[x] for x in key])
+      return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
     else:
       return dict.__getitem__(self, key)
 
@@ -93,6 +95,14 @@ class pdict(dict):
         dict.__setitem__(self, k, v)
     else:
       dict.__setitem__(self, key, value)
+    return self
+
+  def __str__(self):
+    delim = ', ' if len(self) < 8 else ',\n '
+    s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
+    return '{' + s + '}'
+
+  __repr__ = __str__
 
   def update(self, *a, **kw):
     dict.update(self, *a, **kw)
@@ -100,6 +110,18 @@ class pdict(dict):
 
   def copy(self):
     return pdict(dict.copy(self))
+
+  def peys(self):
+    return plist(sorted(self.keys()))
+
+  def palues(self):
+    return self[self.peys()]
+
+  def pitems(self):
+    return self.palues().root()
+
+  def qj(self, *a, **kw):
+    return qj(self, _depth=2, *a, **kw)
 
 
 pict = pdict
@@ -176,16 +198,9 @@ class defaultpdict(defaultdict):
   def __setattr__(self, name, value):
     self[name] = value
 
-  def __str__(self):
-    delim = ', ' if len(self) < 8 else ',\n '
-    s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in sorted(self))
-    return '{' + s + '}'
-
-  __repr__ = __str__
-
   def __getitem__(self, key):
     if isinstance(key, list):
-      return plist([self[x] for x in key])
+      return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
     else:
       return defaultdict.__getitem__(self, key)
 
@@ -196,6 +211,14 @@ class defaultpdict(defaultdict):
         defaultdict.__setitem__(self, k, v)
     else:
       defaultdict.__setitem__(self, key, value)
+    return self
+
+  def __str__(self):
+    delim = ', ' if len(self) < 8 else ',\n '
+    s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
+    return '{' + s + '}'
+
+  __repr__ = __str__
 
   def update(self, *a, **kw):
     defaultdict.update(self, *a, **kw)
@@ -204,6 +227,17 @@ class defaultpdict(defaultdict):
   def copy(self):
     return defaultpdict(defaultdict.copy(self))
 
+  def peys(self):
+    return plist(sorted(self.keys()))
+
+  def palues(self):
+    return self[self.peys()]
+
+  def pitems(self):
+    return self.palues().root()
+
+  def qj(self, *a, **kw):
+    return qj(self, _depth=2, *a, **kw)
 
 defaultpict = defaultpdict
 
@@ -1263,6 +1297,9 @@ class plist(list):
   def pd(self, *args, **kwargs):
     """Converts self into a pandas DataFrame, forwarding passed args."""
     return pd.DataFrame.from_records(self.aslist(), *args, **kwargs)
+
+  def pdict(self, *args, **kwargs):
+    return pdict({k: v for k, v in self}).update(*args, **kwargs)
 
   def pset(self):
     """Converts the elements of self into pset objects."""

@@ -83,6 +83,44 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(p.bar, 3)
     self.assertIn('baz', p.keys())
 
+  def test_pdict_peys(self):
+    p = pdict(foo=1, bar=2, floo=0)
+
+    self.assertEqual(p.peys().aslist(),
+                     sorted(p.keys()))
+
+    # Filter p by keys and then by values
+    self.assertEqual((p[p.peys()._[0] == 'f'] > 0).aslist(),
+                     [('foo', 1)])
+
+    self.assertEqual((p[p.peys()._[0] == 'f'] > 0).pdict(),
+                     dict(foo=1))
+
+    p[p.peys()._[1:]] = p[p.peys()] * 3
+    self.assertEqual(p,
+                     dict(foo=1, bar=2, floo=0, oo=3, ar=6, loo=0))
+
+  def test_pdict_palues(self):
+    p = pdict(foo=1, bar=2, floo=0)
+
+    self.assertEqual(p.palues().aslist(),
+                     [2, 0, 1])
+
+    self.assertEqual((p.palues() == 0).aslist(),
+                     [('floo', 0)])
+
+    self.assertEqual((p.palues() > 0).pdict(),
+                     dict(foo=1, bar=2))
+
+  def test_pdict_pitems(self):
+    p = pdict(foo=1, bar=2, floo=0)
+
+    self.assertEqual(p.pitems().aslist(),
+                     [('bar', 2), ('floo', 0), ('foo', 1)])
+
+    self.assertEqual((p.pitems() > ('bar', 2)).aslist(),
+                     [('floo', 0), ('foo', 1)])
+
   def test_empty_defaultpdict(self):
     self.assertFalse(defaultpdict())
 
@@ -940,24 +978,25 @@ class PStarTest(unittest.TestCase):
     self.assertFalse('me' in globals())
     self.assertFalse('me2' in globals())
 
-    # If there's no local variable, me() will create a global variable. Not particularly recommended, but convenient in notebooks.
-    ((foos.bar == 0).me()
-      .foo.apply(
-          self.assertEqual,
-          me.foo
+    try:
+      # If there's no local variable, me() will create a global variable. Not particularly recommended, but convenient in notebooks.
+      ((foos.bar == 0).me()
+        .foo.apply(
+            self.assertEqual,
+            me.foo
+        )
       )
-    )
 
-    self.assertTrue('me' in globals())
+      self.assertTrue('me' in globals())
 
-    me.bar.me('me2').apply(self.assertEqual, me2)
-    me.bar.me('me2').root().baz.apply(self.assertEqual, me2.root().baz)
+      me.bar.me('me2').apply(self.assertEqual, me2)
+      me.bar.me('me2').root().baz.apply(self.assertEqual, me2.root().baz)
 
-    self.assertTrue('me2' in globals())
-
-    # Clean up the globals.
-    del globals()['me']
-    del globals()['me2']
+      self.assertTrue('me2' in globals())
+    finally:
+      # Clean up the globals.
+      del globals()['me']
+      del globals()['me2']
 
   def test_plist_of_pdict_groupby_groupby_pand(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
