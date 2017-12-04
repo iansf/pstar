@@ -33,6 +33,18 @@ from qj import qj
 
 # pylint: disable=line-too-long,invalid-name,g-explicit-length-test,broad-except,g-long-lambda
 
+
+def compatible_metaclass(meta, *bases):
+  class metaclass(meta):
+    __call__ = type.__call__
+    __init__ = type.__init__
+    def __new__(cls, name, this_bases, d):
+      if this_bases is None:
+        return type.__new__(cls, name, (), d)
+      return meta(name, bases, d)
+  return metaclass('_temporary_class', None, {})
+
+
 KeyValue = collections.namedtuple('KeyValue', 'key value')
 
 
@@ -677,6 +689,11 @@ def _successor(v):
   return s
 
 
+class _SyntaxSugar(type):
+  def __getitem__(cls, key):
+    return plist(key)
+
+
 ################################################################################
 ################################################################################
 ################################################################################
@@ -684,7 +701,7 @@ def _successor(v):
 ################################################################################
 ################################################################################
 ################################################################################
-class plist(list):
+class plist(compatible_metaclass(_SyntaxSugar, list)):
   """List where everything is automatically a property that is applied to its elements. Guaranteed to surprise, if not delight.
 
   See README.md for a detailed overview of ways plist can be used.
@@ -1318,7 +1335,11 @@ class plist(list):
     return pd.DataFrame.from_records(self.aslist(), *args, **kwargs)
 
   def pdict(self, *args, **kwargs):
-    return pdict({k: v for k, v in self}).update(*args, **kwargs)
+    if self is self.__root__:
+      return pdict({k: v for k, v in self}).update(*args, **kwargs)
+    if self.__root__.all(isinstance, KeyValue):
+      return pdict({k: v for k, v in zip(self.__root__.key, self)}).update(*args, **kwargs)
+    return pdict({k: v for k, v in zip(self.__root__, self)}).update(*args, **kwargs)
 
   def pset(self):
     """Converts the elements of self into pset objects."""

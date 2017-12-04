@@ -96,6 +96,11 @@ class PStarTest(unittest.TestCase):
     self.assertEqual((p[p.peys()._[0] == 'f'] > 0).pdict(),
                      dict(foo=1))
 
+    # Create a new pdict mapping keys to the first letter of the keys.
+    # Really is testing plist.pdict()...
+    self.assertEqual(p.peys()._[0].pdict(),
+                     pdict(foo='f', bar='b', floo='f'))
+
     # Supress warning message on python 2.7.
     log_fn = qj.LOG_FN
     with mock.patch('logging.info') as mock_log_fn:
@@ -118,6 +123,9 @@ class PStarTest(unittest.TestCase):
 
     self.assertEqual((p.palues() > 0).pdict(),
                      dict(foo=1, bar=2))
+
+    self.assertEqual((p.palues() + 1).pdict(),
+                     dict(foo=2, bar=3, floo=1))
 
   def test_pdict_pitems(self):
     p = pdict(foo=1, bar=2, floo=0)
@@ -143,15 +151,15 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(p.stats.bar, [2])
 
   def test_defaultpdict_assignment(self):
-    p = pdict()
+    p = defaultpdict(int)
     p.foo = 1
     self.assertEqual(p['foo'], 1)
 
-    p = pdict(foo=1, bar=2)
+    p = defaultpdict(foo=1, bar=2)
     self.assertEqual(p[['foo', 'bar']].aslist(),
                      [1, 2])
 
-    p = pdict()
+    p = defaultpdict(int)
     p[['foo', 'bar']] = 1
     self.assertEqual(p[['foo', 'bar']].aslist(),
                      [1, 1])
@@ -159,6 +167,19 @@ class PStarTest(unittest.TestCase):
     p[['foo', 'bar']] = [1, 2]
     self.assertEqual(p[['foo', 'bar']].aslist(),
                      [1, 2])
+
+    p = defaultpdict(list)
+    p[['foo', 'bar']].append_(1)
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [[1], [1]])
+
+    p[['foo', 'bar']].append_([2, 3])
+    self.assertEqual(p[['foo', 'bar']].aslist(),
+                     [[1, 2], [1, 3]])
+
+    p[['baz', 'bin']].append_([0, 1])
+    self.assertEqual(p[['baz', 'bin']].aslist(),
+                     [[0], [1]])
 
   def test_defaultpdict_update(self):
     p = pdict(foo=1, bar=2)
@@ -174,6 +195,11 @@ class PStarTest(unittest.TestCase):
 
   def test_plist_init(self):
     pl = plist([x for x in range(4)])
+    self.assertEqual(pl.aslist(),
+                     [0, 1, 2, 3])
+
+  def test_plist_convenience_init_from_array(self):
+    pl = plist[0, 1, 2, 3]
     self.assertEqual(pl.aslist(),
                      [0, 1, 2, 3])
 
@@ -224,7 +250,8 @@ class PStarTest(unittest.TestCase):
                        [[0, 0],
                         [2, 3],
                         [4, 6]])
-      del plist.__getslice__.__dict__['__warned__']
+      if '__warned__' in plist.__getslice__.__dict__:
+        del plist.__getslice__.__dict__['__warned__']
       log_fn = qj.LOG_FN
       with mock.patch('logging.info') as mock_log_fn:
         qj.LOG_FN = mock_log_fn
