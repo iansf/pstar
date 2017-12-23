@@ -375,7 +375,6 @@ class PStarTest(unittest.TestCase):
                        [{'foo': 2, 'bar': 0}]],
                       [[]]])
 
-
   def test_plist_of_filename_context_manager(self):
     path = os.path.dirname(__file__)
     filenames = plist(['__init__.py', 'pstar_test.py']).apply(lambda f: os.path.join(path, f))
