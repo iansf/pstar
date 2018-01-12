@@ -566,65 +566,65 @@ else:
 NONCALLABLE_ATTRS = ['__class__', '__dict__', '__doc__', '__module__']
 
 
-def _call_attr(obj, name, attr, *args, **kwargs):
+def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
   """Recursive function to call the desired attribute.
 
   Args:
-    obj: Object that the attribute will be called on. May not be a plist
-         if `pepth != 0`.
-    name: Name of the attribute being called.
-    attr: Bound attribute found by a __getattribute__ or getattr call.
-    *args: Arguments passed directly to the attribute.
-    **kwargs: Keyword arguments passed directly to the attribute, except
-              `pepth` and `call_pepth`, which are removed.
-              `pepth` tracks the desired depth in the plist of the
-              attribute. When `pepth == 0`, the attribute is called or
-              returned (for non-callable attributes).
-              `call_pepth` tracks the actual depth the call occurs at. It is
-              only passed on to a known list of plist methods that need it
-              in order to correctly handle stack frames between the original
-              caller and the final call.
+    _pobj: Object that the attribute will be called on. May not be a plist
+           if `pepth != 0`.
+    _pname: Name of the attribute being called.
+    _pattr: Bound attribute found by a __getattribute__ or getattr call.
+    *_pargs: Arguments passed directly to the attribute.
+    **_pkwargs: Keyword arguments passed directly to the attribute, except
+                `pepth` and `call_pepth`, which are removed.
+                `pepth` tracks the desired depth in the plist of the
+                attribute. When `pepth == 0`, the attribute is called or
+                returned (for non-callable attributes).
+                `call_pepth` tracks the actual depth the call occurs at. It is
+                only passed on to a known list of plist methods that need it
+                in order to correctly handle stack frames between the original
+                caller and the final call.
 
   Returns:
     Either the value of the attribute, if the attribute is a known
     non-callable attribute, or the value of calling the attribute with the
     provided arguments.
   """
-  pepth = kwargs.pop('pepth', 0)
-  call_pepth = kwargs.pop('call_pepth', 0)
+  pepth = _pkwargs.pop('pepth', 0)
+  call_pepth = _pkwargs.pop('call_pepth', 0)
   if pepth != 0:
-    if not isinstance(obj, plist):
-      if name in NONCALLABLE_ATTRS:
-        return attr
-      return attr(*args, **kwargs)
-    pargs = [_ensure_len(len(obj), a) for a in args]
+    if not isinstance(_pobj, plist):
+      if _pname in NONCALLABLE_ATTRS:
+        return _pattr
+      return _pattr(*_pargs, **_pkwargs)
+    pargs = [_ensure_len(len(_pobj), a) for a in _pargs]
     pkwargs = {
-        k: _ensure_len(len(obj), v) for k, v in kwargs.items()
+        k: _ensure_len(len(_pobj), v) for k, v in _pkwargs.items()
     }
     try:
-      attrs = [list.__getattribute__(x, name) if isinstance(x, list) else getattr(x, name) for x in obj]
+      attrs = [list.__getattribute__(x, _pname) if isinstance(x, list) else getattr(x, _pname) for x in _pobj]
       return plist([_call_attr(x,
-                               name,
+                               _pname,
                                attrs[i],
                                pepth=pepth - 1,
                                call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
                                *[a[i] for a in pargs],
                                **{k: v[i] for k, v in pkwargs.items()})
-                    for i, x in enumerate(obj)],
-                   root=obj.__root__)
+                    for i, x in enumerate(_pobj)],
+                   root=_pobj.__root__)
     except Exception as e:
       if pepth > 0:
         raise e
 
-  if name in ['qj', 'me']:
-    result = attr(call_pepth=call_pepth, *args, **kwargs)
-  elif name in NONCALLABLE_ATTRS:
-    return attr
+  if _pname in ['qj', 'me']:
+    result = _pattr(call_pepth=call_pepth, *_pargs, **_pkwargs)
+  elif _pname in NONCALLABLE_ATTRS:
+    return _pattr
   else:
-    result = attr(*args, **kwargs)
+    result = _pattr(*_pargs, **_pkwargs)
 
-  if result is None and isinstance(obj, plist):
-    return obj
+  if result is None and isinstance(_pobj, plist):
+    return _pobj
   return result
 
 

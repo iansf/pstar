@@ -558,6 +558,13 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos.apply(len).aslist(),
                      [3, 3, 3, 3, 3])
 
+  def test_plist_of_pdict_call_attr_with_name_kwarg(self):
+    foos = plist([pdict(foo=lambda name: name, bar=str(i)) for i in range(5)])
+    names = foos.foo(name=foos.bar)
+
+    self.assertEqual(names.aslist(),
+                     ['0', '1', '2', '3', '4'])
+
   def test_plist_of_pdict_apply_keys(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     foos.baz = 3 - ((foos.bar == 0).foo % 3)
