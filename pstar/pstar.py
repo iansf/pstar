@@ -237,7 +237,7 @@ class defaultpdict(defaultdict):
     return self
 
   def copy(self):
-    return defaultpdict(defaultdict.copy(self))
+    return defaultdict.copy(self)
 
   def peys(self):
     return plist(sorted(self.keys()))

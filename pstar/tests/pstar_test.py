@@ -143,6 +143,16 @@ class PStarTest(unittest.TestCase):
     p = defaultpdict(int)
     self.assertEqual(p.foo, 0)
 
+  def test_defaultpdict_copy(self):
+    p = defaultpdict(int)
+    p.foo = 0
+    pp = p.copy()
+    self.assertEqual(p, pp)
+    self.assertEqual(p.foo, pp.foo)
+    p.foo = 1
+    self.assertNotEqual(p.foo, pp.foo)
+    self.assertIsInstance(pp, defaultpdict)
+
   def test_defaultpdict_nested_constructor(self):
     p = defaultpdict(lambda: defaultpdict(list))
     p.foo = 1
