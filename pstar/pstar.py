@@ -38,6 +38,7 @@ def compatible_metaclass(meta, *bases):
   class metaclass(meta):
     __call__ = type.__call__
     __init__ = type.__init__
+
     def __new__(cls, name, this_bases, d):
       if this_bases is None:
         return type.__new__(cls, name, (), d)
@@ -1507,6 +1508,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     kwargs = {
         k: _ensure_len(len(self), v) for k, v in kwargs.items()
     }
+
     if isinstance(func, str):
       func = plist.__getattribute__(self, func)
       if hasattr(func, '__len__') and len(func) == len(self):
@@ -1514,14 +1516,20 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       else:
         # We should be calling a single function of a plist object.  If that's not the case, something odd is happening, and the crash is appropriate.
         return func(*[a[0] for a in args], **{k: v[0] for k, v in kwargs.items()})
+
+    funcs = plist(_ensure_len(len(self), func))
+    if plist.all(funcs, isinstance, STRING_TYPES):
+      funcs = plist.__getattribute__(self, funcs)
+      return plist([funcs[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+
     if paslist:
       if psplat:
-        return plist([plist(func(*x.aslist() + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
-      return plist([plist(func(x.aslist(), *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
+        return plist([plist(funcs[i](*x.aslist() + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
+      return plist([plist(funcs[i](x.aslist(), *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}), root=x.__root__) for i, x in enumerate(self)], root=self.__root__)
     else:
       if psplat:
-        return plist([func(*list(x) + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
-      return plist([func(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+        return plist([funcs[i](*list(x) + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+      return plist([funcs[i](x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
   def qj(self, *args, **kwargs):
     """Applies logging function qj to self for easy in-chain logging.

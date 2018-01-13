@@ -228,6 +228,13 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl.apply(float).pstr().aslist(),
                      ['1.0', '2.0', '3.0'])
 
+  def test_plist_apply_with_list_of_fn(self):
+    pl = plist[1, 2, 3]
+    fns = plist[lambda x: x + 1, lambda x: x + 2, lambda x: x + 3]
+
+    self.assertEqual(pl.apply(fns).aslist(),
+                     [2, 4, 6])
+
   def test_plist_negative_slicing(self):
     pl = plist()
     for i in range(10):
