@@ -598,9 +598,9 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
       if _pname in NONCALLABLE_ATTRS:
         return _pattr
       return _pattr(*_pargs, **_pkwargs)
-    pargs = [_ensure_len(len(_pobj), a) for a in _pargs]
+    pargs = [_ensure_len(len(_pobj), a, strict=True) for a in _pargs]
     pkwargs = {
-        k: _ensure_len(len(_pobj), v) for k, v in _pkwargs.items()
+        k: _ensure_len(len(_pobj), v, strict=True) for k, v in _pkwargs.items()
     }
     try:
       attrs = [list.__getattribute__(x, _pname) if isinstance(x, list) else getattr(x, _pname) for x in _pobj]
@@ -629,7 +629,7 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
   return result
 
 
-def _ensure_len(length, x):
+def _ensure_len(length, x, strict=False):
   """Convert x to a list of length `length` if necessary and return it.
 
   This function is the core of plist 'deepcasting', which is conceptually
@@ -643,12 +643,23 @@ def _ensure_len(length, x):
   Args:
     length: int.
     x: object to convert.
+    strict: Boolean. If True, only plists are returned without being wrapped. Lists
+            and other iterables of the correct length are still returned wrapped in
+            a new list of the correct length. Defaults to False, which means that
+            lists and other iterables of the correct length are returned unchanged.
 
   Returns:
     `x` if `x` is a non-string sequence and `len(x) == length`.
     Otherwise a list with `length` copies of `x`.
   """
-  if not isinstance(x, type) and not isinstance(x, STRING_TYPES) and not isinstance(x, tuple) and hasattr(x, '__len__') and len(x) == length:
+  if ((strict
+       and isinstance(x, plist) and len(x) == length)
+      or (not strict
+          and not isinstance(x, type)
+          and not isinstance(x, STRING_TYPES)
+          and not isinstance(x, tuple)
+          and hasattr(x, '__len__')
+          and len(x) == length)):
     return x
   return [x for _ in range(length)]
 
@@ -1114,9 +1125,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     pepth = kwargs.pop('pepth', self.__pepth__)
     self.__pepth__ = 0
     call_pepth = kwargs.pop('call_pepth', 0)
-    args = [_ensure_len(len(self), a) for a in args]
+    args = [_ensure_len(len(self), a, strict=True) for a in args]
     kwargs = {
-        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+        k: _ensure_len(len(self), v, strict=True) for k, v in kwargs.items()
     }
     if pepth != 0:
       try:
@@ -1504,9 +1515,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """
     paslist = kwargs.pop('paslist', False)
     psplat = kwargs.pop('psplat', False)
-    args = [_ensure_len(len(self), a) for a in args]
+    args = [_ensure_len(len(self), a, strict=True) for a in args]
     kwargs = {
-        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+        k: _ensure_len(len(self), v, strict=True) for k, v in kwargs.items()
     }
 
     if isinstance(func, str):
@@ -1981,7 +1992,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       and keyword arguments.
     """
     kwargs = {
-        k: _ensure_len(len(self), v) for k, v in kwargs.items()
+        k: _ensure_len(len(self), v, strict=True) for k, v in kwargs.items()
     }
     new_items = []
     for i, x in enumerate(self):
@@ -2415,7 +2426,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Returns:
       A plist with the structure of `self` filled with `value`.
     """
-    values = _ensure_len(len(self), value)
+    values = _ensure_len(len(self), value, strict=True)
     try:
       return plist([x.values_like(v) for x, v in zip(self, values)], root=self.__root__)
     except Exception:

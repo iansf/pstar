@@ -183,11 +183,11 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(p[['foo', 'bar']].aslist(),
                      [[1], [1]])
 
-    p[['foo', 'bar']].append_([2, 3])
+    p[['foo', 'bar']].append_(plist[2, 3])
     self.assertEqual(p[['foo', 'bar']].aslist(),
                      [[1, 2], [1, 3]])
 
-    p[['baz', 'bin']].append_([0, 1])
+    p[['baz', 'bin']].append_(plist[0, 1])
     self.assertEqual(p[['baz', 'bin']].aslist(),
                      [[0], [1]])
 
@@ -564,6 +564,30 @@ class PStarTest(unittest.TestCase):
 
     self.assertEqual(foos.apply(len).aslist(),
                      [3, 3, 3, 3, 3])
+
+  def test_plist_apply_list_arg(self):
+    foos = plist([pdict(foo=i, bar=i % 3) for i in range(5)])
+
+    baz = lambda foo, bar, l: [foo + bar] + l
+
+    self.assertEqual(foos.foo.apply(baz, foos.bar, [i for i in range(5)]).aslist(),
+                     [[0, 0, 1, 2, 3, 4],
+                      [2, 0, 1, 2, 3, 4],
+                      [4, 0, 1, 2, 3, 4],
+                      [3, 0, 1, 2, 3, 4],
+                      [5, 0, 1, 2, 3, 4]])
+
+  def test_plist_call_list_arg(self):
+    foos = plist([pdict(foo=i, bar=i % 3) for i in range(5)])
+
+    foos.baz = lambda foo, bar, l: [foo + bar] + l
+
+    self.assertEqual(foos.baz(foos.foo, foos.bar, [i for i in range(5)]).aslist(),
+                     [[0, 0, 1, 2, 3, 4],
+                      [2, 0, 1, 2, 3, 4],
+                      [4, 0, 1, 2, 3, 4],
+                      [3, 0, 1, 2, 3, 4],
+                      [5, 0, 1, 2, 3, 4]])
 
   def test_plist_of_pdict_call_attr_with_name_kwarg(self):
     foos = plist([pdict(foo=lambda name: name, bar=str(i)) for i in range(5)])
@@ -1060,17 +1084,17 @@ class PStarTest(unittest.TestCase):
       .baz.me(me).sortby_().root()
       .apply(
           lambda x, y: (self.assertEqual(x, y) and False) or x,  # Always returns x if there's no exception.
-          [[[{'foo': 1, 'bar': 1, 'baz': 6},
-             {'foo': 3, 'bar': 1, 'baz': 6}]],
-           [[{'foo': 2, 'bar': 0, 'baz': 1}],
-            [{'foo': 4, 'bar': 0, 'baz': 2}],
-            [{'foo': 0, 'bar': 0, 'baz': 3}]]],
+          plist[[[{'foo': 1, 'bar': 1, 'baz': 6},
+                  {'foo': 3, 'bar': 1, 'baz': 6}]],
+                [[{'foo': 2, 'bar': 0, 'baz': 1}],
+                 [{'foo': 4, 'bar': 0, 'baz': 2}],
+                 [{'foo': 0, 'bar': 0, 'baz': 3}]]],
           paslist=True
       )
       .root()[-1:].baz
       .apply(
           lambda x, y: (self.assertEqual(x, y) and False) or x,  # Always returns x if there's no exception.
-          (me.uproot() < 6).nonempty(-1).sortby_().root().aslist(),
+          (me.uproot() < 6).nonempty(-1).sortby_().root(),
           paslist=True
       )
     )
