@@ -671,6 +671,22 @@ class PStarTest(unittest.TestCase):
                        [{'baz': 2, 'foo': 4, 'bar': 0}],
                        [{'baz': 3, 'foo': 0, 'bar': 0}]]])
 
+  def test_plist_of_pdict_groupby_contains(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    self.assertTrue(6 in foos.baz)
+    self.assertFalse('a' in foos)
+    self.assertFalse(foos in foos)
+
+    by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
+
+    self.assertTrue(by_bar_baz[0] in by_bar_baz)
+    self.assertTrue(6 in by_bar_baz.baz)
+    self.assertFalse('a' in by_bar_baz)
+    self.assertFalse(by_bar_baz in by_bar_baz)
+
   def test_plist_of_pdict_slice(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)

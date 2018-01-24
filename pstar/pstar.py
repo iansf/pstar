@@ -1147,7 +1147,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   # __contains__
   ##############################################################################
   def __contains__(self, other):
-    return list.__contains__(self, other)
+    if self is other:
+      return False
+    found = False
+    try:
+      found = self.any(plist.__contains__, other)
+    except Exception as e:
+      pass
+    return (found
+            or any([x is other for x in self]))
 
   ##############################################################################
   # Comparison operators -- ALL PERFORM FILTERING!
