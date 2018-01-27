@@ -1550,6 +1550,19 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         return plist([funcs[i](*list(x) + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
       return plist([funcs[i](x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
+  def filter(self, func, *args, **kwargs):
+    """Filter self by an arbitrary function on elements of self, forwarding arguments.
+
+    Args:
+      func: callable. Return value will be cast to bool.
+      *args: Arguments to pass to func.
+      **kwargs: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`:
+
+    Returns:
+      plist resulting from filtering out elements of `self` for whom `func` evaluated to a False value.
+    """
+    return self.apply(func, *args, **kwargs).apply(bool) == True
+
   def qj(self, *args, **kwargs):
     """Applies logging function qj to self for easy in-chain logging.
 

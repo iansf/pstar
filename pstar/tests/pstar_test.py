@@ -235,6 +235,28 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl.apply(fns).aslist(),
                      [2, 4, 6])
 
+  def test_plist_filter(self):
+    pl = plist[1, 2, 3]
+    fn = lambda x: x <= 2
+
+    self.assertEqual(pl.filter(fn).aslist(),
+                     [1, 2])
+
+    pl2 = plist[1, 'b', None]
+    self.assertEqual(pl2.filter(isinstance, str).aslist(),
+                     ['b'])
+
+    plists = pdict(locals()).palues().filter(isinstance, plist).pdict()
+    self.assertEqual(plists.peys().aslist(),
+                     ['pl', 'pl2'])
+
+  def test_plist_filter_with_list_of_fn(self):
+    pl = plist[1, 2, 3]
+    fns = plist[lambda x: x < 2, lambda x: x > 2, lambda x: x == 3]
+
+    self.assertEqual(pl.filter(fns).aslist(),
+                     [1, 3])
+
   def test_plist_negative_slicing(self):
     pl = plist()
     for i in range(10):
