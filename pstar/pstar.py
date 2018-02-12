@@ -26,6 +26,7 @@ import operator
 import sys
 import types
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from qj import qj
@@ -1371,6 +1372,45 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       return plist([x.pstr() for x in self], root=self.__root__)
     except Exception:
       return plist([str(x) for x in self], root=self.__root__)
+
+  ##############################################################################
+  # Matplotlib pyplot convenience methods.
+  ##############################################################################
+  def plt(self, **kwargs):
+    def call_plt_fn(attr, args):
+      attr = getattr(plt, attr)
+      if args is None:
+        attr()
+      elif isinstance(args, list):
+        if isinstance(args[-1], dict):
+          attr(*args[:-1], **args[-1])
+        else:
+          attr(*args)
+      elif isinstance(args, dict):
+        attr(**args)
+      else:
+        attr(args)
+
+    kwargs = pdict(kwargs)
+    kwargs.pitems().apply(call_plt_fn, psplat=True)
+
+    class Plt(object):
+      """Wrapper class for calling plt functions in a plist context."""
+      def __init__(self, first_arg):
+        self.first_arg = first_arg
+
+      def __getattr__(self, name):
+        first_arg = self.first_arg
+        if isinstance(first_arg, Plt):
+          first_arg = first_arg.first_arg
+        try:
+          attr = getattr(plt, name)
+          return lambda *a, **kw: attr(first_arg, *a, **kw)
+        except Exception:
+          return getattr(first_arg, name)
+
+    return plist([Plt(x) for x in self], root=self.__root__)
+
 
   ##############################################################################
   # Shortcutting boolean test methods.
