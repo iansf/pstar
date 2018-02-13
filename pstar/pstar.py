@@ -597,6 +597,8 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
   """
   pepth = _pkwargs.pop('pepth', 0)
   call_pepth = _pkwargs.pop('call_pepth', 0)
+  psplit = _pkwargs.pop('psplit', 0)
+
   if pepth != 0:
     if not isinstance(_pobj, plist):
       if _pname in NONCALLABLE_ATTRS:
@@ -608,11 +610,36 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
     }
     try:
       attrs = [list.__getattribute__(x, _pname) if isinstance(x, list) else getattr(x, _pname) for x in _pobj]
+
+      if psplit > 0 and isinstance(_pobj, plist):
+        pool = ThreadPool(psplit if psplit > 1 else len(_pobj))
+
+        call_args = [
+            pdict(
+                inspect.getcallargs(_call_attr,
+                                    x,
+                                    _pname,
+                                    attrs[i],
+                                    pepth=pepth - 1,
+                                    call_pepth=0,  # It's not possible to get the proper stack frame when spinning off threads, so don't bother tracking it.
+                                    psplit=psplit,
+                                    *[a[i] for a in pargs],
+                                    **{k: v[i] for k, v in pkwargs.items()})
+            )
+            for i, x in enumerate(_pobj)
+        ]
+        return plist(
+            pool.map(
+                lambda ca: _call_attr(ca._pobj, ca._pname, ca._pattr, *ca._pargs, **ca._pkwargs),
+                call_args),
+            root=_pobj.__root__)
+
       return plist([_call_attr(x,
                                _pname,
                                attrs[i],
                                pepth=pepth - 1,
                                call_pepth=call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA,
+                               psplit=psplit,
                                *[a[i] for a in pargs],
                                **{k: v[i] for k, v in pkwargs.items()})
                     for i, x in enumerate(_pobj)],
