@@ -2058,6 +2058,32 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(str(df[(df.bar == 0) & (df.bar == 1)]),
                      str(((by.bar == 0) & (by.bar == 1)).pd(index='idx', columns=sorted(by.keys()[0]))))
 
+  def test_plist_of_pdict_inner_qj(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(3)])
+
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      qj.COLOR = False
+
+      self.assertEqual(foos.qj_('foos').aslist(),
+                       foos.aslist())
+
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar_test> test_plist_of_pdict_inner_qj: foos <\d+>: \{'bar': 0, 'foo': 0\}")),
+              mock.call(
+                  RegExp(r"qj: <pstar_test> test_plist_of_pdict_inner_qj: foos <\d+>: \{'bar': 1, 'foo': 1\}")),
+              mock.call(
+                  RegExp(r"qj: <pstar_test> test_plist_of_pdict_inner_qj: foos <\d+>: \{'bar': 0, 'foo': 2\}")),
+          ],
+          any_order=False)
+      self.assertEqual(mock_log_fn.call_count, 3)
+
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
+
   def test_plist_of_pdict_groupby_groupby_apply_args(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 + (foos.bar == 0).foo

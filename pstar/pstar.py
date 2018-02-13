@@ -135,7 +135,8 @@ class pdict(dict):
     return self.palues().root()
 
   def qj(self, *a, **kw):
-    return qj(self, _depth=2, *a, **kw)
+    depth = kw.pop('_depth', 0) + 2
+    return qj(self, _depth=depth, *a, **kw)
 
 
 pict = pdict
@@ -251,7 +252,8 @@ class defaultpdict(defaultdict):
     return self.palues().root()
 
   def qj(self, *a, **kw):
-    return qj(self, _depth=2, *a, **kw)
+    depth = kw.pop('_depth', 0) + 2
+    return qj(self, _depth=depth, *a, **kw)
 
 defaultpict = defaultpdict
 
@@ -618,8 +620,11 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
       if pepth > 0:
         raise e
 
-  if _pname in ['qj', 'me']:
+  if isinstance(_pobj, plist) and _pname in ['qj', 'me']:
     result = _pattr(call_pepth=call_pepth, *_pargs, **_pkwargs)
+  elif _pname == 'qj':
+    depth = _pkwargs.pop('_depth', 0) + call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA + (sys.version_info[0] < 3)
+    result = _pattr(_depth=depth, *_pargs, **_pkwargs)
   elif _pname in NONCALLABLE_ATTRS:
     return _pattr
   else:
