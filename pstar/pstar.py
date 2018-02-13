@@ -614,26 +614,15 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
       if psplit > 0 and isinstance(_pobj, plist):
         pool = ThreadPool(psplit if psplit > 1 else len(_pobj))
 
-        call_args = [
-            pdict(
-                inspect.getcallargs(_call_attr,
-                                    x,
-                                    _pname,
-                                    attrs[i],
-                                    pepth=pepth - 1,
-                                    call_pepth=0,  # It's not possible to get the proper stack frame when spinning off threads, so don't bother tracking it.
-                                    psplit=psplit,
-                                    *[a[i] for a in pargs],
-                                    **{k: v[i] for k, v in pkwargs.items()})
-            )
-            for i, x in enumerate(_pobj)
-        ]
-        return plist(
-            pool.map(
-                lambda ca: _call_attr(ca._pobj, ca._pname, ca._pattr, *ca._pargs, **ca._pkwargs),
-                call_args),
-            root=_pobj.__root__)
-
+        call_args = [pdict(x=x, i=i) for i, x in enumerate(_pobj)]
+        map_func = lambda ca: _call_attr(ca.x,
+                                         _pname, attrs[ca.i],
+                                         pepth=pepth - 1,
+                                         call_pepth=0,  # It's not possible to get the proper stack frame when spinning off threads, so don't bother tracking it.
+                                         psplit=psplit,
+                                         *[a[ca.i] for a in pargs],
+                                         **{k: v[ca.i] for k, v in pkwargs.items()})
+        return plist(pool.map(map_func, call_args), root=_pobj.__root__)
       return plist([_call_attr(x,
                                _pname,
                                attrs[i],
@@ -1182,13 +1171,14 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     if psplit > 0:
       pool = ThreadPool(psplit if psplit > 1 else len(self))
 
-      call_args = [
-          [x, inspect.getcallargs(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()})]
-          for i, x in enumerate(self)
-      ]
-      return plist(pool.map(lambda args: args[0](**args[1]), call_args), root=self.__root__)
-
-    return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+      call_args = [pdict(x=x, i=i) for i, x in enumerate(self)]
+      map_func = lambda ca: ca.x(*[a[ca.i] for a in args],
+                                 **{k: v[ca.i] for k, v in kwargs.items()})
+      return plist(pool.map(map_func, call_args), root=self.__root__)
+    return plist([x(*[a[i] for a in args],
+                    **{k: v[i] for k, v in kwargs.items()})
+                  for i, x in enumerate(self)],
+                 root=self.__root__)
 
   ##############################################################################
   # __contains__

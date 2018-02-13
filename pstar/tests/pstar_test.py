@@ -2086,14 +2086,14 @@ class PStarTest(unittest.TestCase):
   def test_plist_call_with_psplit(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(3)])
 
-    foos.qj_lambda = lambda x, s: x.qj(s)
+    foos.qj_lambda = lambda x, *a, **kw: x.qj(*a, **kw)
 
     log_fn = qj.LOG_FN
     with mock.patch('logging.info') as mock_log_fn:
       qj.LOG_FN = mock_log_fn
       qj.COLOR = False
 
-      self.assertEqual(foos.qj_lambda(foos, 'foos', psplit=1).aslist(),
+      self.assertEqual(foos.qj_lambda(foos, 'foos', psplit=1, n=0, p=0, *(None, 0), **dict(t=0, z=0)).aslist(),
                        foos.aslist())
 
       mock_log_fn.assert_has_calls(
@@ -2119,7 +2119,7 @@ class PStarTest(unittest.TestCase):
       qj.LOG_FN = mock_log_fn
       qj.COLOR = False
 
-      self.assertEqual(foos.qj_('foos', None, 0, n=0, psplit=1).aslist(),
+      self.assertEqual(foos.qj_('foos', psplit=1, n=0, p=0, *(None, 0), **dict(t=0, z=0)).aslist(),
                        foos.aslist())
 
       mock_log_fn.assert_has_calls(
