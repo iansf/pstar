@@ -20,7 +20,9 @@ from __future__ import print_function
 
 import os
 import re
+import shutil
 import sys
+import tempfile
 
 import unittest
 import mock
@@ -2669,6 +2671,24 @@ class PStarTest(unittest.TestCase):
 
     self.assertEqual(foos.aslist(),
                      gen_foos.aslist())
+
+  @unittest.skip('slow')
+  def test_fast_parallel_file_processing(self):
+    tdir = tempfile.mkdtemp()
+    try:
+      qj(tic=1)
+      files = 'test_' + plist([str(i) for i in range(5000)]) + '.txt'
+      files = files.values_like(tdir).apply(os.path.join, files)
+      with files.apply(open, 'w', psplit=1) as wf:
+        wf.write(files, psplit=1)
+      with files.apply(open, 'r', psplit=1) as rf:
+        contents = rf.read(psplit=1)
+      qj(toc=-1)
+
+      self.assertEqual(files.aslist(),
+                       contents.aslist())
+    finally:
+      shutil.rmtree(tdir, ignore_errors=True)
 
   @unittest.skip('slow')
   def test_plist_of_pdict_timing(self):

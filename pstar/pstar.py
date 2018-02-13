@@ -22,7 +22,7 @@ Import with:
 import collections
 from collections import defaultdict
 import inspect
-from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing.dummy import Pool
 import operator
 import sys
 import types
@@ -612,7 +612,7 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
       attrs = [list.__getattribute__(x, _pname) if isinstance(x, list) else getattr(x, _pname) for x in _pobj]
 
       if psplit > 0 and isinstance(_pobj, plist):
-        pool = ThreadPool(psplit if psplit > 1 else len(_pobj))
+        pool = _get_thread_pool(psplit, len(_pobj))
 
         call_args = [pdict(x=x, i=i) for i, x in enumerate(_pobj)]
         map_func = lambda ca: _call_attr(ca.x,
@@ -622,7 +622,7 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
                                          psplit=psplit,
                                          *[a[ca.i] for a in pargs],
                                          **{k: v[ca.i] for k, v in pkwargs.items()})
-        return plist(pool.map(map_func, call_args), root=_pobj.__root__)
+        return plist(pool.map(map_func, call_args, chunksize=psplit if psplit > 1 else len(_pobj)), root=_pobj.__root__)
       return plist([_call_attr(x,
                                _pname,
                                attrs[i],
@@ -729,6 +729,11 @@ def _successor(v):
 class _SyntaxSugar(type):
   def __getitem__(cls, key):
     return plist(key)
+
+
+MAX_THREADS = 25
+def _get_thread_pool(psplit, obj_len):
+  return Pool(psplit if psplit > 1 else min(MAX_THREADS, obj_len))
 
 
 ################################################################################
@@ -1169,12 +1174,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
           raise e
 
     if psplit > 0:
-      pool = ThreadPool(psplit if psplit > 1 else len(self))
+      pool = _get_thread_pool(psplit, len(self))
 
       call_args = [pdict(x=x, i=i) for i, x in enumerate(self)]
       map_func = lambda ca: ca.x(*[a[ca.i] for a in args],
                                  **{k: v[ca.i] for k, v in kwargs.items()})
-      return plist(pool.map(map_func, call_args), root=self.__root__)
+      return plist(pool.map(map_func, call_args, chunksize=psplit if psplit > 1 else len(self)), root=self.__root__)
     return plist([x(*[a[i] for a in args],
                     **{k: v[i] for k, v in kwargs.items()})
                   for i, x in enumerate(self)],
@@ -1620,7 +1625,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       return plist([funcs[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
     if psplit > 0:
-      pool = ThreadPool(psplit if psplit > 1 else len(self))
+      pool = _get_thread_pool(psplit, len(self))
       call_args = [pdict(x=x, i=i) for i, x in enumerate(self)]
       if paslist:
         if psplat:
@@ -1632,7 +1637,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
           map_func = lambda ca: funcs[ca.i](*list(ca.x) + [a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
         else:
           map_func = lambda ca: funcs[ca.i](ca.x, *[a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
-      return plist(pool.map(map_func, call_args), root=self.__root__)
+      return plist(pool.map(map_func, call_args, chunksize=psplit if psplit > 1 else len(self)), root=self.__root__)
 
     if paslist:
       if psplat:
