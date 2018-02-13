@@ -1081,14 +1081,31 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz.values_like(by_bar_baz.foo + by_bar_baz.bar).aslist(),
                      [[[2, 4]], [[2], [4], [0]]])
 
-  def test_plist_of_pdict_groupby_groupby_apply_paslist(self):
+  def test_plist_of_pdict_groupby_apply_psplat(self, psplit=False):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+    (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+    (foos.bar == 1).baz = 6
+
+    # by_foo is just foo with an extra plist wrapping each element.
+    by_foo = foos.foo.groupby()
+    by_foo_psplat = by_foo.apply(lambda x, *a, **kw: qj(x, *a, **kw), psplat=True, psplit=psplit, n=0, b=0, *(None, 0), **dict(t=0, z=0))
+
+    # psplatting by_foo gets rid of the inner plist wrappers, so the result should be the same as foos.
+    self.assertEqual(foos.aslist(),
+                     by_foo_psplat.aslist())
+
+  def test_plist_of_pdict_groupby_apply_psplat_psplit(self):
+    self.test_plist_of_pdict_groupby_apply_psplat(psplit=True)
+
+  def test_plist_of_pdict_groupby_groupby_apply_paslist(self, psplit=False):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
 
-    by_bar_baz_apply_paslist = by_bar_baz.apply(lambda x: x, paslist=True)
+    by_bar_baz_apply_paslist = by_bar_baz.apply(lambda x, *a, **kw: qj(x, *a, **kw), paslist=True, psplit=psplit, n=0, b=0, *(None, 0), **dict(t=0, z=0))
+    by_bar_baz_apply_paslist_psplat = by_bar_baz.apply(lambda *x, **kw: qj(x, **kw), paslist=True, psplat=True, psplit=psplit, n=0, b=0, **dict(t=0, z=0))
 
     # This test shows that doing apply(..., paslist=True) may give back a plist with lower depth than the input plist.
     # This is because aslist() has to be fully recursive, but there isn't a true inverse operation that we can know a priori,
@@ -1100,6 +1117,14 @@ class PStarTest(unittest.TestCase):
                      [[[2]], [[1], [1], [1]]])
     self.assertEqual(by_bar_baz_apply_paslist.pshape().aslist(),
                      [[1], [3]])
+
+    self.assertEqual(by_bar_baz.aslist(),
+                     by_bar_baz_apply_paslist_psplat.aslist())
+    self.assertEqual(by_bar_baz_apply_paslist_psplat.pshape().aslist(),
+                     [[1], [3]])
+
+  def test_plist_of_pdict_groupby_groupby_apply_paslist_psplit(self):
+    self.test_plist_of_pdict_groupby_groupby_apply_paslist(psplit=True)
 
   def test_plist_of_pdict_groupby_groupby_me_local(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
@@ -2094,7 +2119,7 @@ class PStarTest(unittest.TestCase):
       qj.LOG_FN = mock_log_fn
       qj.COLOR = False
 
-      self.assertEqual(foos.qj_('foos', psplit=1).aslist(),
+      self.assertEqual(foos.qj_('foos', None, 0, n=0, psplit=1).aslist(),
                        foos.aslist())
 
       mock_log_fn.assert_has_calls(
@@ -2120,17 +2145,17 @@ class PStarTest(unittest.TestCase):
       qj.LOG_FN = mock_log_fn
       qj.COLOR = False
 
-      self.assertEqual(foos.apply(qj, 'foos', psplit=1).aslist(),
+      self.assertEqual(foos.apply(qj, 'foos', None, 0, n=0, psplit=1).aslist(),
                        foos.aslist())
 
       mock_log_fn.assert_has_calls(
           [
               mock.call(
-                  RegExp(r"qj: <pstar> apply: foos <\d+>: \{'bar': 0, 'foo': 0\}")),
+                  RegExp(r"qj: <pstar> mapstar.lambda: foos <\d+>: \{'bar': 0, 'foo': 0\}")),
               mock.call(
-                  RegExp(r"qj: <pstar> apply: foos <\d+>: \{'bar': 1, 'foo': 1\}")),
+                  RegExp(r"qj: <pstar> mapstar.lambda: foos <\d+>: \{'bar': 1, 'foo': 1\}")),
               mock.call(
-                  RegExp(r"qj: <pstar> apply: foos <\d+>: \{'bar': 0, 'foo': 2\}")),
+                  RegExp(r"qj: <pstar> mapstar.lambda: foos <\d+>: \{'bar': 0, 'foo': 2\}")),
           ],
           any_order=True)
       self.assertEqual(mock_log_fn.call_count, 3)

@@ -650,6 +650,8 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
 
   if isinstance(_pobj, plist) and _pname in ['qj', 'me']:
     result = _pattr(call_pepth=call_pepth, *_pargs, **_pkwargs)
+  elif psplit > 0 and isinstance(_pobj, plist) and _pname == 'apply':
+    result = _pattr(psplit=psplit, *_pargs, **_pkwargs)
   elif _pname == 'qj':
     depth = _pkwargs.pop('_depth', 0) + call_pepth + PLIST_CALL_ATTR_CALL_PEPTH_DELTA + (sys.version_info[0] < 3)
     result = _pattr(_depth=depth, *_pargs, **_pkwargs)
@@ -1629,12 +1631,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     if psplit > 0:
       pool = ThreadPool(psplit if psplit > 1 else len(self))
-
-      call_args = [
-          [funcs[i], inspect.getcallargs(funcs[i], x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()})]
-          for i, x in enumerate(self)
-      ]
-      return plist(pool.map(lambda ca: ca[0](**args[1]), call_args), root=self.__root__)
+      call_args = [pdict(x=x, i=i) for i, x in enumerate(self)]
+      if paslist:
+        if psplat:
+          map_func = lambda ca: plist(funcs[ca.i](*ca.x.aslist() + [a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()}), root=ca.x.__root__)
+        else:
+          map_func = lambda ca: plist(funcs[ca.i](ca.x.aslist(), *[a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()}), root=ca.x.__root__)
+      else:
+        if psplat:
+          map_func = lambda ca: funcs[ca.i](*list(ca.x) + [a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
+        else:
+          map_func = lambda ca: funcs[ca.i](ca.x, *[a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
+      return plist(pool.map(map_func, call_args), root=self.__root__)
 
     if paslist:
       if psplat:
