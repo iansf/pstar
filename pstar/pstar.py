@@ -1607,6 +1607,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """
     paslist = kwargs.pop('paslist', False)
     psplat = kwargs.pop('psplat', False)
+    psplit = kwargs.pop('psplit', 0)
+
     args = [_ensure_len(len(self), a, strict=True) for a in args]
     kwargs = {
         k: _ensure_len(len(self), v, strict=True) for k, v in kwargs.items()
@@ -1624,6 +1626,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     if plist.all(funcs, isinstance, STRING_TYPES):
       funcs = plist.__getattribute__(self, funcs)
       return plist([funcs[i](*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
+
+    if psplit > 0:
+      pool = ThreadPool(psplit if psplit > 1 else len(self))
+
+      call_args = [
+          [funcs[i], inspect.getcallargs(funcs[i], x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()})]
+          for i, x in enumerate(self)
+      ]
+      return plist(pool.map(lambda ca: ca[0](**args[1]), call_args), root=self.__root__)
 
     if paslist:
       if psplat:
