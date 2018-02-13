@@ -22,6 +22,7 @@ Import with:
 import collections
 from collections import defaultdict
 import inspect
+from multiprocessing.dummy import Pool as ThreadPool
 import operator
 import sys
 import types
@@ -1131,6 +1132,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     pepth = kwargs.pop('pepth', self.__pepth__)
     self.__pepth__ = 0
     call_pepth = kwargs.pop('call_pepth', 0)
+    psplit = kwargs.pop('psplit', 0)
+
     args = [_ensure_len(len(self), a, strict=True) for a in args]
     kwargs = {
         k: _ensure_len(len(self), v, strict=True) for k, v in kwargs.items()
@@ -1146,6 +1149,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       except Exception as e:
         if pepth > 0:
           raise e
+
+    if psplit > 0:
+      pool = ThreadPool(psplit if psplit > 1 else len(self))
+
+      call_args = [
+          [x, inspect.getcallargs(x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()})]
+          for i, x in enumerate(self)
+      ]
+      return plist(pool.map(lambda args: args[0](**args[1]), call_args), root=self.__root__)
 
     return plist([x(*[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 

@@ -2058,6 +2058,34 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(str(df[(df.bar == 0) & (df.bar == 1)]),
                      str(((by.bar == 0) & (by.bar == 1)).pd(index='idx', columns=sorted(by.keys()[0]))))
 
+  def test_plist_call_with_psplit(self):
+    foos = plist([pdict(foo=i, bar=i % 2) for i in range(3)])
+
+    foos.qj_lambda = lambda x, s: x.qj(s)
+
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      qj.COLOR = False
+
+      self.assertEqual(foos.qj_lambda(foos, 'foos', psplit=1).aslist(),
+                       foos.aslist())
+
+      mock_log_fn.assert_has_calls(
+          [
+              mock.call(
+                  RegExp(r"qj: <pstar_test> <lambda>.lambda: foos <\d+>: \{'bar': 0, 'foo': 0, 'qj_lambda':.*\}")),
+              mock.call(
+                  RegExp(r"qj: <pstar_test> <lambda>.lambda: foos <\d+>: \{'bar': 1, 'foo': 1, 'qj_lambda':.*\}")),
+              mock.call(
+                  RegExp(r"qj: <pstar_test> <lambda>.lambda: foos <\d+>: \{'bar': 0, 'foo': 2, 'qj_lambda':.*\}")),
+          ],
+          any_order=True)
+      self.assertEqual(mock_log_fn.call_count, 3)
+
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
+
   def test_plist_of_pdict_inner_qj(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(3)])
 
