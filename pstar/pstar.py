@@ -1739,6 +1739,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         groups[x].append(self.__root__[i])
       return plist(groups.values())
 
+  def enum(self):
+    """Wrap the current plist values in tuples where the first item is the index."""
+    return plist(enumerate(self), root=self.__root__)
+
   def join(self):
     """Adds and returns an outer plist around self.
 

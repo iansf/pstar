@@ -2672,6 +2672,16 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos.aslist(),
                      gen_foos.aslist())
 
+  def test_plist_enum(self):
+    foos = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
+
+    self.assertEqual(foos.enum().aslist(),
+                     [(0, {'bar': 0, 'bin': '0', 'foo': 0}),
+                      (1, {'bar': 1, 'bin': '1', 'foo': 1}),
+                      (2, {'bar': 0, 'bin': '4', 'foo': 2}),
+                      (3, {'bar': 1, 'bin': '9', 'foo': 3}),
+                      (4, {'bar': 0, 'bin': '16', 'foo': 4})])
+
   def test_plist_zip(self):
     foos0 = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
     (foos0.bar == 0).baz = 3 - ((foos0.bar == 0).foo % 3)
