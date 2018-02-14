@@ -2672,6 +2672,39 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos.aslist(),
                      gen_foos.aslist())
 
+  def test_plist_zip(self):
+    foos0 = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5)])
+    (foos0.bar == 0).baz = 3 - ((foos0.bar == 0).foo % 3)
+    (foos0.bar == 1).baz = 6
+
+    foos1 = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(5, 10)])
+    (foos1.bar == 0).baz = 3 - ((foos1.bar == 0).foo % 3)
+    (foos1.bar == 1).baz = 6
+
+    foos2 = plist([pdict(foo=i, bar=i % 2, bin=str(i ** 2)) for i in range(10, 15)])
+    (foos2.bar == 0).baz = 3 - ((foos2.bar == 0).foo % 3)
+    (foos2.bar == 1).baz = 6
+
+    self.assertEqual(foos0.foo.zip(foos1.foo).aslist(),
+                     [(0, 5), (1, 6), (2, 7), (3, 8), (4, 9)])
+
+    self.assertEqual(foos0.foo.zip(foos1.foo, foos2.foo).aslist(),
+                     [(0, 5, 10), (1, 6, 11), (2, 7, 12), (3, 8, 13), (4, 9, 14)])
+
+    by_bar_baz0 = foos0.bar.sortby().groupby().baz.sortby(pepth=1).groupby()
+
+    by_bar_baz1 = foos0.bar.sortby().groupby().baz.sortby(pepth=1).groupby()
+    by_bar_baz1.bar += 1
+
+    by_bar_baz2 = foos0.bar.sortby().groupby().baz.sortby(pepth=1).groupby()
+    by_bar_baz2.baz += 1
+
+    self.assertEqual(by_bar_baz0.foo.zip(by_bar_baz1.bar, by_bar_baz2.baz).aslist(),
+                     [[[(2, 1, 2)],
+                       [(4, 1, 3)],
+                       [(0, 1, 4)]],
+                      [[(1, 2, 7), (3, 2, 7)]]])
+
   @unittest.skip('slow')
   def test_fast_parallel_file_processing(self):
     tdir = tempfile.mkdtemp()

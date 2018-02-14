@@ -1872,6 +1872,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     s.p()
     return plist(new_items)
 
+  def zip(self, *others):
+    """Zips self with others, recursively."""
+    plothers = plist(others)
+    if plothers.any(lambda x: len(x) != len(self)):
+      raise ValueError('plist.zip arguments must all have the same length as self (%d)' % len(self))
+    try:
+      return plist([x.zip(*plothers.__getitem___(i)) for i, x in enumerate(self)], root=self.__root__)
+    except Exception:
+      pass
+    zipped = [x for x in zip(self, *others)]  # 3.6 compatibility
+    return plist(zipped, root=self.__root__[0:len(zipped):1])
+
   ##############################################################################
   # Additional filtering methods.
   ##############################################################################
