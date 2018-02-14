@@ -2722,9 +2722,9 @@ class PStarTest(unittest.TestCase):
       qj(tic=1)
       files = 'test_' + plist([str(i) for i in range(5000)]) + '.txt'
       files = files.values_like(tdir).apply(os.path.join, files)
-      with files.apply(open, 'w', psplit=1) as wf:
+      with files.apply(open, 'w', psplit=25) as wf:
         wf.write(files, psplit=1)
-      with files.apply(open, 'r', psplit=1) as rf:
+      with files.apply(open, 'r', psplit=25) as rf:
         contents = rf.read(psplit=1)
       qj(toc=-1)
 

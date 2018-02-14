@@ -622,7 +622,7 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
                                          psplit=psplit,
                                          *[a[ca.i] for a in pargs],
                                          **{k: v[ca.i] for k, v in pkwargs.items()})
-        return plist(pool.map(map_func, call_args, chunksize=psplit if psplit > 1 else len(_pobj)), root=_pobj.__root__)
+        return plist(pool.map(map_func, call_args, chunksize=_get_thread_chunksize(psplit, len(_pobj))), root=_pobj.__root__)
       return plist([_call_attr(x,
                                _pname,
                                attrs[i],
@@ -734,6 +734,10 @@ class _SyntaxSugar(type):
 MAX_THREADS = 25
 def _get_thread_pool(psplit, obj_len):
   return Pool(psplit if psplit > 1 else min(MAX_THREADS, obj_len))
+
+
+def _get_thread_chunksize(psplit, obj_len):
+  return max(1, obj_len // psplit) if psplit > 1 else 1
 
 
 ################################################################################
@@ -1179,7 +1183,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       call_args = [pdict(x=x, i=i) for i, x in enumerate(self)]
       map_func = lambda ca: ca.x(*[a[ca.i] for a in args],
                                  **{k: v[ca.i] for k, v in kwargs.items()})
-      return plist(pool.map(map_func, call_args, chunksize=psplit if psplit > 1 else len(self)), root=self.__root__)
+      return plist(pool.map(map_func, call_args, chunksize=_get_thread_chunksize(psplit, len(self))), root=self.__root__)
     return plist([x(*[a[i] for a in args],
                     **{k: v[i] for k, v in kwargs.items()})
                   for i, x in enumerate(self)],
@@ -1637,7 +1641,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
           map_func = lambda ca: funcs[ca.i](*list(ca.x) + [a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
         else:
           map_func = lambda ca: funcs[ca.i](ca.x, *[a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
-      return plist(pool.map(map_func, call_args, chunksize=psplit if psplit > 1 else len(self)), root=self.__root__)
+      return plist(pool.map(map_func, call_args, chunksize=_get_thread_chunksize(psplit, len(self))), root=self.__root__)
 
     if paslist:
       if psplat:
