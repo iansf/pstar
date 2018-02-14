@@ -140,9 +140,6 @@ class pdict(dict):
     return qj(self, _depth=depth, *a, **kw)
 
 
-pict = pdict
-
-
 ################################################################################
 ################################################################################
 ################################################################################
@@ -256,8 +253,6 @@ class defaultpdict(defaultdict):
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
 
-defaultpict = defaultpdict
-
 
 ################################################################################
 ################################################################################
@@ -269,9 +264,6 @@ defaultpict = defaultpdict
 class pset(set):
   """Placeholder set subclass. Not yet implemented."""
   pass
-
-
-pet = pset
 
 
 ################################################################################
@@ -2762,9 +2754,6 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       # Delete the stack frame to ensure there are no memory leaks, as suggested
       # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
       del f
-
-
-pist = plist
 
 
 # pylint: enable=line-too-long,invalid-name,g-explicit-length-test

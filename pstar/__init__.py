@@ -18,6 +18,6 @@ Import like this:
   from pstar import *
 """
 
-from .pstar import pdict, defaultpdict, pset, plist, pict, defaultpict, pet, pist
+from .pstar import pdict, defaultpdict, pset, plist
 
-__all__ = ['pdict', 'defaultpdict', 'pset', 'plist', 'pict', 'defaultpict', 'pet', 'pist']
+__all__ = ['pdict', 'defaultpdict', 'pset', 'plist']
