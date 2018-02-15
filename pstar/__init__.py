@@ -15,7 +15,9 @@
 """Get pstar.
 
 Import like this:
-  from pstar import *
+```python
+from pstar import *
+```
 """
 
 from .pstar import pdict, defaultpdict, pset, plist
