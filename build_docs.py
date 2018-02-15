@@ -13,10 +13,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""pstar: replacements for common container classes.
+"""Build README.md.
 
-Import with:
-  from pstar import *
+Run with:
+```bash
+python build_docs.py
+```
 """
 import os
 import re
@@ -29,7 +31,35 @@ from pstar import *
 
 SECTIONS = plist['advanced_usage',]
 SKIP_SYMBOLS = plist['pstar.pstar',]
-PUBLICIZE_SYMBOLS = plist['__init__', '_']
+PUBLICIZE_SYMBOLS = plist[
+    '__init__',
+    '_',
+    '_build_comparator',
+    '_build_logical_op',
+    '_build_binary_op',
+    '_build_unary_op',
+    '_call_attr',
+    '_ensure_len',
+    '_merge_indices',
+    '__getattribute__',
+    '__getattr__',
+    '__getitem__',
+    '__getslice__',
+    '__setattr__',
+    '__setitem__',
+    '__setslice__',
+    '__delattr__',
+    '__delitem__',
+    '__delslice__',
+    '__call__',
+    '__contains__',
+    '__cmp__',
+    '__and__',
+    '__add__',
+    '__neg__',
+    '__enter__',
+    '__exit__',
+]
 
 
 def find_public_symbols(obj):
@@ -52,7 +82,7 @@ def get_docs(obj, depth, base_name, full_base_name):
     if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or obj.__name__ in SKIP_SYMBOLS:
       return ''
     full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
-    docs = '%s %s\n\n%s' % ('#' * depth, full_name, process_doc(obj.__doc__))
+    docs = '%s `%s`\n\n%s' % ('#' * depth, full_name, process_doc(obj.__doc__))
     subdocs = (find_public_symbols(obj) != obj).apply(get_docs, depth + 1, base_name, full_name).uproot() != ''
     return docs + '\n\n'.join(subdocs)
   except AttributeError as e:

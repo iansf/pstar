@@ -13,10 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""pstar: replacements for common container classes.
+"""`pstar` class implementations.
 
-Import with:
-  from pstar import *
+Import like this:
+```python
+from pstar import *
+```
+or like this:
+```python
+from pstar import defaultpdict, pdict, plist, pset
+```
 """
 
 import collections
@@ -62,21 +68,21 @@ class pdict(dict):
   """dict subclass where everything is automatically a property.
 
   Use with dot notation or subscript notation:
-  ```
+  ```python
     p = pdict()
     p.foo = 1
     assert p['foo'] == p.foo == 1
   ```
 
   List subscripts also work and return a plist of the corresponding keys:
-  ```
+  ```python
     p = pdict(foo=1, bar=2)
     assert p[['foo', 'bar']].aslist() == [1, 2]
   ```
 
   Setting with a list subscript also works, using a single element or a matching
   list for the values:
-  ```
+  ```python
     p = pdict()
     p[['foo', 'bar']] = 1
     assert p[['foo', 'bar']].aslist() == [1, 1]
@@ -85,7 +91,7 @@ class pdict(dict):
   ```
 
   pdict.update() returns self, rather than None, to support chaining:
-  ```
+  ```python
     p = pdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
     assert p.bar == 3
@@ -94,16 +100,19 @@ class pdict(dict):
   """
 
   def __init__(self, *a, **kw):
+    """Initialize pdict."""
     dict.__init__(self, *a, **kw)
     self.__dict__ = self
 
   def __getitem__(self, key):
+    """Subscript operation. Keys can be scalars or lists."""
     if isinstance(key, list):
       return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
     else:
       return dict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
+    """Subscript assignment operation. Keys and values can be scalars or lists."""
     if isinstance(key, list):
       value = _ensure_len(len(key), value)
       for k, v in zip(key, value):
@@ -120,26 +129,33 @@ class pdict(dict):
   __repr__ = __str__
 
   def update(self, *a, **kw):
+    """Update self. Returns self."""
     dict.update(self, *a, **kw)
     return self
 
   def copy(self):
+    """Copy self to new pdict."""
     return pdict(dict.copy(self))
 
   def peys(self):
+    """Get self.keys() as a sorted plist."""
     return plist(sorted(self.keys()))
 
   def palues(self):
+    """Equivalent to `self.values()`, but results are sorted as in `self.peys()`."""
     return self[self.peys()]
 
   def pitems(self):
+    """Equivalent to `self.items()`, but results are sorted as in `self.peys()`."""
     return self.palues().root()
 
   def qj(self, *a, **kw):
+    """Call `qj` logging function with `self` as the item to be logged. All other arguments are passed through to `qj`."""
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
 
   def rekey(self, map_or_fn, inplace=False):
+    """Change the keys of `self` or a copy while keeping the same values."""
     if not inplace:
       return self.copy().rekey(map_or_fn, inplace=True)
     if isinstance(map_or_fn, dict):
@@ -171,21 +187,21 @@ class defaultpdict(defaultdict):
   """defaultdict subclass where everything is automatically a property.
 
   Use with dot notation or subscript notation:
-  ```
+  ```python
     p = defaultpdict()
     p.foo = 1
     assert p['foo'] == 1
   ```
 
   List subscripts also work and return a plist of the corresponding keys:
-  ```
+  ```python
     p = defaultpdict(foo=1, bar=2)
     assert p[['foo', 'bar']].aslist() == [1, 2]
   ```
 
   Setting with a list subscript also works, using a single element or a matching
   list for the values:
-  ```
+  ```python
     p = defaultpdict()
     p[['foo', 'bar']] = 1
     assert p[['foo', 'bar']].aslist() == [1, 1]
@@ -194,7 +210,7 @@ class defaultpdict(defaultdict):
   ```
 
   defaultpdict.update() returns self, rather than None, to support chaining:
-  ```
+  ```python
     p = defaultpdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
     assert p.bar == 3
@@ -203,13 +219,13 @@ class defaultpdict(defaultdict):
 
   Set the desired defualt constructor as normal to avoid having to construct
   individual values:
-  ```
+  ```python
     p = defaultpdict(int)
     assert p.foo == 0
   ```
 
   Nested defaultpdicts make nice lightweight objects:
-  ```
+  ```python
     p = defaultpdict(lambda: defaultpdict(list))
     p.foo = 1
     p.stats.bar.append(2)
@@ -219,9 +235,11 @@ class defaultpdict(defaultdict):
   """
 
   def __init__(self, *a, **kw):
+    """Initialize defaultpdict."""
     defaultdict.__init__(self, *a, **kw)
 
   def __getattr__(self, name):
+    """Override getattr. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`."""
     if name.startswith('_'):
       return defaultdict.__getattribute__(self, name)
     if name == '*':
@@ -229,15 +247,18 @@ class defaultpdict(defaultdict):
     return self[name]
 
   def __setattr__(self, name, value):
+    """Attribute assignment operation. Forwards to subscript assignment."""
     self[name] = value
 
   def __getitem__(self, key):
+    """Subscript operation. Keys can be scalars or lists."""
     if isinstance(key, list):
       return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
     else:
       return defaultdict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
+    """Subscript assignment operation. Keys and values can be scalars or lists."""
     if isinstance(key, list):
       value = _ensure_len(len(key), value)
       for k, v in zip(key, value):
@@ -254,26 +275,33 @@ class defaultpdict(defaultdict):
   __repr__ = __str__
 
   def update(self, *a, **kw):
+    """Update self. Returns self."""
     defaultdict.update(self, *a, **kw)
     return self
 
   def copy(self):
+    """Copy self to new defaultpdict."""
     return defaultdict.copy(self)
 
   def peys(self):
+    """Get self.keys() as a sorted plist."""
     return plist(sorted(self.keys()))
 
   def palues(self):
+    """Equivalent to `self.values()`, but results are sorted as in `self.peys()`."""
     return self[self.peys()]
 
   def pitems(self):
+    """Equivalent to `self.items()`, but results are sorted as in `self.peys()`."""
     return self.palues().root()
 
   def qj(self, *a, **kw):
+    """Call `qj` logging function with `self` as the item to be logged. All other arguments are passed through to `qj`."""
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
 
   def rekey(self, map_or_fn, inplace=False):
+    """Change the keys of `self` or a copy while keeping the same values."""
     if not inplace:
       return self.copy().rekey(map_or_fn, inplace=True)
     if isinstance(map_or_fn, dict):
@@ -332,7 +360,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     """plist-compatible comparison operator. Note: comparisons filter plists.
 
     plist comparators can filter on leaf values:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -346,7 +374,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
 
     They can also filter on other plists so long as the structures are
     compatible:
-    ```
+    ```python
     foo == zero_bars
       => [{'foo': 0, 'bar': 0},
           {'foo': 2, 'bar': 0}]
@@ -355,14 +383,14 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     ```
 
     The same is true when comparing against lists with compatible structure:
-    ```
+    ```python
     foo.foo == [0, 1, 3]
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1}]
     ```
 
     This all generalizes naturally to plists that have been grouped:
-    ```
+    ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
       => [[[{'foo': 0, 'bar': 0}],
            [{'foo': 2, 'bar': 0}]],
@@ -383,7 +411,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
 
     Lists with incompatible structure are compared to `self` one-at-a-time,
     resulting in set-like filtering where the two sets are merged with an 'or':
-    ```
+    ```python
     foo.foo == [0, 1, 3, 4]
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1}]
@@ -395,7 +423,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
 
     When comparing against an empty list, `==` always returns an empty list, but
     all other comparisons return `self`:
-    ```
+    ```python
     foo.foo == []
       => []
     foo.foo < []
@@ -1225,6 +1253,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   # __contains__
   ##############################################################################
   def __contains__(self, other):
+    """Implements the `in` operator to avoid inappropriate use of plist comparators."""
     if self is other:
       return False
     found = False
@@ -1579,7 +1608,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `pequal` always returns `True` or `False` rather than a plist. This is a
     convenience method for cases when the filtering that happens with `==` is
     undesirable or inconvenient.
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -1720,7 +1749,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Group self.root() by the values in self.
 
     Given a plist:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -1735,7 +1764,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     remaining pdict where `foo.bar == 1`.
 
     Calling groupby again:
-    ```
+    ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
       => [[[{'foo': 0, 'bar': 0}],
            [{'foo': 2, 'bar': 0}]],
@@ -1750,7 +1779,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Grouping relies on the values being hashable. If, for some reason, you need
     to group by a non-hashable value, you should convert it to a hashable
     representation first, for example using `plist.pstr()` or `plist.apply(id)`:
-    ```
+    ```python
     foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
     foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
     foo_by_bar_pstr = foo.bar.pstr().groupby()
@@ -1787,7 +1816,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `join` is useful when you wish to call a function on the top-level plist,
     but you don't want to stop your call chain:
-    ```
+    ```python
     foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
       => [{'bar': [1, 2, 3]},
           {'bar': [4, 5, 6]}]
@@ -1831,7 +1860,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     structure of the plist, only the order of its (or its children's) elements.
 
     A basic sort:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -1846,7 +1875,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Sorting with groups works in the same way -- the sort is applied to each
     group of `self`:
-    ```
+    ```python
     foo_by_bar = foo.bar.groupby()
       => [[{'foo': 0, 'bar': 0},
            {'foo': 2, 'bar': 0}],
@@ -1934,7 +1963,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a new plist with empty sublists removed.
 
     `nonempty` is useful in combination with grouping and filtering:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -1954,7 +1983,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     If the plist is deep, multiple levels of empty sublists can be removed at
     the same time:
-    ```
+    ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
       => [[[{'foo': 0, 'bar': 0}],
            [{'foo': 2, 'bar': 0}]],
@@ -1982,7 +2011,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     It is also possible to remove empty sublists only at deeper levels, using
     the two ways to call functions on sublists -- passing `pepth` and adding `_`
     to the method name:
-    ```
+    ```python
     filtered_nonempty_p1 = filtered.nonempty(pepth=1)
       => [[[{'foo': 0, 'bar': 0}],
            [{'foo': 2, 'bar': 0}]],
@@ -2020,7 +2049,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `preduce_eq` reduces the values of the groups of self using an equality
     check:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2033,7 +2062,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     Grouped plists
-    ```
+    ```python
     foo_by_bar = foo.bar.groupby()
       => [[{'foo': 0, 'bar': 0},
            {'foo': 2, 'bar': 0}],
@@ -2046,7 +2075,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     The equality check respects the subgroups of self:
-    ```
+    ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
       => [[[{'foo': 0, 'bar': 0}],
            [{'foo': 2, 'bar': 0}]],
@@ -2063,7 +2092,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     If, for some reason, you need to reduce by a non-hashable value, you should
     convert it to a hashable representation first, for example using
     `plist.pstr()` or `plist.apply(id)`:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2116,7 +2145,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a new plist of pdicts based on selected data from self.
 
     `remix` allows you to easily restructure your data into a manageable form:
-    ```
+    ```python
     foo = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
                  {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
                  {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
@@ -2129,7 +2158,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     If `remix` is called on a grouped plist, the result is still a flat plist
     of flat pdicts, but the values in the pdicts are themselves pdicts:
-    ```
+    ```python
     foo_by_bam = foo.bar.bam.groupby()
       => [[{'foo': 0, 'bar': {'bam': 0, 'baz': 13, 'bin': 'not'}},
            {'foo': 2, 'bar': {'bam': 0, 'baz': -9, 'bin': 'data'}}],
@@ -2140,7 +2169,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     This behavior can be useful when integrating with pandas, for example:
-    ```
+    ```python
     df = rmx_by_bam.pd()
       =>         baz     foo
          0  [13, -9]  [0, 2]
@@ -2149,7 +2178,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     If you instead want `remix` to return grouped pdicts, just pass `pepth=-1`
     to have it execute on the deepest plists, as with any other call to a plist:
-    ```
+    ```python
     rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz, pepth=-1)
       => [[{'foo': 0, 'baz': 13},
            {'foo': 2, 'baz': -9}],
@@ -2189,7 +2218,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a plist of the recursive depth of each leaf element, from 0.
 
     `pdepth` returns a plist of the same plist structure as self:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2215,7 +2244,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Since the depth values are always equal or empty in well-formed plists, it
     is sometimes more convenient to get the depth as a scalar value. Pass a True
     value to the first parameter (`s` for 'scalar'):
-    ```
+    ```python
     depth = foo.pdepth(s=1)
       => 0
     depth = foo_by_bar_foo.pdepth(1)
@@ -2248,7 +2277,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a plist of the length of a recursively-selected layer of self.
 
     `plen` returns a plist of the same depth as self, up to `r`:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2284,7 +2313,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Since the depth values are always equal or empty in well-formed plists, it
     is sometimes more convenient to get the depth as a scalar value. Pass a True
     value to the first parameter (`s` for 'scalar'):
-    ```
+    ```python
     length = foo.plen(s=1)
       => 3
     length = foo_by_bar_foo.plen(r=2, s=1)
@@ -2323,7 +2352,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a plist of the same structure as self, filled with leaf lengths.
 
     `pshape` returns a plist of the same structure as self:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2369,7 +2398,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     list is the depth of `self`. Each value in the list is the result of calling
     `self.plen(r)`, where `r` ranges from 0 to `self.pdepth()`. `plen(r)` gives
     the sum of the lengths of all plists at layer `r`.
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2407,7 +2436,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a list with the structure of `self` filled in order from `v`.
 
     Identical to `plist.pfill()`, but returns a list instead of a plist.
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2456,7 +2485,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a plist with the structure of `self` filled in order from `v`.
 
     Identical to `plist.lfill()`, but returns a plist instead of a list.
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2504,7 +2533,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a plist with the structure of `self` filled `plen(-1)` to 0.
 
     Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2534,7 +2563,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     change each time a new grouping is started, such as generating many plots
     from a single grouped plist using pyplot, where the function would need to
     call `plt.show()` after each group was completed:
-    ```
+    ```python
     def plot(x, remaining):
       plt.plot(x)
 
@@ -2554,7 +2583,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def values_like(self, value=0):
     """Returns a plist with the structure of `self` filled with `value`.
 
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2585,7 +2614,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Note the example above that filling with a mutable object like a dict gives
     a plist filled that single object, which might be surprising, but is the
     same as other common python idioms, such as:
-    ```
+    ```python
     all_the_same_dict = [{}] * 3
       => [{}, {}, {}]
     all_the_same_dict[0].update(foo=1)
@@ -2622,19 +2651,19 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Using `me` with a local variable requires that the variable already exist in
     the local context, and that it be a plist:
-    ```
+    ```python
     me = plist()
     foo.bar.groupby().baz.sortby_().me().groupby().apply_(plt.plot, me)
     ```
 
     The same can work with a name of your choice:
-    ```
+    ```python
     baz = plist()
     foo.bar.groupby().baz.sortby_().me('baz').groupby().apply_(plt.plot, baz)
     ```
 
     You can pass the plist you want to use instead:
-    ```
+    ```python
     me2 = plist()
     foo.bar.groupby().baz.sortby_().me(me2).groupby().apply_(plt.plot, me2)
     ```
@@ -2642,7 +2671,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     If there isn't a local variable of that name, `me()` will put the plist into
     the caller's `globals()` dict under the requested name. The following both
     work if there are no local or global variables named `me` or `baz`:
-    ```
+    ```python
     foo.bar.groupby().baz.sortby_().me().groupby().apply_(plt.plot, me)
     foo.bar.groupby().baz.sortby_().me('baz').groupby().apply_(plt.plot, baz)
     ```
@@ -2709,7 +2738,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     works.
 
     Basic usage might look like:
-    ```
+    ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
@@ -2731,14 +2760,14 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     The same construction can be used with methods that expect the arguments
     individually, requiring the tuple to be expanded:
-    ```
+    ```python
     (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
         .ungroup().apply_(qj, psplat=True))
     ```
 
     Building multiple tuples in the same context requires passing `name` to keep
     them separate:
-    ```
+    ```python
     (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
         .apply_(qj,
                 me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()))
