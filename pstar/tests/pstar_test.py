@@ -253,6 +253,8 @@ class PStarTest(unittest.TestCase):
                      [1, 2])
 
     pl2 = plist[1, 'b', None]
+    self.assertEqual(pl2.filter().aslist(),
+                     [1, 'b'])
     self.assertEqual(pl2.filter(isinstance, str).aslist(),
                      ['b'])
 

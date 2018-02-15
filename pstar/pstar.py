@@ -1647,11 +1647,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         return plist([funcs[i](*list(x) + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
       return plist([funcs[i](x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
-  def filter(self, func, *args, **kwargs):
+  def filter(self, func=bool, *args, **kwargs):
     """Filter self by an arbitrary function on elements of self, forwarding arguments.
 
     Args:
-      func: callable. Return value will be cast to bool.
+      func: callable. Defaults to `bool`. Return value will be cast to `bool`.
       *args: Arguments to pass to func.
       **kwargs: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`:
 
