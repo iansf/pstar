@@ -237,6 +237,14 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl.apply(fns).aslist(),
                      [2, 4, 6])
 
+  def test_plist_apply_on_empty_plist(self):
+    pl = plist()
+
+    sentinal = lambda x: None
+
+    self.assertEqual(pl.apply(sentinal).aslist(),
+                     [])
+
   def test_plist_filter(self):
     pl = plist[1, 2, 3]
     fn = lambda x: x <= 2
