@@ -1193,7 +1193,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     except Exception as e:
       pass
     return (found
-            or any([x is other for x in self]))
+            or any([x is other
+                    or (not isinstance(x, plist)
+                        and not isinstance(other, plist)
+                        and x == other) for x in self]))
 
   ##############################################################################
   # Comparison operators -- ALL PERFORM FILTERING!
