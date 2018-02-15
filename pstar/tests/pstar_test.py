@@ -138,6 +138,25 @@ class PStarTest(unittest.TestCase):
     self.assertEqual((p.pitems() > ('bar', 2)).aslist(),
                      [('floo', 0), ('foo', 1)])
 
+  def test_pdict_rekey(self):
+    p = pdict(foo=1, bar=2, floo=0)
+
+    self.assertEqual(p.rekey({'floo': 'baz'}),
+                     dict(foo=1, bar=2, baz=0))
+
+    self.assertEqual(p.rekey(lambda k: 'bin' if k == 'floo' else k),
+                     dict(foo=1, bar=2, bin=0))
+
+    self.assertRaises(ValueError, lambda: p.rekey(None))
+    self.assertRaises(ValueError, lambda: p.rekey({'floo': 'foo'}))
+
+    pp = p.copy()
+    pp.rekey({'floo': 'bin'}, inplace=True)
+    self.assertEqual(p,
+                     dict(foo=1, bar=2, floo=0))
+    self.assertEqual(pp,
+                     dict(foo=1, bar=2, bin=0))
+
   def test_empty_defaultpdict(self):
     self.assertFalse(defaultpdict())
 
@@ -198,6 +217,25 @@ class PStarTest(unittest.TestCase):
     p.update(bar=3).baz = 4
     self.assertEqual(p.bar, 3)
     self.assertIn('baz', p.keys())
+
+  def test_defaultpdict_rekey(self):
+    p = defaultpdict(int).update(foo=1, bar=2, floo=0)
+
+    self.assertEqual(p.rekey({'floo': 'baz'}),
+                     dict(foo=1, bar=2, baz=0))
+
+    self.assertEqual(p.rekey(lambda k: 'bin' if k == 'floo' else k),
+                     dict(foo=1, bar=2, bin=0))
+
+    self.assertRaises(ValueError, lambda: p.rekey(None))
+    self.assertRaises(ValueError, lambda: p.rekey({'floo': 'foo'}))
+
+    pp = p.copy()
+    pp.rekey({'floo': 'bin'}, inplace=True)
+    self.assertEqual(p,
+                     dict(foo=1, bar=2, floo=0))
+    self.assertEqual(pp,
+                     dict(foo=1, bar=2, bin=0))
 
   def test_empty_plist(self):
     self.assertFalse(plist())

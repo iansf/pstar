@@ -139,6 +139,26 @@ class pdict(dict):
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
 
+  def rekey(self, map_or_fn, inplace=False):
+    if not inplace:
+      return self.copy().rekey(map_or_fn, inplace=True)
+    if isinstance(map_or_fn, dict):
+      func = lambda k: map_or_fn.get(k, k)
+    else:
+      func = map_or_fn
+    if not callable(func):
+      raise ValueError('`map_or_fn` must be a dict or callable. Received %s: %s'
+                       % (str(type(map_or_fn)), str(map_or_fn)))
+    keys = self.peys()
+    new_keys = keys.apply(func).puniq()
+    if len(keys) != len(new_keys):
+      raise ValueError('rekey map must return the same number of unique keys as the original pdict. '
+                       'Only found %d of %d expected keys.' % (len(new_keys), len(keys)))
+    vals = self.palues().uproot()
+    self.clear()
+    self[new_keys] = vals
+    return self
+
 
 ################################################################################
 ################################################################################
@@ -252,6 +272,26 @@ class defaultpdict(defaultdict):
   def qj(self, *a, **kw):
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
+
+  def rekey(self, map_or_fn, inplace=False):
+    if not inplace:
+      return self.copy().rekey(map_or_fn, inplace=True)
+    if isinstance(map_or_fn, dict):
+      func = lambda k: map_or_fn.get(k, k)
+    else:
+      func = map_or_fn
+    if not callable(func):
+      raise ValueError('`map_or_fn` must be a dict or callable. Received %s: %s'
+                       % (str(type(map_or_fn)), str(map_or_fn)))
+    keys = self.peys()
+    new_keys = keys.apply(func).puniq()
+    if len(keys) != len(new_keys):
+      raise ValueError('rekey map must return the same number of unique keys as the original pdict. '
+                       'Only found %d of %d expected keys.' % (len(new_keys), len(keys)))
+    vals = self.palues().uproot()
+    self.clear()
+    self[new_keys] = vals
+    return self
 
 
 ################################################################################
