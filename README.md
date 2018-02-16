@@ -44,7 +44,7 @@ Use with dot notation or subscript notation:
 ```python
   p = defaultpdict()
   p.foo = 1
-  assert (p['foo'] == 1)
+  assert (p['foo'] == p.foo == 1)
 ```
 
 List subscripts also work and return a plist of the corresponding keys:

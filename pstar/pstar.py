@@ -190,7 +190,7 @@ class defaultpdict(defaultdict):
   ```python
     p = defaultpdict()
     p.foo = 1
-    assert (p['foo'] == 1)
+    assert (p['foo'] == p.foo == 1)
   ```
 
   List subscripts also work and return a plist of the corresponding keys:

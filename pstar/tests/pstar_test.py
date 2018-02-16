@@ -2820,7 +2820,7 @@ class PStarTest(unittest.TestCase):
   def test_from_docs_pstar_defaultpdict(self):
     p = defaultpdict()
     p.foo = 1
-    self.assertTrue(p['foo'] == 1)
+    self.assertTrue(p['foo'] == p.foo == 1)
     p = defaultpdict(foo=1, bar=2)
     self.assertTrue(p[['foo', 'bar']].aslist() == [1, 2])
     p = defaultpdict()
