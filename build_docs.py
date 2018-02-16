@@ -125,7 +125,11 @@ def process_doc(doc):
 
 def get_signature(obj, full_name):
   signature = ''
-  return full_name #+ '(' + signature + ')'
+  try:
+    signature = inspect.formatargspec(*inspect.getargspec(obj))
+  except Exception as e:
+    qj(e)
+  return full_name + signature
 
 def get_docs(obj, depth, base_name, full_base_name):
   try:
