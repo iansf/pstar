@@ -71,13 +71,13 @@ class pdict(dict):
   ```python
     p = pdict()
     p.foo = 1
-    assert p['foo'] == p.foo == 1
+    assert (p['foo'] == p.foo == 1)
   ```
 
   List subscripts also work and return a plist of the corresponding keys:
   ```python
     p = pdict(foo=1, bar=2)
-    assert p[['foo', 'bar']].aslist() == [1, 2]
+    assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   Setting with a list subscript also works, using a single element or a matching
@@ -85,17 +85,17 @@ class pdict(dict):
   ```python
     p = pdict()
     p[['foo', 'bar']] = 1
-    assert p[['foo', 'bar']].aslist() == [1, 1]
+    assert (p[['foo', 'bar']].aslist() == [1, 1])
     p[['foo', 'bar']] = [1, 2]
-    assert p[['foo', 'bar']].aslist() == [1, 2]
+    assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   pdict.update() returns self, rather than None, to support chaining:
   ```python
     p = pdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
-    assert p.bar == 3
-    assert 'baz' in p.keys()
+    assert (p.bar == 3)
+    assert ('baz' in p.keys())
   ```
   """
 
@@ -190,13 +190,13 @@ class defaultpdict(defaultdict):
   ```python
     p = defaultpdict()
     p.foo = 1
-    assert p['foo'] == 1
+    assert (p['foo'] == 1)
   ```
 
   List subscripts also work and return a plist of the corresponding keys:
   ```python
     p = defaultpdict(foo=1, bar=2)
-    assert p[['foo', 'bar']].aslist() == [1, 2]
+    assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   Setting with a list subscript also works, using a single element or a matching
@@ -204,24 +204,24 @@ class defaultpdict(defaultdict):
   ```python
     p = defaultpdict()
     p[['foo', 'bar']] = 1
-    assert p[['foo', 'bar']].aslist() == [1, 1]
+    assert (p[['foo', 'bar']].aslist() == [1, 1])
     p[['foo', 'bar']] = [1, 2]
-    assert p[['foo', 'bar']].aslist() == [1, 2]
+    assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   defaultpdict.update() returns self, rather than None, to support chaining:
   ```python
     p = defaultpdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
-    assert p.bar == 3
-    assert 'baz' in p.keys()
+    assert (p.bar == 3)
+    assert ('baz' in p.keys())
   ```
 
   Set the desired defualt constructor as normal to avoid having to construct
   individual values:
   ```python
     p = defaultpdict(int)
-    assert p.foo == 0
+    assert (p.foo == 0)
   ```
 
   Nested defaultpdicts make nice lightweight objects:
@@ -229,8 +229,8 @@ class defaultpdict(defaultdict):
     p = defaultpdict(lambda: defaultpdict(list))
     p.foo = 1
     p.stats.bar.append(2)
-    assert p['foo'] == 1
-    assert p.stats.bar == [2]
+    assert (p['foo'] == 1)
+    assert (p.stats.bar == [2])
   ```
   """
 
@@ -362,82 +362,92 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     plist comparators can filter on leaf values:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     zero_bars = foo.bar == 0
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 2, 'bar': 0}]
+    assert (zero_bars.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
     nonzero_bars = foo.bar != 0
-      => [{'foo': 1, 'bar': 1}]
+    assert (nonzero_bars.aslist() ==
+            [{'foo': 1, 'bar': 1}])
     ```
 
     They can also filter on other plists so long as the structures are
     compatible:
     ```python
     foo == zero_bars
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 2, 'bar': 0}]
-    foo.foo > foo.bar
-      => [{'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
+    assert ((foo.foo > foo.bar).aslist() ==
+            [{'foo': 2, 'bar': 0}])
     ```
 
     The same is true when comparing against lists with compatible structure:
     ```python
     foo.foo == [0, 1, 3]
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
     ```
 
     This all generalizes naturally to plists that have been grouped:
     ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
     nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
-      => [[[],
-           []],
-          [[{'bar': 1, 'foo': 1}]]]
+    assert (nonzero_foo_by_bar_foo.aslist() ==
+            [[[],
+              []],
+             [[{'bar': 1, 'foo': 1}]]])
     zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[]]]
+    assert (zero_foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[]]])
     foo_by_bar_foo.foo == [[[0], [3]], [[1]]]
-      => [[[{'foo': 0, 'bar': 0}],
-           []],
-          [[{'foo': 1, 'bar': 1}]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              []],
+             [[{'foo': 1, 'bar': 1}]]])
     ```
 
     Lists with incompatible structure are compared to `self` one-at-a-time,
     resulting in set-like filtering where the two sets are merged with an 'or':
     ```python
     foo.foo == [0, 1, 3, 4]
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
     foo_by_bar_foo.foo == [0, 1, 3, 4]
-      => [[[{'foo': 0, 'bar': 0}],
-           []],
-          [[{'foo': 1, 'bar': 1}]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              []],
+             [[{'foo': 1, 'bar': 1}]]])
     ```
 
     When comparing against an empty list, `==` always returns an empty list, but
     all other comparisons return `self`:
     ```python
-    foo.foo == []
-      => []
-    foo.foo < []
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    foo_by_bar_foo == nonzero_foo_by_bar_foo
-      => [[[],
-           []],
-          [[{'foo': 1, 'bar': 1}]]]
-    foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[]]]
+    assert ((foo.foo == []).aslist() == [])
+    assert ((foo.foo < []).aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).aslist() ==
+            [[[],
+              []],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[]]])
     ```
 
     Args:
@@ -1404,6 +1414,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   ##############################################################################
 
   def _(self):
+    """Causes the next call to `self` to be performed as deep as possible in the plist."""
     self.__pepth__ = -1
     return self
 
@@ -1610,17 +1621,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     undesirable or inconvenient.
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     zero_bars = foo.bar == 0
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 2, 'bar': 0}]
-    foo == zero_bars
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 2, 'bar': 0}]
-    foo.pequal(zero_bars)
-      => False
+    assert (zero_bars.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
+    assert ((foo == zero_bars).aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.pequal(zero_bars) == False)
     ```
 
     Args:
@@ -1751,13 +1763,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Given a plist:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     foo_by_bar = foo.bar.groupby()
-      => [[{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}],
-          [{'foo': 1, 'bar': 1}]]
+    assert (foo_by_bar.aslist() ==
+            [[{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}],
+             [{'foo': 1, 'bar': 1}]])
     ```
     Note that foo_by_bar now has two nested plists. The first inner plist has
     the two pdicts where `foo.bar == 0`. The second inner plist has the
@@ -1766,9 +1780,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Calling groupby again:
     ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
     ```
     Now foo_by_bar_foo has two nested layers of inner plists. The outer nest
     groups the values by `bar`, and the inner nest groups them by `foo`.
@@ -1781,13 +1796,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     representation first, for example using `plist.pstr()` or `plist.apply(id)`:
     ```python
     foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
-    foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
+    try:
+      foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
+    except Exception as e:
+      assert (isinstance(e, ValueError))
     foo_by_bar_pstr = foo.bar.pstr().groupby()
-      => [[{'bar': [1, 2, 3]},
-           {'bar': [1, 2, 3]}]]
+    assert (foo_by_bar_pstr.aslist() ==
+            [[{'bar': [1, 2, 3]},
+              {'bar': [1, 2, 3]}]])
     foo_by_bar_id = foo.bar.apply(id).groupby()
-      => [[{'bar': [1, 2, 3]}],
-          [{'bar': [1, 2, 3]}]]
+    assert (foo_by_bar_id.aslist() ==
+            [[{'bar': [1, 2, 3]}],
+             [{'bar': [1, 2, 3]}]])
     ```
     Note that in the example above, using `pstr()` probably gives the intended
     result of grouping both elements together, whereas `apply(id)` gives the
@@ -1818,19 +1838,23 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     but you don't want to stop your call chain:
     ```python
     foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
-      => [{'bar': [1, 2, 3]},
-          {'bar': [4, 5, 6]}]
+    assert (foo.aslist ==
+            [{'bar': [1, 2, 3]},
+             {'bar': [4, 5, 6]}])
     arr1 = np.array(foo.bar.pstr().groupby().bar)
-      => array([[[1, 2, 3],
-                 [4, 5, 6]]])
+    assert (arr1 ==
+            np.array([[[1, 2, 3],
+                       [4, 5, 6]]]))
     arr2 = foo.bar.pstr().groupby().bar.np()
-      => [array([[1, 2, 3],
-                 [4, 5, 6]])]
+    assert (arr2 ==
+            [np.array([[1, 2, 3],
+                       [4, 5, 6]])])
     arr3 = foo.bar.pstr().groupby().bar.join().np()
-      => [array([[[1, 2, 3],
-                  [4, 5, 6]]])]
-    assert arr1 == arr2[0]  # FALSE!
-    assert arr1 == arr3[0]  # TRUE!
+    assert (arr3.aslist() ==
+            [np.array([[[1, 2, 3],
+                        [4, 5, 6]]])])
+    assert (arr1 != arr2[0])
+    assert (arr1 == arr3[0])
     ```
     In the example above, calling `np.array` on the grouped plist gives a
     particular array structure, but it does not return a plist, so you can't as
@@ -1862,30 +1886,36 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     A basic sort:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     bar_sorted = foo.bar.sortby()
-      => [0, 0, 1]
+    assert (bar_sorted.aslist() ==
+            [0, 0, 1])
     foo_sorted_by_bar = bar_sorted.root()
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 2, 'bar': 0},
-          {'foo': 1, 'bar': 1}]
+    assert (foo_sorted_by_bar.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
     ```
 
     Sorting with groups works in the same way -- the sort is applied to each
     group of `self`:
     ```python
     foo_by_bar = foo.bar.groupby()
-      => [[{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}],
-          [{'foo': 1, 'bar': 1}]]
+    assert (foo_by_bar.aslist() ==
+            [[{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}],
+             [{'foo': 1, 'bar': 1}]])
     bar_by_bar_sorted = foo_by_bar.bar.sortby(reverse=True)
-      => [[1], [0, 0]]
+    assert (bar_by_bar_sorted.aslist() ==
+            [[1], [0, 0]])
     foo_by_bar_sorted = bar_by_bar_sorted.root()
-      => [[{'foo': 1, 'bar': 1}],
-          [{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}]]
+    assert (foo_by_bar_sorted.aslist() ==
+            [[{'foo': 1, 'bar': 1}],
+             [{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}]])
     ```
 
     Args:
@@ -1965,43 +1995,52 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `nonempty` is useful in combination with grouping and filtering:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     foo_by_bar = foo.bar.groupby()
-      => [[{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}],
-          [{'foo': 1, 'bar': 1}]]
+    assert (foo_by_bar.aslist() ==
+            [[{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}],
+             [{'foo': 1, 'bar': 1}]])
     filtered = foo_by_bar.foo != 1
-      => [[{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}],
-          []]
+    assert (filtered.aslist() ==
+            [[{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}],
+             []])
     filtered_nonempty = filtered.nonempty()
-      => [[{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}]]
+    assert (filtered_nonempty.aslist() ==
+            [[{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}]])
     ```
 
     If the plist is deep, multiple levels of empty sublists can be removed at
     the same time:
     ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
     filtered = foo_by_bar_foo.foo != 1
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[]]]
+    assert (filtered.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[]]])
     filtered_nonempty_0 = filtered.nonempty()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[]]]
+    assert (filtered_nonempty_0.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[]]])
     filtered_nonempty_1 = filtered.nonempty(1)
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]]]
+    assert (filtered_nonempty_1.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]]])
     filtered_nonempty_n1 = filtered.nonempty(-1)
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]]]
+    assert (filtered_nonempty_n1.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]]])
     ```
     Note that `filtered_nonempty_0` is identical to `filteed`, since there are
     no empty sublists at the top level. In this example, `filtered_nonempty_1`
@@ -2013,13 +2052,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     to the method name:
     ```python
     filtered_nonempty_p1 = filtered.nonempty(pepth=1)
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          []]
+    assert (filtered_nonempty_p1.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             []])
     filtered_nonempty_u1 = filtered.nonempty_()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          []]
+    assert (filtered_nonempty_u1.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             []])
     ```
     `filtered_nonempty_p1` and `filtered_nonempty_u1` both remove a single layer
     of empty sublists starting from one layer into `filtered`.
@@ -2044,48 +2085,53 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       new_plist = self
     return plist([x for x in new_plist if len(x)])
 
-  def preduce_eq(self):
+  def puniq(self):
     """Returns a new plist with only a single element of each value in self.
 
-    `preduce_eq` reduces the values of the groups of self using an equality
-    check:
+    `puniq` reduces the values of the groups of self using an equality check:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foo.aslist() ==
       => [{'foo': 0, 'bar': 0},
           {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    reduced = foo.bar.preduce_eq()
-      => [0, 1]
-    reduced.root()
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1}]
+          {'foo': 2, 'bar': 0}])
+    reduced = foo.bar.puniq()
+    assert (reduced.aslist() ==
+            [0, 1])
+    assert (reduced.root().aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
     ```
 
     Grouped plists
     ```python
     foo_by_bar = foo.bar.groupby()
-      => [[{'foo': 0, 'bar': 0},
-           {'foo': 2, 'bar': 0}],
-          [{'foo': 1, 'bar': 1}]]
-    reduced = foo_by_bar.bar.preduce_eq()
-      => [[0], [1]]
-    reduced.root()
-      => [[{'foo': 0, 'bar': 0}],
-          [{'foo': 1, 'bar': 1}]]
+    assert (foo_by_bar.aslist() ==
+            [[{'foo': 0, 'bar': 0},
+              {'foo': 2, 'bar': 0}],
+             [{'foo': 1, 'bar': 1}]])
+    reduced = foo_by_bar.bar.puniq()
+    assert (reduced.aslist() ==
+            [[0], [1]])
+    assert (reduced.root().aslist() ==
+            [[{'foo': 0, 'bar': 0}],
+             [{'foo': 1, 'bar': 1}]])
     ```
 
     The equality check respects the subgroups of self:
     ```python
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    reduced_no_effect = foo_by_bar_foo.bar.preduce_eq()
-      => [[[0], [0]], [[1]]]
-    reduced_no_effect.root()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    reduced_no_effect = foo_by_bar_foo.bar.puniq()
+    assert (reduced_no_effect.aslist() ==
+            [[[0], [0]], [[1]]])
+    assert (reduced_no_effect.root().aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
     ```
 
     As with `plist.groupby`, `preduce_eq` relies on the values being hashable.
@@ -2094,24 +2140,28 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `plist.pstr()` or `plist.apply(id)`:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 0, 'bar': 0}]
-    reduced_crash = foo.preduce_eq()  # CRASHES!
-    reduced_pstr = foo.pstr().preduce_eq()
-      => ["{'foo': 0, 'bar': 0}",
-          "{'foo': 1, 'bar': 1}"]
-    reduced_pstr.root()
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1}]
-    reduced_id = foo.apply(id).preduce_eq()
-      => [4689112496, 4689260040, 4689258368]
-    reduced_id.root()
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 0, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 0, 'bar': 0}])
+    try:
+      reduced_crash = foo.puniq()  # CRASHES!
+    except Exception as e:
+      assert (isinstance(e, ValueError))
+    reduced_pstr = foo.pstr().puniq()
+    assert (reduced_pstr.aslist() ==
+            ["{'foo': 0, 'bar': 0}",
+             "{'foo': 1, 'bar': 1}"])
+    assert (reduced_pstr.root().aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
+    reduced_id = foo.apply(id).puniq()
+    assert (reduced_id.root().aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 0, 'bar': 0}])
     ```
-    In this case, since each of the elements of `foo` are unique pdicts,
+    In the last case, since each of the elements of `foo` are unique pdicts,
     reducing by `plist.apply(id)` has no useful effect, but if there had been
     any duplicates in the elements of `foo`, they would have been removed.
 
@@ -2121,7 +2171,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       `self.root()` that has that value.
     """
     try:
-      return plist([x.preduce_eq() for x in self], root=self.__root__)
+      return plist([x.puniq() for x in self], root=self.__root__)
     except Exception:
       pass
     vals = set()
@@ -2139,7 +2189,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       return plist(new_items, root=plist(new_roots))
     return plist(new_items)
 
-  puniq = preduce_eq
+  preduce_eq = puniq
 
   def remix(self, *args, **kwargs):
     """Returns a new plist of pdicts based on selected data from self.
@@ -2150,9 +2200,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
                  {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
                  {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
     rmx = foo.remix('foo', baz=foo.bar.baz)
-      => [{'foo': 0, 'baz': 13},
-          {'foo': 1, 'baz': 42},
-          {'foo': 2, 'baz': -9}]
+    assert (rmx.aslist() ==
+            [{'foo': 0, 'baz': 13},
+             {'foo': 1, 'baz': 42},
+             {'foo': 2, 'baz': -9}])
     ```
     Note that `rmx.baz` gets its values from `foo.bar.baz` in a natural manner.
 
@@ -2160,29 +2211,33 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     of flat pdicts, but the values in the pdicts are themselves pdicts:
     ```python
     foo_by_bam = foo.bar.bam.groupby()
-      => [[{'foo': 0, 'bar': {'bam': 0, 'baz': 13, 'bin': 'not'}},
-           {'foo': 2, 'bar': {'bam': 0, 'baz': -9, 'bin': 'data'}}],
-          [{'foo': 1, 'bar': {'bam': 1, 'baz': 42, 'bin': 'good'}}]]
+    assert (foo_by_bam.aslist() ==
+            [[{'foo': 0, 'bar': {'bam': 0, 'baz': 13, 'bin': 'not'}},
+              {'foo': 2, 'bar': {'bam': 0, 'baz': -9, 'bin': 'data'}}],
+             [{'foo': 1, 'bar': {'bam': 1, 'baz': 42, 'bin': 'good'}}]])
     rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz)
-      => [{'foo': [0, 2], 'baz': [13, -9]},
-          {'foo': [1],    'baz': [42]}]
+    assert (rmx_by_bam.aslist() ==
+            [{'foo': [0, 2], 'baz': [13, -9]},
+             {'foo': [1],    'baz': [42]}])
     ```
 
     This behavior can be useful when integrating with pandas, for example:
     ```python
     df = rmx_by_bam.pd()
-      =>         baz     foo
-         0  [13, -9]  [0, 2]
-         1      [42]     [1]
+    # df is the following dataframe object:
+    #           baz     foo
+    #   0  [13, -9]  [0, 2]
+    #   1      [42]     [1]
     ```
 
     If you instead want `remix` to return grouped pdicts, just pass `pepth=-1`
     to have it execute on the deepest plists, as with any other call to a plist:
     ```python
     rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz, pepth=-1)
-      => [[{'foo': 0, 'baz': 13},
-           {'foo': 2, 'baz': -9}],
-          [{'foo': 1, 'baz': 42}]]
+    assert (rmx_by_bam.aslist() ==
+            [[{'foo': 0, 'baz': 13},
+              {'foo': 2, 'baz': -9}],
+             [{'foo': 1, 'baz': 42}]])
     ```
 
     Args:
@@ -2220,37 +2275,37 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `pdepth` returns a plist of the same plist structure as self:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    depth = foo.pdepth()
-      => [0]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.pdepth().aslist() ==
+            [0])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    depth = foo_by_bar_foo.pdepth()
-      => [[[2], [2]], [[2]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.pdepth().aslist() ==
+            [[[2], [2]], [[2]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    filtered.pdepth()
-      => [[[2], [2]], [[]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.pdepth().aslist() ==
+            [[[2], [2]], [[]]])
     ```
 
     Since the depth values are always equal or empty in well-formed plists, it
     is sometimes more convenient to get the depth as a scalar value. Pass a True
     value to the first parameter (`s` for 'scalar'):
     ```python
-    depth = foo.pdepth(s=1)
-      => 0
-    depth = foo_by_bar_foo.pdepth(1)
-      => 2
-    depth = filtered.pdepth(True)
-      => 2
+    assert (foo.pdepth(s=1) == 0)
+    assert (foo_by_bar_foo.pdepth(1) == 2)
+    assert (filtered.pdepth(True) == 2)
     ```
 
     Args:
@@ -2279,47 +2334,47 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `plen` returns a plist of the same depth as self, up to `r`:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    length = foo.plen()
-      => [3]
-    length_r1 = foo.plen(1)
-      => [3]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.plen().aslist() ==
+            [3])
+    assert (foo.plen(1).aslist() ==
+            [3])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    length = foo_by_bar_foo.plen()
-      => [2]
-    length = foo_by_bar_foo.plen(r=1)
-      => [[3]]
-    length = foo_by_bar_foo.plen(2)
-      => [[[3]]]
-    length = foo_by_bar_foo.plen(-1)
-      => [[[3]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.plen().aslist() ==
+            [2])
+    assert (foo_by_bar_foo.plen(r=1).aslist() ==
+            [[3]])
+    assert (foo_by_bar_foo.plen(2).aslist() ==
+            [[[3]]])
+    assert (foo_by_bar_foo.plen(-1).aslist() ==
+            [[[3]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    filtered.plen()
-      => [2]
-    filtered.plen(-1)
-      => [[[2]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.plen().aslist() ==
+            [2])
+    assert (filtered.plen(-1).aslist() ==
+            [[[2]]])
     ```
 
     Since the depth values are always equal or empty in well-formed plists, it
     is sometimes more convenient to get the depth as a scalar value. Pass a True
     value to the first parameter (`s` for 'scalar'):
     ```python
-    length = foo.plen(s=1)
-      => 3
-    length = foo_by_bar_foo.plen(r=2, s=1)
-      => 3
-    length = filtered.plen(-1, s=True)
-      => 2
+    assert (foo.plen(s=1) == 3)
+    assert (foo_by_bar_foo.plen(r=2, s=1) == 3)
+    assert (filtered.plen(-1, s=True) == 2)
     ```
 
     Args:
@@ -2354,32 +2409,36 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `pshape` returns a plist of the same structure as self:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    shape = foo.pshape()
-      => [3]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.pshape().aslist() ==
+            [3])
 
     foo_by_bar = foo.bar.groupby()
-      => [[{'bar': 0, 'foo': 0},
-           {'bar': 0, 'foo': 2}],
-          [{'bar': 1, 'foo': 1}]]
-    shape = foo_by_bar.pshape()
-      => [[2], [1]]
+    assert (foo_by_bar.aslist() ==
+            [[{'bar': 0, 'foo': 0},
+              {'bar': 0, 'foo': 2}],
+             [{'bar': 1, 'foo': 1}]])
+    assert (foo_by_bar.pshape().aslist() ==
+            [[2], [1]])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    shape = foo_by_bar_foo.pshape()
-      => [[[1], [1]], [[1]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.pshape().aslist() ==
+            [[[1], [1]], [[1]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    shape = filtered.pshape()
-      => [[[1], [1]], [[]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.pshape().aslist() ==
+            [[[1], [1]], [[]]])
     ```
 
     Returns:
@@ -2400,25 +2459,28 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     the sum of the lengths of all plists at layer `r`.
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    structure = foo.pstructure()
-      => [3]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.pstructure().aslist() ==
+            [3])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    structure = foo_by_bar_foo.pstructure()
-      => [2, 3, 3]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.pstructure().aslist() ==
+            [2, 3, 3])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    structure = filtered.pstructure()
-      => [2, 3, 2]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.pstructure().aslist() ==
+            [2, 3, 2])
     ```
 
     Returns:
@@ -2438,31 +2500,34 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Identical to `plist.pfill()`, but returns a list instead of a plist.
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    filled = foo.lfill()
-      => [0, 1, 2]
-    filled = foo.lfill(-7)
-      => [-7, -6, -5]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.lfill() ==
+            [0, 1, 2])
+    assert (foo.lfill(-7) ==
+            [-7, -6, -5])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    filled = foo_by_bar_foo.lfill()
-      => [[[0], [1]], [[2]]]
-    filled = foo_by_bar_foo.lfill_()
-      => [[[0], [1]], [[0]]]
-    filled = foo_by_bar_foo.lfill(pepth=2)
-      => [[[0], [0]], [[0]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.lfill() ==
+            [[[0], [1]], [[2]]])
+    assert (foo_by_bar_foo.lfill_() ==
+            [[[0], [1]], [[0]]])
+    assert (foo_by_bar_foo.lfill(pepth=2) ==
+            [[[0], [0]], [[0]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    filled = filtered.lfill(3)
-      => [[[3], [4]], [[]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.lfill(3) ==
+            [[[3], [4]], [[]]])
     ```
 
     Args:
@@ -2487,31 +2552,34 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Identical to `plist.lfill()`, but returns a plist instead of a list.
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    filled = foo.pfill()
-      => [0, 1, 2]
-    filled = foo.pfill(-7)
-      => [-7, -6, -5]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.pfill().aslist() ==
+            [0, 1, 2])
+    assert (foo.pfill(-7).aslist() ==
+            [-7, -6, -5])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    filled = foo_by_bar_foo.pfill()
-      => [[[0], [1]], [[2]]]
-    filled = foo_by_bar_foo.pfill_()
-      => [[[0], [1]], [[0]]]
-    filled = foo_by_bar_foo.pfill(pepth=2)
-      => [[[0], [0]], [[0]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.pfill().aslist() ==
+            [[[0], [1]], [[2]]])
+    assert (foo_by_bar_foo.pfill_().aslist() ==
+            [[[0], [1]], [[0]]])
+    assert (foo_by_bar_foo.pfill(pepth=2).aslist() ==
+            [[[0], [0]], [[0]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    filled = filtered.pfill(3)
-      => [[[3], [4]], [[]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.pfill(3).aslist() ==
+            [[[3], [4]], [[]]])
     ```
 
     Args:
@@ -2535,29 +2603,32 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    remaining = foo.pleft()
-      => [2, 1, 0]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.pleft().aslist() ==
+            [2, 1, 0])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    remaining = foo_by_bar_foo.pleft()
-      => [[[2], [1]], [[0]]]
-    remaining = foo_by_bar_foo.pleft_()
-      => [[[1], [0]], [[0]]]
-    remaining = foo_by_bar_foo.pleft(pepth=2)
-      => [[[0], [0]], [[0]]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.pleft().aslist() ==
+            [[[2], [1]], [[0]]])
+    assert (foo_by_bar_foo.pleft_().aslist() ==
+            [[[1], [0]], [[0]]])
+    assert (foo_by_bar_foo.pleft(pepth=2).aslist() ==
+            [[[0], [0]], [[0]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
-    remaining = filtered.pleft()
-      => [[[1], [0]], [[]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
+    assert (filtered.pleft().aslist() ==
+            [[[1], [0]], [[]]])
     ```
     This is useful for calling functions that have some global state that should
     change each time a new grouping is started, such as generating many plots
@@ -2585,42 +2656,47 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
-    ones = foo.values_like(1)
-      => [1, 1, 1]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    assert (foo.values_like(1).aslist() ==
+            [1, 1, 1])
 
     foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-      => [[[{'foo': 0, 'bar': 0}],
-           [{'foo': 2, 'bar': 0}]],
-          [[{'foo': 1, 'bar': 1}]]]
-    strings = foo_by_bar_foo.values_like('foo')
-      => [[['foo'], ['foo']], [['foo']]]
+    assert (foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    assert (foo_by_bar_foo.values_like('foo').aslist() ==
+            [[['foo'], ['foo']], [['foo']]])
     all_the_same_dict = foo_by_bar_foo.values_like({}, pepth=2)
-      => [[[{}], [{}]], [[{}]]]
+    assert (all_the_same_dict.aslist() ==
+            [[[{}], [{}]], [[{}]]])
+
     all_the_same_dict.ungroup(-1)[0].update(foo=1)
-      => None
-    all_the_same_dict
-      => [[[{'foo': 1}], [{'foo': 1}]], [[{'foo': 1}]]]
+    assert (all_the_same_dict.aslist() ==
+            [[[{'foo': 1}], [{'foo': 1}]], [[{'foo': 1}]]])
 
     filtered = foo_by_bar_foo.bar == 0
-      => [[[{'bar': 0, 'foo': 0}],
-           [{'bar': 0, 'foo': 2}]],
-          [[]]]
+    assert (filtered.aslist() ==
+            [[[{'bar': 0, 'foo': 0}],
+              [{'bar': 0, 'foo': 2}]],
+             [[]]])
     tuples = filtered.values_like((1, 2, 3))
-      => [[[(1, 2, 3)], [(1, 2, 3)]], [[]]]
+    assert (tuples.aslist() ==
+            [[[(1, 2, 3)], [(1, 2, 3)]], [[]]])
     ```
     Note the example above that filling with a mutable object like a dict gives
     a plist filled that single object, which might be surprising, but is the
     same as other common python idioms, such as:
     ```python
     all_the_same_dict = [{}] * 3
-      => [{}, {}, {}]
+    assert (all_the_same_dict ==
+            [{}, {}, {}])
     all_the_same_dict[0].update(foo=1)
-      => None
-    all_the_same_dict
-      => [{'foo': 1}, {'foo': 1}, {'foo': 1}]
+    assert (all_the_same_dict ==
+            [{'foo': 1}, {'foo': 1}, {'foo': 1}])
     ```
 
     Args:
@@ -2653,27 +2729,27 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     the local context, and that it be a plist:
     ```python
     me = plist()
-    foo.bar.groupby().baz.sortby_().me().groupby().apply_(plt.plot, me)
+    foo.bar.groupby().baz.sortby_().me().groupby().plt().plot(me)
     ```
 
     The same can work with a name of your choice:
     ```python
     baz = plist()
-    foo.bar.groupby().baz.sortby_().me('baz').groupby().apply_(plt.plot, baz)
+    foo.bar.groupby().baz.sortby_().me('baz').groupby().plt().plot(baz)
     ```
 
     You can pass the plist you want to use instead:
     ```python
     me2 = plist()
-    foo.bar.groupby().baz.sortby_().me(me2).groupby().apply_(plt.plot, me2)
+    foo.bar.groupby().baz.sortby_().me(me2).groupby().plt().plot(me2)
     ```
 
     If there isn't a local variable of that name, `me()` will put the plist into
     the caller's `globals()` dict under the requested name. The following both
     work if there are no local or global variables named `me` or `baz`:
     ```python
-    foo.bar.groupby().baz.sortby_().me().groupby().apply_(plt.plot, me)
-    foo.bar.groupby().baz.sortby_().me('baz').groupby().apply_(plt.plot, baz)
+    foo.bar.groupby().baz.sortby_().me().groupby().plt().plot(me)
+    foo.bar.groupby().baz.sortby_().me('baz').groupby().plt().plot(baz)
     ```
 
     Args:
@@ -2740,22 +2816,24 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Basic usage might look like:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}]
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     foo.baz = 3 * foo.foo + foo.bar
-      => [{'foo': 0, 'bar': 0, 'baz': 0},
-          {'foo': 1, 'bar': 1, 'baz': 4},
-          {'foo': 2, 'bar': 0, 'baz': 6}]
-    (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
-        .apply_(qj, '(foo, bar)'))
-      => [[[(0, 0)],
-           [(2, 0)]],
-          [[(1, 1)]]]
-      Logs:
-        qj: <pstar> apply: (foo, bar) <1249>: (0, 0)
-        qj: <pstar> apply: (foo, bar) <1249>: (2, 0)
-        qj: <pstar> apply: (foo, bar) <1249>: (1, 1)
+    assert (foo.baz.aslist() ==
+            [{'foo': 0, 'bar': 0, 'baz': 0},
+             {'foo': 1, 'bar': 1, 'baz': 4},
+             {'foo': 2, 'bar': 0, 'baz': 6}])
+    assert (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
+               .apply_(qj, '(foo, bar)') ==
+            [[[(0, 0)],
+              [(2, 0)]],
+             [[(1, 1)]]])
+    # Logs:
+    #   qj: <pstar> apply: (foo, bar) <1249>: (0, 0)
+    #   qj: <pstar> apply: (foo, bar) <1249>: (2, 0)
+    #   qj: <pstar> apply: (foo, bar) <1249>: (1, 1)
     ```
 
     The same construction can be used with methods that expect the arguments
@@ -2768,16 +2846,16 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Building multiple tuples in the same context requires passing `name` to keep
     them separate:
     ```python
-    (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
-        .apply_(qj,
-                me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()))
-      => [[(0, 0),
-           (2, 0)],
-          [(1, 1)]]
-      Logs:
-        qj: <pstar> apply: (0, 0) <1249>: (0, 0)
-        qj: <pstar> apply: (2, 0) <1249>: (2, 0)
-        qj: <pstar> apply: (1, 1) <1249>: (1, 1)
+    assert (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
+               .apply_(qj,
+                       me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
+            [[(0, 0),
+              (2, 0)],
+             [(1, 1)]])
+    # Logs:
+    #   qj: <pstar> apply: (0, 0) <1249>: (0, 0)
+    #   qj: <pstar> apply: (2, 0) <1249>: (2, 0)
+    #   qj: <pstar> apply: (1, 1) <1249>: (1, 1)
     ```
     Note that the construction above is hard to understand, and probably
     shouldn't be used.
