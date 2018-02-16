@@ -26,6 +26,7 @@ from pstar import *
 
 ## Advanced Usage:
 
+
 ### `pstar`
 
 `pstar` module.
@@ -88,49 +89,61 @@ Nested defaultpdicts make nice lightweight objects:
 
 Override getattr. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`.
 
+
 ##### `pstar.defaultpdict.__getitem__`
 
 Subscript operation. Keys can be scalars or lists.
+
 
 ##### `pstar.defaultpdict.__init__`
 
 Initialize defaultpdict.
 
+
 ##### `pstar.defaultpdict.__setattr__`
 
 Attribute assignment operation. Forwards to subscript assignment.
+
 
 ##### `pstar.defaultpdict.__setitem__`
 
 Subscript assignment operation. Keys and values can be scalars or lists.
 
+
 ##### `pstar.defaultpdict.copy`
 
 Copy self to new defaultpdict.
+
 
 ##### `pstar.defaultpdict.palues`
 
 Equivalent to `self.values()`, but results are sorted as in `self.peys()`.
 
+
 ##### `pstar.defaultpdict.peys`
 
 Get self.keys() as a sorted plist.
+
 
 ##### `pstar.defaultpdict.pitems`
 
 Equivalent to `self.items()`, but results are sorted as in `self.peys()`.
 
+
 ##### `pstar.defaultpdict.qj`
 
 Call `qj` logging function with `self` as the item to be logged. All other arguments are passed through to `qj`.
+
 
 ##### `pstar.defaultpdict.rekey`
 
 Change the keys of `self` or a copy while keeping the same values.
 
+
 ##### `pstar.defaultpdict.update`
 
 Update self. Returns self.
+
 
 #### `pstar.pdict`
 
@@ -170,41 +183,51 @@ pdict.update() returns self, rather than None, to support chaining:
 
 Subscript operation. Keys can be scalars or lists.
 
+
 ##### `pstar.pdict.__init__`
 
 Initialize pdict.
+
 
 ##### `pstar.pdict.__setitem__`
 
 Subscript assignment operation. Keys and values can be scalars or lists.
 
+
 ##### `pstar.pdict.copy`
 
 Copy self to new pdict.
+
 
 ##### `pstar.pdict.palues`
 
 Equivalent to `self.values()`, but results are sorted as in `self.peys()`.
 
+
 ##### `pstar.pdict.peys`
 
 Get self.keys() as a sorted plist.
+
 
 ##### `pstar.pdict.pitems`
 
 Equivalent to `self.items()`, but results are sorted as in `self.peys()`.
 
+
 ##### `pstar.pdict.qj`
 
 Call `qj` logging function with `self` as the item to be logged. All other arguments are passed through to `qj`.
+
 
 ##### `pstar.pdict.rekey`
 
 Change the keys of `self` or a copy while keeping the same values.
 
+
 ##### `pstar.pdict.update`
 
 Update self. Returns self.
+
 
 #### `pstar.plist`
 
@@ -215,6 +238,7 @@ See tests/pstar_test.py for usage examples ranging from simple to complex.
 ##### `pstar.plist._`
 
 Causes the next call to `self` to be performed as deep as possible in the plist.
+
 
 ##### `pstar.plist.binary_op`
 
@@ -366,6 +390,7 @@ Returns:
 
 Implements the `in` operator to avoid inappropriate use of plist comparators.
 
+
 ##### `pstar.plist.__delattr__`
 
 Recursively attempt to get the attribute `name`.
@@ -413,13 +438,16 @@ Raises:
 
 Delegates to __delitem__ for compatibility with python 2.7.
 
+
 ##### `pstar.plist.__enter__`
 
 Allow the use of plists in `with` statements.
 
+
 ##### `pstar.plist.__exit__`
 
 Allow the use of plists in `with` statements.
+
 
 ##### `pstar.plist.__getattr__`
 
@@ -499,6 +527,7 @@ Raises:
 
 Delegates to __getitem__ for compatibility with python 2.7.
 
+
 ##### `pstar.plist.__init__`
 
 Constructs plist.
@@ -576,6 +605,7 @@ Raises:
 
 Delegates to __setitem__ for compatibility with python 2.7.
 
+
 ##### `pstar.plist.all`
 
 Returns self if args[0] evaluates to True for all elements of self.
@@ -639,17 +669,21 @@ Returns:
 
 Recursively convert all nested plists from self to lists, inclusive.
 
+
 ##### `pstar.plist.astuple`
 
 Recursively convert all nested plists from self to tuples, inclusive.
+
 
 ##### `pstar.plist.copy`
 
 Copy self to new plist.
 
+
 ##### `pstar.plist.enum`
 
 Wrap the current plist values in tuples where the first item is the index.
+
 
 ##### `pstar.plist.filter`
 
@@ -1000,6 +1034,7 @@ Returns:
 
 Converts the elements of self to numpy arrays, forwarding passed args.
 
+
 ##### `pstar.plist.pand`
 
 Stores `self` into a plist of tuples that gets extended with each call.
@@ -1084,6 +1119,7 @@ Raises:
 ##### `pstar.plist.pd`
 
 Converts self into a pandas DataFrame, forwarding passed args.
+
 
 ##### `pstar.plist.pdepth`
 
@@ -1424,6 +1460,7 @@ Returns:
 
 Converts the elements of self into pset objects.
 
+
 ##### `pstar.plist.pshape`
 
 Returns a plist of the same structure as self, filled with leaf lengths.
@@ -1471,6 +1508,7 @@ Returns:
 ##### `pstar.plist.pstr`
 
 Returns a plist with leaf elements converted to strings.
+
 
 ##### `pstar.plist.pstructure`
 
@@ -1755,6 +1793,7 @@ Raises:
 
 Sets the root to `self` so future `root()` calls return this plist.
 
+
 ##### `pstar.plist.values_like`
 
 Returns a plist with the structure of `self` filled with `value`.
@@ -1814,6 +1853,7 @@ Returns:
 ##### `pstar.plist.zip`
 
 Zips self with others, recursively.
+
 
 #### `pstar.pset`
 

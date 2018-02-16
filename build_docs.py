@@ -20,6 +20,7 @@ Run with:
 python build_docs.py
 ```
 """
+import inspect
 import os
 import re
 import types
@@ -122,12 +123,16 @@ def process_doc(doc):
 
   return '\n'.join([short] + body)
 
+def get_signature(obj, full_name):
+  signature = ''
+  return full_name #+ '(' + signature + ')'
+
 def get_docs(obj, depth, base_name, full_base_name):
   try:
     if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or obj.__name__ in SKIP_SYMBOLS:
       return ''
     full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
-    docs = '%s `%s`\n\n%s' % ('#' * depth, full_name, process_doc(obj.__doc__))
+    docs = '\n%s `%s`\n\n%s' % ('#' * depth, get_signature(obj, full_name), process_doc(inspect.getdoc(obj)))
     extract_tests(full_name, docs)
     subdocs = (find_public_symbols(obj) != obj).apply(get_docs, depth + 1, base_name, full_name).uproot() != ''
     return docs + '\n\n'.join(subdocs)
