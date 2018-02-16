@@ -1668,18 +1668,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       func: callable or string name of method in plist class.
       *args: Arguments to pass to func.
       **kwargs: Keyword arguments to pass to `func`, after extracting:
-                `paslist`: Boolean (default `False`). If `True`, converts
-                           elements of self to list using `plist.aslist()`
-                           before passing them to `func`, and reconverts the
-                           result of each call to a plist. Note that this does
-                           not guarantee that the returned plist has the same
-                           shape as `self`, as plist.aslist() recursively
-                           converts all contained plists to lists, but `func`
-                           might return any arbitrary result, so the same
-                           conversion cannot be inverted automatically.
-                `psplat`: Boolean (default `False`). If `True`, expands the
-                          arguments provided by `self` with the `*` operator
-                          (sometimes called the 'splat' operator).
+      paslist: Boolean (default `False`). If `True`, converts
+               elements of self to list using `plist.aslist()`
+               before passing them to `func`, and reconverts the
+               result of each call to a plist. Note that this does
+               not guarantee that the returned plist has the same
+               shape as `self`, as plist.aslist() recursively
+               converts all contained plists to lists, but `func`
+               might return any arbitrary result, so the same
+               conversion cannot be inverted automatically.
+      psplat: Boolean (default `False`). If `True`, expands the
+              arguments provided by `self` with the `*` operator
+              (sometimes called the 'splat' operator).
 
     Returns:
       plist resulting from applying func to each element of self.
@@ -1740,7 +1740,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Args:
       func: callable. Defaults to `bool`. Return value will be cast to `bool`.
       *args: Arguments to pass to func.
-      **kwargs: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`:
+      **kwargs: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`.
 
     Returns:
       plist resulting from filtering out elements of `self` for whom `func` evaluated to a False value.

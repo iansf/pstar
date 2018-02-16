@@ -271,14 +271,17 @@ Causes the next call to `self` to be performed as deep as possible in the plist.
 
 plist-compatible binary operation; applied element-wise to its args.
 
-Args:
-  self: plist object.
-  other: Object to perform the binary operation with.
+**Args:**
 
-Returns:
-  A new plist, where each element of `self` had the operation passed to
-  `_build_binary_op` applied to it and `other`, or the corresponding element
-  of `other`, if the lengths of `self` and `other` match.
+>    **`self`**: plist object.
+
+>    **`other`**: Object to perform the binary operation with.
+
+**Returns:**
+
+>    A new plist, where each element of `self` had the operation passed to
+>    `_build_binary_op` applied to it and `other`, or the corresponding element
+>    of `other`, if the lengths of `self` and `other` match.
 
 
 
@@ -286,13 +289,16 @@ Returns:
 
 plist-compatible logical operation; performs a set operation on its args.
 
-Args:
-  self: plist object.
-  other: Object to perform the logical operation with.
+**Args:**
 
-Returns:
-  A new plist, merging `self` and other according to the operation provided
-  to `_build_logical_op`.
+>    **`self`**: plist object.
+
+>    **`other`**: Object to perform the logical operation with.
+
+**Returns:**
+
+>    A new plist, merging `self` and other according to the operation provided
+>    to `_build_logical_op`.
 
 
 
@@ -300,13 +306,16 @@ Returns:
 
 Call each element of self, possibly recusively.
 
-Args:
-  *args: The arguments to apply to the callables in self.
-  **kwargs: The keyword arguments to apply to the callables in self.
-            pepth and call_pepth are updated before calling the callables.
+**Args:**
 
-Returns:
-  A new plist with the return values of calling each callable in self.
+>    **`*args`**: The arguments to apply to the callables in self.
+
+>    **`**kwargs`**: The keyword arguments to apply to the callables in self.
+>              pepth and call_pepth are updated before calling the callables.
+
+**Returns:**
+
+>    A new plist with the return values of calling each callable in self.
 
 
 
@@ -402,18 +411,22 @@ assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
          [[]]])
 ```
 
-Args:
-  self: plist object.
-  other: Object to compare against.
-  return_inds: Optional bool. When `True`, causes the comparison to return
-               the plist indices of the matching items. When `False`
-               (the default), causes the comparison to return a plist of the
-               matching values.
+**Args:**
 
-Returns:
-  A new plist, filtered from `self` and `other` according to the operation
-  provided to `_build_comparator`, if `return_inds` is `False`. Otherwise,
-  returns the corresponding indices into self.
+>    **`self`**: plist object.
+
+>    **`other`**: Object to compare against.
+
+>    **`return_inds`**: Optional bool. When `True`, causes the comparison to return
+>                 the plist indices of the matching items. When `False`
+>                 (the default), causes the comparison to return a plist of the
+>                 matching values.
+
+**Returns:**
+
+>    A new plist, filtered from `self` and `other` according to the operation
+>    provided to `_build_comparator`, if `return_inds` is `False`. Otherwise,
+>    returns the corresponding indices into self.
 
 
 
@@ -427,11 +440,13 @@ Implements the `in` operator to avoid inappropriate use of plist comparators.
 
 Recursively attempt to get the attribute `name`.
 
-Args:
-  name: Name of attribute to delete.
+**Args:**
 
-Returns:
-  self, in order to allow chaining through `pl.__delattr__(name).foo`.
+>    **`name`**: Name of attribute to delete.
+
+**Returns:**
+
+>    self, in order to allow chaining through `pl.__delattr__(name).foo`.
 
 
 
@@ -439,32 +454,35 @@ Returns:
 
 Deletes items of self using a variety of potential indexing styles.
 
-Args:
-  key: The key to index by.
-       The key can be applied to self directly as:
-         A list of ints: Deletes from self using those ints as indices.
-         A slice: Deletes from self based on the slice.
-         An int: Deletes the value at that index.
-       The key can be applied to elements of self individually:
-         A generic list: Deletes from the elements of self using the
-                         elements of the key in order on the elements of
-                         self.
-         A tuple when the elements of self can be indexed by tuple:
-                  Deletes from the elements of self by applying that tuple
-                  to each element of self.
-         A tuple, otherwise:
-                  Deletes from the elements of self where each element gets
-                  each element in the key tuple deleted. E.g.,
-                  `del foo[('bar', 'baz')]` deletes all `'bar'` and `'baz'`
-                  keys from each element of foo.
-         Anything else: Deletes the key from each of its elements.
+**Args:**
 
-Returns:
-  self, in order to allow chaining through `pl.__delitem__(key).foo`.
+>    **`key`**: The key to index by.
+>         The key can be applied to self directly as:
+>           A list of ints: Deletes from self using those ints as indices.
+>           A slice: Deletes from self based on the slice.
+>           An int: Deletes the value at that index.
+>         The key can be applied to elements of self individually:
+>           A generic list: Deletes from the elements of self using the
+>                           elements of the key in order on the elements of
+>                           self.
+>           A tuple when the elements of self can be indexed by tuple:
+>                    Deletes from the elements of self by applying that tuple
+>                    to each element of self.
+>           A tuple, otherwise:
+>                    Deletes from the elements of self where each element gets
+>                    each element in the key tuple deleted. E.g.,
+>                    `del foo[('bar', 'baz')]` deletes all `'bar'` and `'baz'`
+>                    keys from each element of foo.
+>           Anything else: Deletes the key from each of its elements.
 
-Raises:
-  TypeError: If the key fails to be applied directly to self and fails to be
-             applied to its elements individually.
+**Returns:**
+
+>    self, in order to allow chaining through `pl.__delitem__(key).foo`.
+
+**Raises:**
+
+>    **`TypeError`**: If the key fails to be applied directly to self and fails to be
+>               applied to its elements individually.
 
 
 
@@ -490,18 +508,21 @@ Allow the use of plists in `with` statements.
 
 Recursively attempt to get the attribute `name`.
 
-Args:
-  name: Attribute name.
-  _pepth: plist depth at which the found attribute should be applied.
-          If _pepth < 0, the attribute is applied as deep as possible, which
-          may be on the deepest non-plist children. This permits calling,
-          for example, list methods on lists nested inside of plists.
-          If _pepth > 0, the attribute is applied after that many recursive
-          calls, and any exception generated is propogated back.
+**Args:**
 
-Returns:
-  Either the value of the attribute, for known non-callable attributes like
-  `__class__`, or a callable wrapping the final attributes.
+>    **`name`**: Attribute name.
+
+>    **`_pepth`**: plist depth at which the found attribute should be applied.
+>            If _pepth < 0, the attribute is applied as deep as possible, which
+>            may be on the deepest non-plist children. This permits calling,
+>            for example, list methods on lists nested inside of plists.
+>            If _pepth > 0, the attribute is applied after that many recursive
+>            calls, and any exception generated is propogated back.
+
+**Returns:**
+
+>    Either the value of the attribute, for known non-callable attributes like
+>    `__class__`, or a callable wrapping the final attributes.
 
 
 
@@ -509,24 +530,27 @@ Returns:
 
 Returns a plist of the attribute for self, or for each element.
 
-Args:
-  name: Name of the attribute.
+**Args:**
 
-Returns:
-  If `name` exists as an attribute of plist, that attribute is returned.
-  Otherwise, removes trailing underscores from `name` (apart from those
-  normally part of a `__*__` name), and uses the count of underscores to
-  indicate how deep into the plist `name` should be searched for. Attempts
-  to find the modified `name` on plist first, and then looks for `name` on
-  each element of self.
+>    **`name`**: Name of the attribute.
 
-  When attempting to find `name` on the elements of self, first it checks
-  if the elements all have `name` as an attribute. If so, it returns that
-  attribute (`[getattr(x, name) for x in self]`). Otherwise, it attempts to
-  return `name` as an index of each element (`[x[name] for x in self]`).
+**Returns:**
 
-Raises:
-  AttributeError: If `name` is not found on self or the elements of self.
+>    If `name` exists as an attribute of plist, that attribute is returned.
+>    Otherwise, removes trailing underscores from `name` (apart from those
+>    normally part of a `__*__` name), and uses the count of underscores to
+>    indicate how deep into the plist `name` should be searched for. Attempts
+>    to find the modified `name` on plist first, and then looks for `name` on
+>    each element of self.
+
+>    When attempting to find `name` on the elements of self, first it checks
+>    if the elements all have `name` as an attribute. If so, it returns that
+>    attribute (`[getattr(x, name) for x in self]`). Otherwise, it attempts to
+>    return `name` as an index of each element (`[x[name] for x in self]`).
+
+**Raises:**
+
+>    **`AttributeError`**: If `name` is not found on self or the elements of self.
 
 
 
@@ -534,32 +558,35 @@ Raises:
 
 Returns a new plist using a variety of potential indexing styles.
 
-Args:
-  key: The key to index by.
-       The key can be applied to self directly as:
-         A list of ints: Returns a plist using those ints as indices.
-         A slice: Returns a plist based on the slice.
-         An int: Returns the value at that index (may not be a plist).
-       The key can be applied to elements of self individually:
-         A generic list: Returns a plist using the elements of the key in
-                         order on the elements of self.
-         A tuple when the elements of self can be indexed by tuple:
-                  Returns a plist applying that tuple to each element of
-                  self.
-         A tuple, otherwise:
-                  Returns a plist where each element of the new plist is a
-                  tuple of each value in the key tuple applied to each
-                  element of self. E.g., `foo[('bar', 'baz')]` might return
-                  `plist([(1, 2), (3, 4), ...])`.
-         Anything else: Returns a plist of the key applied to each of its
-                        elements.
+**Args:**
 
-Returns:
-  A plist based on the order of attempting to apply the key described above.
+>    **`key`**: The key to index by.
+>         The key can be applied to self directly as:
+>           A list of ints: Returns a plist using those ints as indices.
+>           A slice: Returns a plist based on the slice.
+>           An int: Returns the value at that index (may not be a plist).
+>         The key can be applied to elements of self individually:
+>           A generic list: Returns a plist using the elements of the key in
+>                           order on the elements of self.
+>           A tuple when the elements of self can be indexed by tuple:
+>                    Returns a plist applying that tuple to each element of
+>                    self.
+>           A tuple, otherwise:
+>                    Returns a plist where each element of the new plist is a
+>                    tuple of each value in the key tuple applied to each
+>                    element of self. E.g., `foo[('bar', 'baz')]` might return
+>                    `plist([(1, 2), (3, 4), ...])`.
+>           Anything else: Returns a plist of the key applied to each of its
+>                          elements.
 
-Raises:
-  TypeError: If the key fails to be applied directly to self and fails to be
-             applied to its elements individually.
+**Returns:**
+
+>    A plist based on the order of attempting to apply the key described above.
+
+**Raises:**
+
+>    **`TypeError`**: If the key fails to be applied directly to self and fails to be
+>               applied to its elements individually.
 
 
 
@@ -573,13 +600,16 @@ Delegates to __getitem__ for compatibility with python 2.7.
 
 Constructs plist.
 
-Args:
-  *args: Passed directly to list constructor.
-  **kwargs: Should only contain 'depth' and 'root' as optional keywords. All
-            other keys are passed directly to list constructor.
+**Args:**
 
-Returns:
-  None. plist is initialized.
+>    **`*args`**: Passed directly to list constructor.
+
+>    **`**kwargs`**: Should only contain 'depth' and 'root' as optional keywords. All
+>              other keys are passed directly to list constructor.
+
+**Returns:**
+
+>    None. plist is initialized.
 
 
 
@@ -587,12 +617,14 @@ Returns:
 
 plist-compatible unary operation; applied element-wise to its args.
 
-Args:
-  self: plist object.
+**Args:**
 
-Returns:
-  A new plist, where each element of `self` had the operation passed to
-  `_build_unary_op` applied to it.
+>    **`self`**: plist object.
+
+**Returns:**
+
+>    A new plist, where each element of `self` had the operation passed to
+>    `_build_unary_op` applied to it.
 
 
 
@@ -600,14 +632,17 @@ Returns:
 
 Sets an attribute on a plist or its elements to `val`.
 
-Args:
-  name: Name of the attribute to set.
-  val: Value to set the attribute to. If val is a sequence and its length
-       matches len(self), the elements of val are set on the elements of
-       self. Otherwise, the elements of self are all set to val.
+**Args:**
 
-Returns:
-  self, in order to allow chaining through `pl.__setattr__(name, val).foo`.
+>    **`name`**: Name of the attribute to set.
+
+>    **`val`**: Value to set the attribute to. If val is a sequence and its length
+>         matches len(self), the elements of val are set on the elements of
+>         self. Otherwise, the elements of self are all set to val.
+
+**Returns:**
+
+>    self, in order to allow chaining through `pl.__setattr__(name, val).foo`.
 
 
 
@@ -615,34 +650,38 @@ Returns:
 
 Sets items of self using a variety of potential indexing styles.
 
-Args:
-  key: The key to index by.
-       The key can be applied to self directly as:
-         A list of ints: Sets items using those ints as indices.
-         A slice: Sets items based on the slice.
-         An int: Sets the item at that index.
-       The key can be applied to elements of self individually:
-         A generic list: Sets the items of self using the elements of the
-                         key in order.
-         A tuple when the elements of self can be indexed by tuple:
-                  Sets the elements of self using that tuple to index into
-                  each element.
-         A tuple, otherwise:
-                  Sets the elements of self using each element of the tuple
-                  key tuple on each element. E.g., `foo[('bar', 'baz')] = 1`
-                  will set the `bar` and `baz` keys of `foo` to `1`.
-         Anything else: Sets the elements of self indexed by key to `val`.
-  val: Value to assign. If val is a sequence and its length matches either
-       `len(self)` (in most cases described above for `key`) or `len(key)`,
-       each element of val is applied to each corresponding element of
-       `self` or `self[k]`.
+**Args:**
 
-Returns:
-  self, in order to allow chaining through `pl.__setitem__(key, val).foo`.
+>    **`key`**: The key to index by.
+>         The key can be applied to self directly as:
+>           A list of ints: Sets items using those ints as indices.
+>           A slice: Sets items based on the slice.
+>           An int: Sets the item at that index.
+>         The key can be applied to elements of self individually:
+>           A generic list: Sets the items of self using the elements of the
+>                           key in order.
+>           A tuple when the elements of self can be indexed by tuple:
+>                    Sets the elements of self using that tuple to index into
+>                    each element.
+>           A tuple, otherwise:
+>                    Sets the elements of self using each element of the tuple
+>                    key tuple on each element. E.g., `foo[('bar', 'baz')] = 1`
+>                    will set the `bar` and `baz` keys of `foo` to `1`.
+>           Anything else: Sets the elements of self indexed by key to `val`.
 
-Raises:
-  TypeError: If the key fails to be applied directly to self and fails to be
-             applied to its elements individually.
+>    **`val`**: Value to assign. If val is a sequence and its length matches either
+>         `len(self)` (in most cases described above for `key`) or `len(key)`,
+>         each element of val is applied to each corresponding element of
+>         `self` or `self[k]`.
+
+**Returns:**
+
+>    self, in order to allow chaining through `pl.__setitem__(key, val).foo`.
+
+**Raises:**
+
+>    **`TypeError`**: If the key fails to be applied directly to self and fails to be
+>               applied to its elements individually.
 
 
 
@@ -659,14 +698,17 @@ Returns self if args[0] evaluates to True for all elements of self.
 Shortcuts if args[0] ever evaluates to False.
 If args are not passed, the function evaluated is `bool`.
 
-Args:
-  *args: Optional. If present, the first entry must be a function to evaluate.
-         All other args are passed through to that function. If absent, the
-         function is set to bool.
-  **kwargs: Passed through to the function specified in *args.
+**Args:**
 
-Returns:
-  `self` or an empty plist (which evaluates to False).
+>    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
+>           All other args are passed through to that function. If absent, the
+>           function is set to bool.
+
+>    **`**kwargs`**: Passed through to the function specified in *args.
+
+**Returns:**
+
+>    `self` or an empty plist (which evaluates to False).
 
 
 
@@ -677,14 +719,17 @@ Returns self if args[0] evaluates to True for any element of self.
 Shortcuts as soon as args[0] evaluates to True.
 If args are not passed, the function evaluated is `bool`.
 
-Args:
-  *args: Optional. If present, the first entry must be a function to evaluate.
-         All other args are passed through to that function. If absent, the
-         function is set to bool.
-  **kwargs: Passed through to func.
+**Args:**
 
-Returns:
-  `self` or an empty plist (which evaluates to False).
+>    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
+>           All other args are passed through to that function. If absent, the
+>           function is set to bool.
+
+>    **`**kwargs`**: Passed through to func.
+
+**Returns:**
+
+>    `self` or an empty plist (which evaluates to False).
 
 
 
@@ -692,25 +737,31 @@ Returns:
 
 Apply an arbitrary function to elements of self, forwarding arguments.
 
-Args:
-  func: callable or string name of method in plist class.
-  *args: Arguments to pass to func.
-  **kwargs: Keyword arguments to pass to `func`, after extracting:
-            `paslist`: Boolean (default `False`). If `True`, converts
-                       elements of self to list using `plist.aslist()`
-                       before passing them to `func`, and reconverts the
-                       result of each call to a plist. Note that this does
-                       not guarantee that the returned plist has the same
-                       shape as `self`, as plist.aslist() recursively
-                       converts all contained plists to lists, but `func`
-                       might return any arbitrary result, so the same
-                       conversion cannot be inverted automatically.
-            `psplat`: Boolean (default `False`). If `True`, expands the
-                      arguments provided by `self` with the `*` operator
-                      (sometimes called the 'splat' operator).
+**Args:**
 
-Returns:
-  plist resulting from applying func to each element of self.
+>    **`func`**: callable or string name of method in plist class.
+
+>    **`*args`**: Arguments to pass to func.
+
+>    **`**kwargs`**: Keyword arguments to pass to `func`, after extracting:
+
+>    **`paslist`**: Boolean (default `False`). If `True`, converts
+>             elements of self to list using `plist.aslist()`
+>             before passing them to `func`, and reconverts the
+>             result of each call to a plist. Note that this does
+>             not guarantee that the returned plist has the same
+>             shape as `self`, as plist.aslist() recursively
+>             converts all contained plists to lists, but `func`
+>             might return any arbitrary result, so the same
+>             conversion cannot be inverted automatically.
+
+>    **`psplat`**: Boolean (default `False`). If `True`, expands the
+>            arguments provided by `self` with the `*` operator
+>            (sometimes called the 'splat' operator).
+
+**Returns:**
+
+>    plist resulting from applying func to each element of self.
 
 
 
@@ -742,13 +793,17 @@ Wrap the current plist values in tuples where the first item is the index.
 
 Filter self by an arbitrary function on elements of self, forwarding arguments.
 
-Args:
-  func: callable. Defaults to `bool`. Return value will be cast to `bool`.
-  *args: Arguments to pass to func.
-  **kwargs: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`:
+**Args:**
 
-Returns:
-  plist resulting from filtering out elements of `self` for whom `func` evaluated to a False value.
+>    **`func`**: callable. Defaults to `bool`. Return value will be cast to `bool`.
+
+>    **`*args`**: Arguments to pass to func.
+
+>    **`**kwargs`**: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`.
+
+**Returns:**
+
+>    plist resulting from filtering out elements of `self` for whom `func` evaluated to a False value.
 
 
 
@@ -809,9 +864,10 @@ Note that in the example above, using `pstr()` probably gives the intended
 result of grouping both elements together, whereas `apply(id)` gives the
 unsurprising result of putting each element into its own group.
 
-Returns:
-  plist with one additional layer of internal plists, where each such plist
-  groups together the root elements based on the values in this plist.
+**Returns:**
+
+>    plist with one additional layer of internal plists, where each such plist
+>    groups together the root elements based on the values in this plist.
 
 
 
@@ -855,8 +911,9 @@ this case in order to get the same result of passing `self` to `np.array()`,
 but the advantage is that the numpy array is still wrapped in a plist, so it
 can be used in follow-on computations.
 
-Returns:
-  plist with one additional level of nesting.
+**Returns:**
+
+>    plist with one additional level of nesting.
 
 
 
@@ -897,15 +954,18 @@ assert (filtered.lfill(3) ==
         [[[3], [4]], [[]]])
 ```
 
-Args:
-  v: Integer. The value to start filling from. Defaults to 0.
-  s: Successor object. Do not pass -- used to track the count of calls
-     across the recursive traversal of `self`.
+**Args:**
 
-Returns:
-  A list (not a plist) of possibly nested plists where each leaf element is
-  an integer, starting with the value of `v` in the 'top left' element of
-  the structure.
+>    **`v`**: Integer. The value to start filling from. Defaults to 0.
+
+>    **`s`**: Successor object. Do not pass -- used to track the count of calls
+>       across the recursive traversal of `self`.
+
+**Returns:**
+
+>    A list (not a plist) of possibly nested plists where each leaf element is
+>    an integer, starting with the value of `v` in the 'top left' element of
+>    the structure.
 
 
 
@@ -963,22 +1023,27 @@ def new_context():
 new_context()
 ```
 
-Args:
-  name_or_plist: String naming a variable in the caller's context or the
-                 global (module-level) context, or an existing plist. In
-                 both cases, the variable will be overwritten with a plist
-                 that is a shallow copy of `self`. Defaults to `'me'`.
-  call_pepth: Do not pass. Used by `plist.__call__` to keep track of how
-              many stack frames occur between the caller and `me()`.
+**Args:**
 
-Returns:
-  `self`, permitting continued chaining.
+>    **`name_or_plist`**: String naming a variable in the caller's context or the
+>                   global (module-level) context, or an existing plist. In
+>                   both cases, the variable will be overwritten with a plist
+>                   that is a shallow copy of `self`. Defaults to `'me'`.
 
-Raises:
-  ValueError: If `name_or_plist` is a string, and that name appears in the
-              caller's local variables, but does not evaluate to a plist.
-  ValueError: If something other than a string or a plist is passed to
-              `name_or_plist`.
+>    **`call_pepth`**: Do not pass. Used by `plist.__call__` to keep track of how
+>                many stack frames occur between the caller and `me()`.
+
+**Returns:**
+
+>    `self`, permitting continued chaining.
+
+**Raises:**
+
+>    **`ValueError`**: If `name_or_plist` is a string, and that name appears in the
+>                caller's local variables, but does not evaluate to a plist.
+
+>    **`ValueError`**: If something other than a string or a plist is passed to
+>                `name_or_plist`.
 
 
 
@@ -989,14 +1054,17 @@ Returns self if args[0] evaluates to False for all elements.
 Shortcuts if args[0] ever evaluates to evaluates to True.
 If args are not passed, the function evaluated is `bool`.
 
-Args:
-  *args: Optional. If present, the first entry must be a function to evaluate.
-         All other args are passed through to that function. If absent, the
-         function is set to bool.
-  **kwargs: Passed through to func.
+**Args:**
 
-Returns:
-  `self` or an empty plist (which evaluates to False).
+>    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
+>           All other args are passed through to that function. If absent, the
+>           function is set to bool.
+
+>    **`**kwargs`**: Passed through to func.
+
+**Returns:**
+
+>    `self` or an empty plist (which evaluates to False).
 
 
 
@@ -1077,16 +1145,18 @@ assert (filtered_nonempty_u1.aslist() ==
 `filtered_nonempty_p1` and `filtered_nonempty_u1` both remove a single layer
 of empty sublists starting from one layer into `filtered`.
 
-Args:
-  r: Integer value for the number of times to recurse. Defaults to 0, which
-     causes only empty direct children of `self` to be removed. If `r > 0`,
-     `nonempty` recurses `r` times, and then removes empty sublists at that
-     depth and empty sublists back up the recursive call chain. If `r < 0`,
-     `nonempty` recurses as deep as it can, and then removes empty sublists
-     back up the recursive call chain.
+**Args:**
 
-Returns:
-  New plist with empty sublist removed.
+>    **`r`**: Integer value for the number of times to recurse. Defaults to 0, which
+>       causes only empty direct children of `self` to be removed. If `r > 0`,
+>       `nonempty` recurses `r` times, and then removes empty sublists at that
+>       depth and empty sublists back up the recursive call chain. If `r < 0`,
+>       `nonempty` recurses as deep as it can, and then removes empty sublists
+>       back up the recursive call chain.
+
+**Returns:**
+
+>    New plist with empty sublist removed.
 
 
 
@@ -1159,22 +1229,26 @@ new_context()
 Note that the construction above is hard to understand, and probably
 shouldn't be used.
 
-Args:
-  name: String naming an available variable in the caller's context. Should
-        only be passed if the calling frame needs to create multiple
-        different tuples. Defaults to '__plist_and_var__'. If a variable of
-        the same name exists in the caller's context, `pand` will fail to
-        write to it.
-  call_pepth: Do not pass. Used by `plist.__call__` to keep track of how
-              many stack frames occur between the caller and `pand()`.
+**Args:**
 
-Returns:
-  The current plist of tuples, with `self` added.
+>    **`name`**: String naming an available variable in the caller's context. Should
+>          only be passed if the calling frame needs to create multiple
+>          different tuples. Defaults to '__plist_and_var__'. If a variable of
+>          the same name exists in the caller's context, `pand` will fail to
+>          write to it.
 
-Raises:
-  ValueError: If the variable named by `name` is already present in the
-              caller's frame and is not a plist, or has different `pshape()`
-              than `self`.
+>    **`call_pepth`**: Do not pass. Used by `plist.__call__` to keep track of how
+>                many stack frames occur between the caller and `pand()`.
+
+**Returns:**
+
+>    The current plist of tuples, with `self` added.
+
+**Raises:**
+
+>    **`ValueError`**: If the variable named by `name` is already present in the
+>                caller's frame and is not a plist, or has different `pshape()`
+>                than `self`.
 
 
 
@@ -1224,14 +1298,16 @@ assert (foo_by_bar_foo.pdepth(1) == 2)
 assert (filtered.pdepth(True) == 2)
 ```
 
-Args:
-  s: Boolean that controls whether a scalar is returned (when `True`) or a
-     plist of the same structure as self (when `False`, the default).
+**Args:**
 
-Returns:
-  plist whose elements are the recursive depth of the leaf children, or a
-  scalar representing the maximum depth encountered in self if `s` is
-  `True`.
+>    **`s`**: Boolean that controls whether a scalar is returned (when `True`) or a
+>       plist of the same structure as self (when `False`, the default).
+
+**Returns:**
+
+>    plist whose elements are the recursive depth of the leaf children, or a
+>    scalar representing the maximum depth encountered in self if `s` is
+>    `True`.
 
 
 
@@ -1258,12 +1334,14 @@ assert ((foo == zero_bars).aslist() ==
 assert (foo.pequal(zero_bars) == False)
 ```
 
-Args:
-  other: Object to check equality against.
+**Args:**
 
-Returns:
-  True if all elements of self and other are recursively equal.
-  False otherwise.
+>    **`other`**: Object to check equality against.
+
+**Returns:**
+
+>    True if all elements of self and other are recursively equal.
+>    False otherwise.
 
 
 
@@ -1304,14 +1382,17 @@ assert (filtered.pfill(3).aslist() ==
         [[[3], [4]], [[]]])
 ```
 
-Args:
-  v: Integer. The value to start filling from. Defaults to 0.
-  s: Successor object. Do not pass -- used to track the count of calls
-     across the recursive traversal of `self`.
+**Args:**
 
-Returns:
-  A plist of possibly nested plists where each leaf element is an integer,
-  starting with the value of `v` in the 'top left' element of the structure.
+>    **`v`**: Integer. The value to start filling from. Defaults to 0.
+
+>    **`s`**: Successor object. Do not pass -- used to track the count of calls
+>       across the recursive traversal of `self`.
+
+**Returns:**
+
+>    A plist of possibly nested plists where each leaf element is an integer,
+>    starting with the value of `v` in the 'top left' element of the structure.
 
 
 
@@ -1367,10 +1448,11 @@ by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
 by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
 ```
 
-Returns:
-  A plist of possibly nested plists where each leaf element is an integer,
-  starting with `self.plen(-1)` in the 'top left' element of the structure
-  and counting down to 0.
+**Returns:**
+
+>    A plist of possibly nested plists where each leaf element is an integer,
+>    starting with `self.plen(-1)` in the 'top left' element of the structure
+>    and counting down to 0.
 
 
 
@@ -1424,16 +1506,19 @@ assert (foo_by_bar_foo.plen(r=2, s=1) == 3)
 assert (filtered.plen(-1, s=True) == 2)
 ```
 
-Args:
-  r: Target recursion depth. Defaults to 0. Set to -1 to recurse as deep as
-     possible.
-  s: Boolean that controls whether a scalar is returned (when `True`) or a
-     plist of the same depth as self (when `False`, the default).
+**Args:**
 
-Returns:
-  plist whose depth equals the requested recursion depth (or less, if
-  `r > self.pdepth()`), containing a single value which is the number of
-  plist elements at that depth, or that value as a scalar if `s` is `True`.
+>    **`r`**: Target recursion depth. Defaults to 0. Set to -1 to recurse as deep as
+>       possible.
+
+>    **`s`**: Boolean that controls whether a scalar is returned (when `True`) or a
+>       plist of the same depth as self (when `False`, the default).
+
+**Returns:**
+
+>    plist whose depth equals the requested recursion depth (or less, if
+>    `r > self.pdepth()`), containing a single value which is the number of
+>    plist elements at that depth, or that value as a scalar if `s` is `True`.
 
 
 
@@ -1518,10 +1603,11 @@ In the last case, since each of the elements of `foo` are unique pdicts,
 reducing by `plist.apply(id)` has no useful effect, but if there had been
 any duplicates in the elements of `foo`, they would have been removed.
 
-Returns:
-  New plist with a new `root` where there is only one example of each value
-  in each sublist. The corresponding `root` element is the first element in
-  `self.root()` that has that value.
+**Returns:**
+
+>    New plist with a new `root` where there is only one example of each value
+>    in each sublist. The corresponding `root` element is the first element in
+>    `self.root()` that has that value.
 
 
 
@@ -1570,9 +1656,10 @@ assert (filtered.pshape().aslist() ==
         [[[1], [1]], [[]]])
 ```
 
-Returns:
-  plist of the same structure as self, where each leaf plist has a single
-  element, which is the length of the corresponding leaf plist in `self`.
+**Returns:**
+
+>    plist of the same structure as self, where each leaf plist has a single
+>    element, which is the length of the corresponding leaf plist in `self`.
 
 
 
@@ -1616,10 +1703,11 @@ assert (filtered.pstructure().aslist() ==
         [2, 3, 2])
 ```
 
-Returns:
-  A list (not a plist) of `self.pdepth()` integers, where each integer is
-  the number of elements in all plists at that layer, 0-indexed according to
-  depth.
+**Returns:**
+
+>    A list (not a plist) of `self.pdepth()` integers, where each integer is
+>    the number of elements in all plists at that layer, 0-indexed according to
+>    depth.
 
 
 
@@ -1704,10 +1792,11 @@ In the last case, since each of the elements of `foo` are unique pdicts,
 reducing by `plist.apply(id)` has no useful effect, but if there had been
 any duplicates in the elements of `foo`, they would have been removed.
 
-Returns:
-  New plist with a new `root` where there is only one example of each value
-  in each sublist. The corresponding `root` element is the first element in
-  `self.root()` that has that value.
+**Returns:**
+
+>    New plist with a new `root` where there is only one example of each value
+>    in each sublist. The corresponding `root` element is the first element in
+>    `self.root()` that has that value.
 
 
 
@@ -1715,12 +1804,15 @@ Returns:
 
 Applies logging function qj to self for easy in-chain logging.
 
-Args:
-  *args: Arguments to pass to qj.
-  **kwargs: Keyword arguments to pass to qj.
+**Args:**
 
-Returns:
-  self
+>    **`*args`**: Arguments to pass to qj.
+
+>    **`**kwargs`**: Keyword arguments to pass to qj.
+
+**Returns:**
+
+>    self
 
 
 
@@ -1774,14 +1866,17 @@ assert (rmx_by_bam.aslist() ==
          [{'foo': 1, 'baz': 42}]])
 ```
 
-Args:
-  *args: List of property names of items in `self` to include in the remix.
-  **kwargs: Key/value pairs where the key will be a new property on items in
-            the remix and the value is a deepcast and set to that key.
+**Args:**
 
-Returns:
-  Flat plist of flat pdicts based on data from self and the passed arguments
-  and keyword arguments.
+>    **`*args`**: List of property names of items in `self` to include in the remix.
+
+>    **`**kwargs`**: Key/value pairs where the key will be a new property on items in
+>              the remix and the value is a deepcast and set to that key.
+
+**Returns:**
+
+>    Flat plist of flat pdicts based on data from self and the passed arguments
+>    and keyword arguments.
 
 
 
@@ -1838,13 +1933,16 @@ assert (foo_by_bar_sorted.aslist() ==
           {'foo': 2, 'bar': 0}]])
 ```
 
-Args:
-  key: Key function to pass to `sorted`. Defaults to the identity function.
-       See the python documentation for `sorted` for more information.
-  reverse: Boolean specifying whether to sort in reverse order or not.
+**Args:**
 
-Returns:
-  self, sorted.
+>    **`key`**: Key function to pass to `sorted`. Defaults to the identity function.
+>         See the python documentation for `sorted` for more information.
+
+>    **`reverse`**: Boolean specifying whether to sort in reverse order or not.
+
+**Returns:**
+
+>    self, sorted.
 
 
 
@@ -1852,19 +1950,23 @@ Returns:
 
 Inverts the last grouping operation applied and returns a new plist.
 
-Args:
-  r: Integer value for the number of groups to remove. If `r == 0`, no
-     groups are removed. If it is positive, that many groups must be
-     removed, or `upgroup` throws a `ValueError`. If `r < 0`, all groups in
-     this plist are removed, returning a flat plist.
-  s: Successor object. Do not pass -- used to track how many ungroupings
-     have happened so that `ungroup` knows when to stop.
+**Args:**
 
-Returns:
-  New plist with one or more fewer inner groups, if there were any.
+>    **`r`**: Integer value for the number of groups to remove. If `r == 0`, no
+>       groups are removed. If it is positive, that many groups must be
+>       removed, or `upgroup` throws a `ValueError`. If `r < 0`, all groups in
+>       this plist are removed, returning a flat plist.
 
-Raises:
-  ValueError: If there are fewer groups to ungroup than requested.
+>    **`s`**: Successor object. Do not pass -- used to track how many ungroupings
+>       have happened so that `ungroup` knows when to stop.
+
+**Returns:**
+
+>    New plist with one or more fewer inner groups, if there were any.
+
+**Raises:**
+
+>    **`ValueError`**: If there are fewer groups to ungroup than requested.
 
 
 
@@ -1923,11 +2025,13 @@ assert (all_the_same_dict ==
         [{'foo': 1}, {'foo': 1}, {'foo': 1}])
 ```
 
-Args:
-  value: Value to fill the returned plist with. Can by any python object.
+**Args:**
 
-Returns:
-  A plist with the structure of `self` filled with `value`.
+>    **`value`**: Value to fill the returned plist with. Can by any python object.
+
+**Returns:**
+
+>    A plist with the structure of `self` filled with `value`.
 
 
 

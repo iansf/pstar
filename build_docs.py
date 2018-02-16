@@ -115,13 +115,37 @@ def find_public_symbols(obj):
 
 def process_doc(doc):
   blank_line = '\n                          \n'
-  doc_lines = plist(doc.replace('\n\n', blank_line).split('\n'))
+  doc_lines = plist(doc.replace('Args:', '**Args:**')
+                       .replace('Returns:', '**Returns:**\n')
+                       .replace('Raises:', '**Raises:**')
+                       .replace('\n\n', blank_line)
+                       .split('\n'))
   short, body = doc_lines[0], doc_lines[1:]
 
   min_spaces = body.apply(lambda s: re.match('^\s*', s)).group(0).apply(len).append(100).join().np().min()[0]
-  body = body._[min_spaces::1].rstrip().aslist()
+  body = body._[min_spaces::1].rstrip()
 
-  return '\n'.join([short] + body)
+  def maybe_indent_line(line):
+    if '**Args:**' in line:
+      maybe_indent_line.indentation_block = True
+      return line
+    if '**Returns:**' in line:
+      maybe_indent_line.indentation_block = True
+      return line
+    if '**Raises:**' in line:
+      maybe_indent_line.indentation_block = True
+      return line
+
+    if maybe_indent_line.indentation_block:
+      line = '>  ' + line if line.strip() else line
+      line = re.sub('^(\s*)>(\s+)([^\s:]+):', r'\n\1>\2**`\3`**:', line)
+      return line
+    return line
+  maybe_indent_line.indentation_block = False
+
+  body = body.apply(maybe_indent_line).uproot()
+
+  return '\n'.join([short] + body.aslist())
 
 def get_signature(obj, full_name):
   signature = ''
