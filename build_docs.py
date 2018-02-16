@@ -128,7 +128,10 @@ def get_signature(obj, full_name):
   try:
     signature = inspect.formatargspec(*inspect.getargspec(obj))
   except Exception as e:
-    qj(e)
+    try:
+      signature = '(%s)' % inspect.getmro(obj)[1].__name__
+    except Exception as e:
+      qj(e)
   return full_name + signature
 
 def get_docs(obj, depth, base_name, full_base_name):
@@ -136,7 +139,7 @@ def get_docs(obj, depth, base_name, full_base_name):
     if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or obj.__name__ in SKIP_SYMBOLS:
       return ''
     full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
-    docs = '\n%s `%s`\n\n%s' % ('#' * depth, get_signature(obj, full_name), process_doc(inspect.getdoc(obj)))
+    docs = '\n%s `%s`\n\n%s\n' % ('#' * min(4, depth), get_signature(obj, full_name), process_doc(inspect.getdoc(obj)))
     extract_tests(full_name, docs)
     subdocs = (find_public_symbols(obj) != obj).apply(get_docs, depth + 1, base_name, full_name).uproot() != ''
     return docs + '\n\n'.join(subdocs)
