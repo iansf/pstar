@@ -61,6 +61,51 @@ PUBLICIZE_SYMBOLS = plist[
     '__exit__',
 ]
 
+tests_from_docs = plist()
+
+
+def extract_tests(name, doc):
+  code_start = '```python'
+  code_end = '```'
+  def line_of_code_or_blank(line):
+    if code_start in line:
+      line_of_code_or_blank.in_code_block = True
+      return ''
+    if code_end in line:
+      line_of_code_or_blank.in_code_block = False
+      return ''
+    if line_of_code_or_blank.in_code_block:
+      return line
+    return ''
+  line_of_code_or_blank.in_code_block = False
+  test_bodies = plist(doc.split('\n')).apply(line_of_code_or_blank) != ''
+  test_bodies = process_doc('\n'.join(test_bodies))  # Strips minimum number of spaces from all but first line.
+  test_bodies = plist(test_bodies.split('\n'))
+  if test_bodies.startswith('# Logs:').any():
+    test_bodies = '  ' + test_bodies
+    test_bodies.insert(
+        0,
+        'log_fn = qj.LOG_FN\n' +
+        'with mock.patch(\'logging.info\') as mock_log_fn:\n' +
+        '  qj.LOG_FN = mock_log_fn'
+    ).append(
+        'qj.LOG_FN = log_fn\n' +
+        'qj.COLOR = True')
+    test_bodies = plist('\n'.join(test_bodies).split('\n'))
+
+  if test_bodies.any(lambda s: 'plt.show()' in s):
+    test_bodies = '  ' + test_bodies
+    test_bodies.insert(0, 'with mock.patch(\'matplotlib.pyplot.show\'):')
+    test_bodies = plist('\n'.join(test_bodies).split('\n'))
+  test_bodies = '\n'.join('    ' + test_bodies).strip().replace('assert (', 'self.assertTrue(')
+
+  if test_bodies:
+    test = ("""
+  def test_from_docs_%s(self):
+    %s
+    """ % (name.replace('.', '_'), test_bodies)).rstrip()
+
+    tests_from_docs.append(test)
 
 def find_public_symbols(obj):
   if obj.__name__ == '__init__' or isinstance(obj, types.MethodType):
@@ -83,6 +128,7 @@ def get_docs(obj, depth, base_name, full_base_name):
       return ''
     full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
     docs = '%s `%s`\n\n%s' % ('#' * depth, full_name, process_doc(obj.__doc__))
+    extract_tests(full_name, docs)
     subdocs = (find_public_symbols(obj) != obj).apply(get_docs, depth + 1, base_name, full_name).uproot() != ''
     return docs + '\n\n'.join(subdocs)
   except AttributeError as e:
@@ -94,10 +140,10 @@ def advanced_usage(base_path):
 
 def build_docs():
   cwd = os.path.dirname(os.path.realpath(__file__))
-  template_path = os.path.join(cwd, 'README.md.template')
+  readme_template_path = os.path.join(cwd, 'README.md.template')
   readme_path = os.path.join(cwd, 'README.md')
 
-  with open(template_path, 'r') as f:
+  with open(readme_template_path, 'r') as f:
     template = f.read()
 
   section_labels = '<<' + SECTIONS + '>>'
@@ -109,6 +155,18 @@ def build_docs():
 
   with open(readme_path, 'w') as f:
     f.write(template.s)
+
+  tests_template_path = os.path.join(cwd, 'pstar_test.py.template')
+  tests_path = os.path.join(cwd, 'pstar', 'tests', 'pstar_test.py')
+
+  with open(tests_template_path, 'r') as f:
+    template = f.read()
+
+  template = template.replace('### <<doc_tests>> ###', '\n\n'.join(tests_from_docs))
+
+  with open(tests_path, 'w') as f:
+    f.write(template)
+
 
 
 if __name__ == '__main__':

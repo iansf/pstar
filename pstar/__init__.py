@@ -16,10 +16,6 @@
 
 Import like this:
 ```python
-from pstar import *
-```
-or like this:
-```python
 from pstar import defaultpdict, pdict, plist, pset
 ```
 """

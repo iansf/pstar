@@ -378,8 +378,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     They can also filter on other plists so long as the structures are
     compatible:
     ```python
-    foo == zero_bars
-    assert (foo.aslist() ==
+    assert ((foo == zero_bars).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 2, 'bar': 0}])
     assert ((foo.foo > foo.bar).aslist() ==
@@ -388,8 +387,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
 
     The same is true when comparing against lists with compatible structure:
     ```python
-    foo.foo == [0, 1, 3]
-    assert (foo.aslist() ==
+    assert ((foo.foo == [0, 1, 3]).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1}])
     ```
@@ -411,8 +409,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[]]])
-    foo_by_bar_foo.foo == [[[0], [3]], [[1]]]
-    assert (foo_by_bar_foo.aslist() ==
+    assert ((foo_by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               []],
              [[{'foo': 1, 'bar': 1}]]])
@@ -421,12 +418,12 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     Lists with incompatible structure are compared to `self` one-at-a-time,
     resulting in set-like filtering where the two sets are merged with an 'or':
     ```python
-    foo.foo == [0, 1, 3, 4]
-    assert (foo.aslist() ==
+
+    assert ((foo.foo == [0, 1, 3, 4]).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1}])
-    foo_by_bar_foo.foo == [0, 1, 3, 4]
-    assert (foo_by_bar_foo.aslist() ==
+
+    assert ((foo_by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               []],
              [[{'foo': 1, 'bar': 1}]]])
@@ -1437,6 +1434,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   ##############################################################################
   # Conversion methods.
   ##############################################################################
+  def copy(self):
+    """Copy self to new plist."""
+    new_root = None if self.__root__ is self else self.__root__.copy()
+    return plist(list.copy(self), root=new_root)
+
   def aslist(self):
     """Recursively convert all nested plists from self to lists, inclusive."""
     try:
@@ -1728,6 +1730,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         return plist([funcs[i](*list(x) + [a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
       return plist([funcs[i](x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()}) for i, x in enumerate(self)], root=self.__root__)
 
+  def reduce_apply(self, func, *args, **kwargs):
+    # TODO(iansf)
+    return self
+
   def filter(self, func=bool, *args, **kwargs):
     """Filter self by an arbitrary function on elements of self, forwarding arguments.
 
@@ -1799,7 +1805,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     try:
       foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
     except Exception as e:
-      assert (isinstance(e, ValueError))
+      assert (isinstance(e, TypeError))
     foo_by_bar_pstr = foo.bar.pstr().groupby()
     assert (foo_by_bar_pstr.aslist() ==
             [[{'bar': [1, 2, 3]},
@@ -1838,23 +1844,23 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     but you don't want to stop your call chain:
     ```python
     foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
-    assert (foo.aslist ==
+    assert (foo.aslist() ==
             [{'bar': [1, 2, 3]},
              {'bar': [4, 5, 6]}])
     arr1 = np.array(foo.bar.pstr().groupby().bar)
-    assert (arr1 ==
-            np.array([[[1, 2, 3],
-                       [4, 5, 6]]]))
+    assert (np.all(arr1 ==
+                   np.array([[[1, 2, 3]],
+                             [[4, 5, 6]]])))
     arr2 = foo.bar.pstr().groupby().bar.np()
-    assert (arr2 ==
-            [np.array([[1, 2, 3],
-                       [4, 5, 6]])])
+    assert (np.all(np.array(arr2.aslist()) ==
+                   np.array([np.array([[1, 2, 3]]),
+                             np.array([[4, 5, 6]])])))
     arr3 = foo.bar.pstr().groupby().bar.join().np()
-    assert (arr3.aslist() ==
-            [np.array([[[1, 2, 3],
-                        [4, 5, 6]]])])
-    assert (arr1 != arr2[0])
-    assert (arr1 == arr3[0])
+    assert (np.all(np.array(arr3.aslist()) ==
+                   np.array([np.array([[[1, 2, 3]],
+                                      [[4, 5, 6]]])])))
+    assert (np.any(arr1 != arr2[0]))
+    assert (np.all(arr1 == arr3[0]))
     ```
     In the example above, calling `np.array` on the grouped plist gives a
     particular array structure, but it does not return a plist, so you can't as
@@ -2092,9 +2098,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
-      => [{'foo': 0, 'bar': 0},
-          {'foo': 1, 'bar': 1},
-          {'foo': 2, 'bar': 0}])
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
     reduced = foo.bar.puniq()
     assert (reduced.aslist() ==
             [0, 1])
@@ -2147,11 +2153,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     try:
       reduced_crash = foo.puniq()  # CRASHES!
     except Exception as e:
-      assert (isinstance(e, ValueError))
+      assert (isinstance(e, TypeError))
     reduced_pstr = foo.pstr().puniq()
     assert (reduced_pstr.aslist() ==
-            ["{'foo': 0, 'bar': 0}",
-             "{'foo': 1, 'bar': 1}"])
+            ["{'bar': 0, 'foo': 0}",
+             "{'bar': 1, 'foo': 1}"])
     assert (reduced_pstr.root().aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1}])
@@ -2171,6 +2177,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       `self.root()` that has that value.
     """
     try:
+      if self.enum().all(lambda x: x[1].__root__.pequal(self.__root__[x[0]])):
+        new_plist = plist([x.puniq() for x in self])
+        new_plist.__root__ = plist([x.__root__ for x in new_plist])
+        return new_plist
       return plist([x.puniq() for x in self], root=self.__root__)
     except Exception:
       pass
@@ -2641,6 +2651,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       if remaining == 0:
         plt.show()
 
+    (foo.bar == 0).baz = 3 + (foo.bar == 0).foo
+    (foo.bar == 1).baz = 6
+    foo.bin = (foo.baz + foo.bar) * foo.foo
+    by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
     by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
     ```
 
@@ -2728,28 +2742,44 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Using `me` with a local variable requires that the variable already exist in
     the local context, and that it be a plist:
     ```python
-    me = plist()
-    foo.bar.groupby().baz.sortby_().me().groupby().plt().plot(me)
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foo.baz = 3 * foo.foo + foo.bar
+    assert (foo.aslist() ==
+            [{'foo': 0, 'bar': 0, 'baz': 0},
+             {'foo': 1, 'bar': 1, 'baz': 4},
+             {'foo': 2, 'bar': 0, 'baz': 6}])
+    def new_context():
+      me = plist()
+      foo.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.bar)
+    new_context()
     ```
 
     The same can work with a name of your choice:
     ```python
-    baz = plist()
-    foo.bar.groupby().baz.sortby_().me('baz').groupby().plt().plot(baz)
+    def new_context():
+      baz = plist()
+      foo.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
+    new_context()
     ```
 
     You can pass the plist you want to use instead:
     ```python
-    me2 = plist()
-    foo.bar.groupby().baz.sortby_().me(me2).groupby().plt().plot(me2)
+    def new_context():
+      me2 = plist()
+      foo.bar.groupby().baz.sortby_().groupby().me(me2).foo.plt().plot(me2.foo + 1)
+    new_context()
     ```
 
     If there isn't a local variable of that name, `me()` will put the plist into
     the caller's `globals()` dict under the requested name. The following both
     work if there are no local or global variables named `me` or `baz`:
     ```python
-    foo.bar.groupby().baz.sortby_().me().groupby().plt().plot(me)
-    foo.bar.groupby().baz.sortby_().me('baz').groupby().plt().plot(baz)
+    def new_context():
+      foo.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.baz)
+      foo.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
+      del globals()['me']
+      del globals()['baz']
+    new_context()
     ```
 
     Args:
@@ -2816,20 +2846,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Basic usage might look like:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1},
-             {'foo': 2, 'bar': 0}])
     foo.baz = 3 * foo.foo + foo.bar
-    assert (foo.baz.aslist() ==
+    assert (foo.aslist() ==
             [{'foo': 0, 'bar': 0, 'baz': 0},
              {'foo': 1, 'bar': 1, 'baz': 4},
              {'foo': 2, 'bar': 0, 'baz': 6}])
-    assert (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
-               .apply_(qj, '(foo, bar)') ==
-            [[[(0, 0)],
-              [(2, 0)]],
-             [[(1, 1)]]])
+    def new_context():
+      assert (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
+                 .apply_(qj, '(foo, bar)') ==
+              [[[(0, 0)],
+                [(2, 0)]],
+               [[(1, 1)]]])
+    new_context()
     # Logs:
     #   qj: <pstar> apply: (foo, bar) <1249>: (0, 0)
     #   qj: <pstar> apply: (foo, bar) <1249>: (2, 0)
@@ -2839,19 +2867,24 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     The same construction can be used with methods that expect the arguments
     individually, requiring the tuple to be expanded:
     ```python
-    (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
-        .ungroup().apply_(qj, psplat=True))
+    def new_context():
+      (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
+          .ungroup().qj('pand').apply_(qj, psplat=True, b=0))
+    new_context()
     ```
 
     Building multiple tuples in the same context requires passing `name` to keep
     them separate:
     ```python
-    assert (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
-               .apply_(qj,
-                       me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
-            [[(0, 0),
-              (2, 0)],
-             [(1, 1)]])
+    def new_context():
+      me = plist()
+      assert (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
+                 .apply_(qj,
+                         me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
+              [[(0, 0),
+                (2, 0)],
+               [(1, 1)]])
+    new_context()
     # Logs:
     #   qj: <pstar> apply: (0, 0) <1249>: (0, 0)
     #   qj: <pstar> apply: (2, 0) <1249>: (2, 0)
