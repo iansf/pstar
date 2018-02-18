@@ -2769,7 +2769,7 @@ class PStarTest(unittest.TestCase):
                       [[(1, 2, 7), (3, 2, 7)]]])
 
   @unittest.skip('slow')
-  def test_fast_parallel_file_processing(self):
+  def test_z_fast_parallel_file_processing(self):
     tdir = tempfile.mkdtemp()
     try:
       qj(tic=1)
@@ -2787,7 +2787,7 @@ class PStarTest(unittest.TestCase):
       shutil.rmtree(tdir, ignore_errors=True)
 
   @unittest.skip('slow')
-  def test_plist_of_pdict_timing(self):
+  def test_z_plist_of_pdict_timing(self):
     qj(tic=1, toc=1)
     large_input = [pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(100000)]
     qj(tic=1, toc=1)
@@ -2821,6 +2821,8 @@ class PStarTest(unittest.TestCase):
     p = defaultpdict()
     p.foo = 1
     self.assertTrue(p['foo'] == p.foo == 1)
+    p = defaultpdict(int)
+    self.assertTrue(p.foo == 0)
     p = defaultpdict(foo=1, bar=2)
     self.assertTrue(p[['foo', 'bar']].aslist() == [1, 2])
     p = defaultpdict()
@@ -2832,13 +2834,116 @@ class PStarTest(unittest.TestCase):
     p.update(bar=3).baz = 4
     self.assertTrue(p.bar == 3)
     self.assertTrue('baz' in p.keys())
-    p = defaultpdict(int)
-    self.assertTrue(p.foo == 0)
     p = defaultpdict(lambda: defaultpdict(list))
     p.foo = 1
     p.stats.bar.append(2)
     self.assertTrue(p['foo'] == 1)
     self.assertTrue(p.stats.bar == [2])
+
+
+  def test_from_docs_pstar_defaultpdict___getattr__(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.foo == 1)
+    self.assertTrue(pd.__module__.startswith('pstar'))
+
+
+  def test_from_docs_pstar_defaultpdict___getitem__(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd['foo'] == pd.foo == 1)
+    self.assertTrue(pd[['foo', 'bar', 'baz']].aslist() == [1, 2.0, 'three'])
+    self.assertTrue(pd[['foo', 'baz']].root().aslist() ==
+            [('foo', 1), ('baz', 'three')])
+    self.assertTrue(pd[['foo', 'baz']].pdict() ==
+            dict(foo=1, baz='three'))
+
+
+  def test_from_docs_pstar_defaultpdict___init__(self):
+    pd = defaultpdict(int)
+    self.assertTrue(pd.foo == 0)
+    pd.bar += 10
+    self.assertTrue(pd.bar == 10)
+    pd = defaultpdict(lambda: defaultpdict(list))
+    pd.foo.bar = 20
+    self.assertTrue(pd == dict(foo=dict(bar=20)))
+    pd.stats.bar.append(2)
+    self.assertTrue(pd.stats.bar == [2])
+
+
+  def test_from_docs_pstar_defaultpdict___setattr__(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    pd.floo = 4.0
+    self.assertTrue(pd.floo == pd['floo'] == 4.0)
+
+
+  def test_from_docs_pstar_defaultpdict___setitem__(self):
+    pd = defaultpdict(int)
+    pd['foo'] = 1
+    self.assertTrue(pd.foo == pd['foo'] == 1)
+    pd[['bar', 'baz']] = plist[2.0, 'three']
+    self.assertTrue(pd.bar == pd['bar'] == 2.0)
+    self.assertTrue(pd.baz == pd['baz'] == 'three')
+
+
+  def test_from_docs_pstar_defaultpdict_palues(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.palues().aslist() ==
+            [2.0, 'three', 1])
+    pd_str = (pd.palues().pstr() + ' foo').pdict()
+    self.assertTrue(pd_str ==
+            dict(foo='1 foo', bar='2.0 foo', baz='three foo'))
+
+
+  def test_from_docs_pstar_defaultpdict_peys(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.peys().aslist() == ['bar', 'baz', 'foo'])
+    pd_str = pdict()
+    pd_str[pd.peys()] = pd.palues().pstr()  # Converts the values to strings.
+    self.assertTrue(pd_str ==
+            dict(foo='1', bar='2.0', baz='three'))
+
+
+  def test_from_docs_pstar_defaultpdict_pitems(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.pitems().aslist() ==
+            [('bar', 2.0), ('baz', 'three'), ('foo', 1)])
+    self.assertTrue(pd.pitems().key.aslist() ==
+            pd.peys().aslist())
+    self.assertTrue(pd.pitems().value.aslist() ==
+            pd.palues().aslist())
+
+
+  def test_from_docs_pstar_defaultpdict_qj(self):
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      pd = pdict(foo=1, bar=2.0, baz='three')
+      pd.qj('pd').update(baz=3).qj('pd now')
+      self.assertTrue(pd.baz == 3)
+      # Logs:
+      # qj: <calling_module> calling_function: pd <2910>: {'bar': 2.0, 'baz': 'three', 'foo': 1}
+      # qj: <calling_module> calling_function:  pd now <2910>: {'bar': 2.0, 'baz': 3, 'foo': 1}
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
+
+
+  def test_from_docs_pstar_defaultpdict_rekey(self):
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.rekey(dict(foo='floo')) ==
+            dict(floo=1, bar=2.0, baz='three'))
+    self.assertTrue(pd.foo == 1)  # pd is unmodified by default.
+    pd.rekey(dict(bar='car'), True)
+    self.assertTrue('bar' not in pd)
+    self.assertTrue(pd.car == 2.0)
+    pd.rekey(lambda k: 'far' if k == 'car' else k, True)
+    self.assertTrue('car' not in pd)
+    self.assertTrue(pd.far == 2.0)
+
+
+  def test_from_docs_pstar_defaultpdict_update(self):
+    pd = defaultpdict(int)
+    self.assertTrue(pd.update(foo=1, bar=2.0).foo == 1)
+    self.assertTrue(pd.bar == 2.0)
+    self.assertTrue(pd.update({'baz': 'three'}).baz == 'three')
 
 
   def test_from_docs_pstar_pdict(self):
@@ -2856,6 +2961,93 @@ class PStarTest(unittest.TestCase):
     p.update(bar=3).baz = 4
     self.assertTrue(p.bar == 3)
     self.assertTrue('baz' in p.keys())
+
+
+  def test_from_docs_pstar_pdict___getitem__(self):
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd['foo'] == pd.foo == 1)
+    self.assertTrue(pd[['foo', 'bar', 'baz']].aslist() == [1, 2.0, 'three'])
+    self.assertTrue(pd[['foo', 'baz']].root().aslist() ==
+            [('foo', 1), ('baz', 'three')])
+    self.assertTrue(pd[['foo', 'baz']].pdict() ==
+            dict(foo=1, baz='three'))
+
+
+  def test_from_docs_pstar_pdict___init__(self):
+    pd1 = pdict(foo=1, bar=2.0, baz='three')
+    pd2 = pdict({'foo': 1, 'bar': 2.0, 'baz': 'three'})
+    self.assertTrue(pd1 == pd2)
+
+
+  def test_from_docs_pstar_pdict___setitem__(self):
+    pd = pdict()
+    pd['foo'] = 1
+    self.assertTrue(pd.foo == pd['foo'] == 1)
+    pd[['bar', 'baz']] = plist[2.0, 'three']
+    self.assertTrue(pd.bar == pd['bar'] == 2.0)
+    self.assertTrue(pd.baz == pd['baz'] == 'three')
+
+
+  def test_from_docs_pstar_pdict_palues(self):
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.palues().aslist() ==
+            [2.0, 'three', 1])
+    pd_str = (pd.palues().pstr() + ' foo').pdict()
+    self.assertTrue(pd_str ==
+            dict(foo='1 foo', bar='2.0 foo', baz='three foo'))
+
+
+  def test_from_docs_pstar_pdict_peys(self):
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.peys().aslist() == ['bar', 'baz', 'foo'])
+    pd_str = pdict()
+    pd_str[pd.peys()] = pd.palues().pstr()  # Converts the values to strings.
+    self.assertTrue(pd_str ==
+            dict(foo='1', bar='2.0', baz='three'))
+
+
+  def test_from_docs_pstar_pdict_pitems(self):
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.pitems().aslist() ==
+            [('bar', 2.0), ('baz', 'three'), ('foo', 1)])
+    self.assertTrue(pd.pitems().key.aslist() ==
+            pd.peys().aslist())
+    self.assertTrue(pd.pitems().value.aslist() ==
+            pd.palues().aslist())
+
+
+  def test_from_docs_pstar_pdict_qj(self):
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      pd = pdict(foo=1, bar=2.0, baz='three')
+      pd.qj('pd').update(baz=3).qj('pd now')
+      self.assertTrue(pd.baz == 3)
+      # Logs:
+      # qj: <calling_module> calling_function: pd <2910>: {'bar': 2.0, 'baz': 'three', 'foo': 1}
+      # qj: <calling_module> calling_function:  pd now <2910>: {'bar': 2.0, 'baz': 3, 'foo': 1}
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
+
+
+  def test_from_docs_pstar_pdict_rekey(self):
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    self.assertTrue(pd.rekey(dict(foo='floo')) ==
+            dict(floo=1, bar=2.0, baz='three'))
+    self.assertTrue(pd.foo == 1)  # pd is unmodified by default.
+    pd.rekey(dict(bar='car'), True)
+    self.assertTrue('bar' not in pd)
+    self.assertTrue(pd.car == 2.0)
+    pd.rekey(lambda k: 'far' if k == 'car' else k, True)
+    self.assertTrue('car' not in pd)
+    self.assertTrue(pd.far == 2.0)
+
+
+  def test_from_docs_pstar_pdict_update(self):
+    pd = pdict()
+    self.assertTrue(pd.update(foo=1, bar=2.0).foo == 1)
+    self.assertTrue(pd.bar == 2.0)
+    self.assertTrue(pd.update({'baz': 'three'}).baz == 'three')
 
 
   def test_from_docs_pstar_plist_comparator(self):

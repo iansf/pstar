@@ -100,19 +100,82 @@ class pdict(dict):
   """
 
   def __init__(self, *a, **kw):
-    """Initialize pdict."""
+    """Initialize pdict.
+
+    Examples:
+    ```python
+    pd1 = pdict(foo=1, bar=2.0, baz='three')
+    pd2 = pdict({'foo': 1, 'bar': 2.0, 'baz': 'three'})
+    assert (pd1 == pd2)
+    ```
+
+    Args:
+      *a: positional arguments passed through to `dict()`.
+      **kw: keyword arguments pass through to `dict()`.
+
+    Returns:
+      `None`. `pdict` is initialized.
+    """
     dict.__init__(self, *a, **kw)
     self.__dict__ = self
 
   def __getitem__(self, key):
-    """Subscript operation. Keys can be scalars or lists."""
+    """Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    assert (pd['foo'] == pd.foo == 1)
+    assert (pd[['foo', 'bar', 'baz']].aslist() == [1, 2.0, 'three'])
+    ```
+
+    When indexing with a `list`, the returned `plist` is rooted at a `plist` of
+    `KeyValue` tuples, making it easy to recover the keys that gave the values, and
+    allows the `plist` to be turned back into a corresponding `pdict`:
+    ```python
+    assert (pd[['foo', 'baz']].root().aslist() ==
+            [('foo', 1), ('baz', 'three')])
+    assert (pd[['foo', 'baz']].pdict() ==
+            dict(foo=1, baz='three'))
+    ```
+
+    Args:
+      key: Any hashable object, or a `list` of hashable objects.
+
+    Returns:
+      Either the value held at `key`, or a `plist` of values held at each key in the list
+      of keys, when called with a list of keys.
+    """
     if isinstance(key, list):
       return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
     else:
       return dict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
-    """Subscript assignment operation. Keys and values can be scalars or lists."""
+    """Subscript assignment operation. Keys and values can be scalars or lists.
+
+    `pdict` assignment works normally for any hashable `key`:
+    ```python
+    pd = pdict()
+    pd['foo'] = 1
+    assert (pd.foo == pd['foo'] == 1)
+    ```
+
+    `pdict` assignment can also work with a list of hashable `key`s:
+    ```python
+    pd[['bar', 'baz']] = plist[2.0, 'three']
+    assert (pd.bar == pd['bar'] == 2.0)
+    assert (pd.baz == pd['baz'] == 'three')
+    ```
+
+    Args:
+      key: Any hashable object, or a `list` of hashable objects.
+      value: Any value, or a `plist` of values that matches the shape of `key`, if it
+             is a `list`.
+
+    Returns:
+      `self`, to allow chaining with direct calls to `pdict.__setitem__`.
+    """
     if isinstance(key, list):
       value = _ensure_len(len(key), value)
       for k, v in zip(key, value):
@@ -122,40 +185,164 @@ class pdict(dict):
     return self
 
   def __str__(self):
-    delim = ', ' if len(self) < 8 else ',\n '
-    s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
-    return '{' + s + '}'
+    """Readable string representation of `self`.
+
+    If the keys in `self` are sortable, returns a string with key/value pairs sorted by key.
+    Otherwise, returns a normal `dict.__str__` representation.
+    """
+    try:
+      delim = ', ' if len(self) < 8 else ',\n '
+      s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
+      return '{' + s + '}'
+    except Exception:
+      return dict.__str__(self)
 
   __repr__ = __str__
 
   def update(self, *a, **kw):
-    """Update self. Returns self."""
+    """Update `self`. Returns `self`.
+
+    Examples:
+    ```python
+    pd = pdict()
+    assert (pd.update(foo=1, bar=2.0).foo == 1)
+    assert (pd.bar == 2.0)
+    assert (pd.update({'baz': 'three'}).baz == 'three')
+    ```
+
+    Args:
+      *a: Positional args passed to `dict.update`.
+      **kw: Keyword args pass to `dict.update`.
+
+    Returns:
+      `self` to allow chaining.
+    """
     dict.update(self, *a, **kw)
     return self
 
   def copy(self):
-    """Copy self to new pdict."""
+    """Copy `self` to a new `pdict`."""
     return pdict(dict.copy(self))
 
   def peys(self):
-    """Get self.keys() as a sorted plist."""
+    """Get `self.keys()` as a sorted `plist`.
+
+    In the common case of a `pdict` with sortable keys, it is often convenient
+    to rely on the sort-order of the keys for a variety of operations that would
+    otherwise require explicit looping.
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    assert (pd.peys().aslist() == ['bar', 'baz', 'foo'])
+    pd_str = pdict()
+    pd_str[pd.peys()] = pd.palues().pstr()  # Converts the values to strings.
+    assert (pd_str ==
+            dict(foo='1', bar='2.0', baz='three'))
+    ```
+
+    Returns:
+      `plist` of keys in sorted order.
+    """
     return plist(sorted(self.keys()))
 
   def palues(self):
-    """Equivalent to `self.values()`, but results are sorted as in `self.peys()`."""
+    """Equivalent to `self.values()`, but returns a `plist` with values sorted as in `self.peys()`.
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    assert (pd.palues().aslist() ==
+            [2.0, 'three', 1])
+    ```
+
+    The `plist` returned is rooted at a corresponding `plist` of `KeyValue` tuples, allowing
+    easy recovery of an equivalent `pdict`, possibly after modifications to the values:
+    ```python
+    pd_str = (pd.palues().pstr() + ' foo').pdict()
+    assert (pd_str ==
+            dict(foo='1 foo', bar='2.0 foo', baz='three foo'))
+    ```
+
+    Returns:
+      `plist` of values from `self`, in the same order given by `self.peys()`.
+      The `root()` of the `plist` is `KeyValue` tuples from `self`.
+    """
     return self[self.peys()]
 
   def pitems(self):
-    """Equivalent to `self.items()`, but results are sorted as in `self.peys()`."""
+    """Equivalent to `self.items()`, but returns a `plist` with items sorted as in `self.peys()`.
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    assert (pd.pitems().aslist() ==
+            [('bar', 2.0), ('baz', 'three'), ('foo', 1)])
+    assert (pd.pitems().key.aslist() ==
+            pd.peys().aslist())
+    assert (pd.pitems().value.aslist() ==
+            pd.palues().aslist())
+    ```
+    In the example above, note that the items are `KeyValue` `namedtuple`s,
+    so the first element can be accessed with `.key` and the second with `.value`.
+
+    Returns:
+      `plist` of items from `self`, in the same order given by `self.peys()`.
+    """
     return self.palues().root()
 
   def qj(self, *a, **kw):
-    """Call `qj` logging function with `self` as the item to be logged. All other arguments are passed through to `qj`."""
+    """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+    See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    pd.qj('pd').update(baz=3).qj('pd now')
+    assert (pd.baz == 3)
+    # Logs:
+    # qj: <calling_module> calling_function: pd <2910>: {'bar': 2.0, 'baz': 'three', 'foo': 1}
+    # qj: <calling_module> calling_function:  pd now <2910>: {'bar': 2.0, 'baz': 3, 'foo': 1}
+    ```
+
+    Returns:
+      `self`, as processed by the arguments supplied to `qj`.
+    """
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
 
   def rekey(self, map_or_fn, inplace=False):
-    """Change the keys of `self` or a copy while keeping the same values."""
+    """Change the keys of `self` or a copy while keeping the same values.
+
+    Convenience method for renaming keys in a `pdict`. Passing a `dict` mapping
+    old keys to new keys allows easy selective renaming, as any key not in the
+    `dict` will be unchanged. Passing a `callable` requires you to return a unique
+    value for every key in `self`
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    assert (pd.rekey(dict(foo='floo')) ==
+            dict(floo=1, bar=2.0, baz='three'))
+    assert (pd.foo == 1)  # pd is unmodified by default.
+    pd.rekey(dict(bar='car'), True)
+    assert ('bar' not in pd)
+    assert (pd.car == 2.0)
+
+    pd.rekey(lambda k: 'far' if k == 'car' else k, True)
+    assert ('car' not in pd)
+    assert (pd.far == 2.0)
+    ```
+
+    Returns:
+      `self` if `inplace` evaluates to `True`, otherwise a new `pdict`. The keys will
+      be changed, but the values will remain the same.
+
+    Raises:
+      ValueError: If `map_or_fn` isn't a `dict` or a `callable`.
+      ValueError: If `map_or_fn` fails to generate a unique key for every key in `self`.
+    """
     if not inplace:
       return self.copy().rekey(map_or_fn, inplace=True)
     if isinstance(map_or_fn, dict):
@@ -193,6 +380,13 @@ class defaultpdict(defaultdict):
     assert (p['foo'] == p.foo == 1)
   ```
 
+  Set the desired defualt constructor as normal to avoid having to construct
+  individual values:
+  ```python
+    p = defaultpdict(int)
+    assert (p.foo == 0)
+  ```
+
   List subscripts also work and return a plist of the corresponding keys:
   ```python
     p = defaultpdict(foo=1, bar=2)
@@ -209,7 +403,7 @@ class defaultpdict(defaultdict):
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  defaultpdict.update() returns self, rather than None, to support chaining:
+  defaultpdict.update() returns `self`, rather than `None`, to support chaining:
   ```python
     p = defaultpdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
@@ -217,14 +411,7 @@ class defaultpdict(defaultdict):
     assert ('baz' in p.keys())
   ```
 
-  Set the desired defualt constructor as normal to avoid having to construct
-  individual values:
-  ```python
-    p = defaultpdict(int)
-    assert (p.foo == 0)
-  ```
-
-  Nested defaultpdicts make nice lightweight objects:
+  Nested `defaultpdicts` make nice lightweight objects:
   ```python
     p = defaultpdict(lambda: defaultpdict(list))
     p.foo = 1
@@ -235,30 +422,130 @@ class defaultpdict(defaultdict):
   """
 
   def __init__(self, *a, **kw):
-    """Initialize defaultpdict."""
+    """Initialize defaultpdict.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int)
+    assert (pd.foo == 0)
+    pd.bar += 10
+    assert (pd.bar == 10)
+
+    pd = defaultpdict(lambda: defaultpdict(list))
+    pd.foo.bar = 20
+    assert (pd == dict(foo=dict(bar=20)))
+    pd.stats.bar.append(2)
+    assert (pd.stats.bar == [2])
+    ```
+
+    Args:
+      *a: positional arguments passed through to `defaultdict()`.
+      **kw: keyword arguments pass through to `defaultdict()`.
+
+    Returns:
+      `None`. `defaultpdict` is initialized.
+    """
     defaultdict.__init__(self, *a, **kw)
 
   def __getattr__(self, name):
-    """Override getattr. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`."""
+    """Override `getattr`. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (pd.foo == 1)
+    assert (pd.__module__.startswith('pstar'))
+    ```
+
+    Args:
+      name: A field name or property name on `self`.
+
+    Returns:
+      Value at `self.<name>` or `self[name]`.
+    """
     if name.startswith('_'):
       return defaultdict.__getattribute__(self, name)
-    if name == '*':
-      return plist([self[k] for k in self])
     return self[name]
 
   def __setattr__(self, name, value):
-    """Attribute assignment operation. Forwards to subscript assignment."""
+    """Attribute assignment operation. Forwards to subscript assignment.
+
+    Permits `pdict`-style field assignment:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    pd.floo = 4.0
+    assert (pd.floo == pd['floo'] == 4.0)
+    ```
+
+    Args:
+      name: Any hashable value or list of hashable values, as in `defaultpdict.__setitem__`,
+            but generally just a valid identifier string provided by the compiler.
+      value: Any value, or `plist` of values of the same length as the corresponding list in
+             `name`.
+
+    Returns:
+      `self` to allow chaining through direct calls to `defaultpdict.__setattr__`.
+    """
     self[name] = value
+    return self
 
   def __getitem__(self, key):
-    """Subscript operation. Keys can be scalars or lists."""
+    """Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (pd['foo'] == pd.foo == 1)
+    assert (pd[['foo', 'bar', 'baz']].aslist() == [1, 2.0, 'three'])
+    ```
+
+    When indexing with a `list`, the returned `plist` is rooted at a `plist` of
+    `KeyValue` tuples, making it easy to recover the keys that gave the values, and
+    allows the `plist` to be turned back into a corresponding `pdict`:
+    ```python
+    assert (pd[['foo', 'baz']].root().aslist() ==
+            [('foo', 1), ('baz', 'three')])
+    assert (pd[['foo', 'baz']].pdict() ==
+            dict(foo=1, baz='three'))
+    ```
+
+    Args:
+      key: Any hashable object, or a `list` of hashable objects.
+
+    Returns:
+      Either the value held at `key`, or a `plist` of values held at each key in the list
+      of keys, when called with a list of keys.
+    """
     if isinstance(key, list):
       return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
     else:
       return defaultdict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
-    """Subscript assignment operation. Keys and values can be scalars or lists."""
+    """Subscript assignment operation. Keys and values can be scalars or lists.
+
+    `defaultpdict` assignment works normally for any hashable `key`:
+    ```python
+    pd = defaultpdict(int)
+    pd['foo'] = 1
+    assert (pd.foo == pd['foo'] == 1)
+    ```
+
+    `defaultpdict` assignment can also work with a list of hashable `key`s:
+    ```python
+    pd[['bar', 'baz']] = plist[2.0, 'three']
+    assert (pd.bar == pd['bar'] == 2.0)
+    assert (pd.baz == pd['baz'] == 'three')
+    ```
+
+    Args:
+      key: Any hashable object, or a `list` of hashable objects.
+      value: Any value, or a `plist` of values that matches the shape of `key`, if it
+             is a `list`.
+
+    Returns:
+      `self`, to allow chaining with direct calls to `defaultpdict.__setitem__`.
+    """
     if isinstance(key, list):
       value = _ensure_len(len(key), value)
       for k, v in zip(key, value):
@@ -268,40 +555,164 @@ class defaultpdict(defaultdict):
     return self
 
   def __str__(self):
-    delim = ', ' if len(self) < 8 else ',\n '
-    s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
-    return '{' + s + '}'
+    """Readable string representation of `self`.
+
+    If the keys in `self` are sortable, returns a string with key/value pairs sorted by key.
+    Otherwise, returns a normal `defaultdict.__str__` representation.
+    """
+    try:
+      delim = ', ' if len(self) < 8 else ',\n '
+      s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
+      return '{' + s + '}'
+    except Exception:
+      return defaultdict.__str__(self)
 
   __repr__ = __str__
 
   def update(self, *a, **kw):
-    """Update self. Returns self."""
+    """Update `self`. Returns `self`.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int)
+    assert (pd.update(foo=1, bar=2.0).foo == 1)
+    assert (pd.bar == 2.0)
+    assert (pd.update({'baz': 'three'}).baz == 'three')
+    ```
+
+    Args:
+      *a: Positional args passed to `dict.update`.
+      **kw: Keyword args pass to `dict.update`.
+
+    Returns:
+      `self` to allow chaining.
+    """
     defaultdict.update(self, *a, **kw)
     return self
 
   def copy(self):
-    """Copy self to new defaultpdict."""
+    """Copy `self` to new `defaultpdict`."""
     return defaultdict.copy(self)
 
   def peys(self):
-    """Get self.keys() as a sorted plist."""
+    """Get `self.keys()` as a sorted `plist`.
+
+    In the common case of a `defaultpdict` with sortable keys, it is often convenient
+    to rely on the sort-order of the keys for a variety of operations that would
+    otherwise require explicit looping.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (pd.peys().aslist() == ['bar', 'baz', 'foo'])
+    pd_str = pdict()
+    pd_str[pd.peys()] = pd.palues().pstr()  # Converts the values to strings.
+    assert (pd_str ==
+            dict(foo='1', bar='2.0', baz='three'))
+    ```
+
+    Returns:
+      `plist` of keys in sorted order.
+    """
     return plist(sorted(self.keys()))
 
   def palues(self):
-    """Equivalent to `self.values()`, but results are sorted as in `self.peys()`."""
+    """Equivalent to `self.values()`, but returns a `plist` with values sorted as in `self.peys()`.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (pd.palues().aslist() ==
+            [2.0, 'three', 1])
+    ```
+
+    The `plist` returned is rooted at a corresponding `plist` of `KeyValue` tuples, allowing
+    easy recovery of an equivalent `pdict`, possibly after modifications to the values:
+    ```python
+    pd_str = (pd.palues().pstr() + ' foo').pdict()
+    assert (pd_str ==
+            dict(foo='1 foo', bar='2.0 foo', baz='three foo'))
+    ```
+
+    Returns:
+      `plist` of values from `self`, in the same order given by `self.peys()`.
+      The `root()` of the `plist` is `KeyValue` tuples from `self`.
+    """
     return self[self.peys()]
 
   def pitems(self):
-    """Equivalent to `self.items()`, but results are sorted as in `self.peys()`."""
+    """Equivalent to `self.items()`, but returns a `plist` with items sorted as in `self.peys()`.
+
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (pd.pitems().aslist() ==
+            [('bar', 2.0), ('baz', 'three'), ('foo', 1)])
+    assert (pd.pitems().key.aslist() ==
+            pd.peys().aslist())
+    assert (pd.pitems().value.aslist() ==
+            pd.palues().aslist())
+    ```
+    In the example above, note that the items are `KeyValue` `namedtuple`s,
+    so the first element can be accessed with `.key` and the second with `.value`.
+
+    Returns:
+      `plist` of items from `self`, in the same order given by `self.peys()`.
+    """
     return self.palues().root()
 
   def qj(self, *a, **kw):
-    """Call `qj` logging function with `self` as the item to be logged. All other arguments are passed through to `qj`."""
+    """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+    See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
+
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    pd.qj('pd').update(baz=3).qj('pd now')
+    assert (pd.baz == 3)
+    # Logs:
+    # qj: <calling_module> calling_function: pd <2910>: {'bar': 2.0, 'baz': 'three', 'foo': 1}
+    # qj: <calling_module> calling_function:  pd now <2910>: {'bar': 2.0, 'baz': 3, 'foo': 1}
+    ```
+
+    Returns:
+      `self`, as processed by the arguments supplied to `qj`.
+    """
     depth = kw.pop('_depth', 0) + 2
     return qj(self, _depth=depth, *a, **kw)
 
   def rekey(self, map_or_fn, inplace=False):
-    """Change the keys of `self` or a copy while keeping the same values."""
+    """Change the keys of `self` or a copy while keeping the same values.
+
+    Convenience method for renaming keys in a `pdict`. Passing a `dict` mapping
+    old keys to new keys allows easy selective renaming, as any key not in the
+    `dict` will be unchanged. Passing a `callable` requires you to return a unique
+    value for every key in `self`
+
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (pd.rekey(dict(foo='floo')) ==
+            dict(floo=1, bar=2.0, baz='three'))
+    assert (pd.foo == 1)  # pd is unmodified by default.
+    pd.rekey(dict(bar='car'), True)
+    assert ('bar' not in pd)
+    assert (pd.car == 2.0)
+
+    pd.rekey(lambda k: 'far' if k == 'car' else k, True)
+    assert ('car' not in pd)
+    assert (pd.far == 2.0)
+    ```
+
+    Returns:
+      `self` if `inplace` evaluates to `True`, otherwise a new `defaultpdict`. The keys will
+      be changed, but the values will remain the same.
+
+    Raises:
+      ValueError: If `map_or_fn` isn't a `dict` or a `callable`.
+      ValueError: If `map_or_fn` fails to generate a unique key for every key in `self`.
+    """
     if not inplace:
       return self.copy().rekey(map_or_fn, inplace=True)
     if isinstance(map_or_fn, dict):
@@ -1906,12 +2317,14 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def qj(self, *args, **kwargs):
     """Applies logging function qj to self for easy in-chain logging.
 
+    See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
+
     Args:
-      *args: Arguments to pass to qj.
-      **kwargs: Keyword arguments to pass to qj.
+      *args: Arguments to pass to `qj`.
+      **kwargs: Keyword arguments to pass to `qj`.
 
     Returns:
-      self
+      `self`
     """
     call_pepth = kwargs.pop('call_pepth', 0)
     return qj(self, _depth=4 + call_pepth, *args, **kwargs)
