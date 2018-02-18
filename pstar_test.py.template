@@ -2769,7 +2769,7 @@ class PStarTest(unittest.TestCase):
                       [[(1, 2, 7), (3, 2, 7)]]])
 
   @unittest.skip('slow')
-  def test_fast_parallel_file_processing(self):
+  def test_z_fast_parallel_file_processing(self):
     tdir = tempfile.mkdtemp()
     try:
       qj(tic=1)
@@ -2787,7 +2787,7 @@ class PStarTest(unittest.TestCase):
       shutil.rmtree(tdir, ignore_errors=True)
 
   @unittest.skip('slow')
-  def test_plist_of_pdict_timing(self):
+  def test_z_plist_of_pdict_timing(self):
     qj(tic=1, toc=1)
     large_input = [pdict(foo=i, bar=i % 2, bin=i % 13, bun=i % 11) for i in range(100000)]
     qj(tic=1, toc=1)
