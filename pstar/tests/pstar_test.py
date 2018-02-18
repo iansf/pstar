@@ -3445,6 +3445,67 @@ class PStarTest(unittest.TestCase):
              {'foo': 0, 'bar': 0}])
 
 
+  def test_from_docs_pstar_plist_reduce(self):
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      s = 'foo bar was a baz of bin'
+      pl = plist['foo', 'bar', 'baz', 'bin']
+      reduced = pl.reduce(lambda s, x, y: qj(s).replace(x, y), s, pl._[::-1])
+      # Logs:
+      #   qj: <pstar> reduce: s <3451>: foo bar was a baz of bin
+      #   qj: <pstar> reduce: s <3451>: oof bar was a baz of bin
+      #   qj: <pstar> reduce: s <3451>: oof rab was a baz of bin
+      #   qj: <pstar> reduce: s <3451>: oof rab was a zab of bin
+      self.assertTrue(reduced.aslist() ==
+              ['oof rab was a zab of nib'])
+      self.assertTrue(reduced.root().aslist() ==
+              ['foo bar was a baz of bin'])
+      self.assertTrue(reduced.root().root() is pl)
+      reduced = pl.reduce(lambda s, x, y: qj(s).replace(x, y), pl._[::-1], initial_value=s)
+      self.assertTrue(reduced.aslist() ==
+              ['oof rab was a zab of nib'])
+      self.assertTrue(reduced.root().aslist() ==
+              ['foo bar was a baz of bin'])
+      self.assertTrue(reduced.root().root() is pl)
+      pl = plist[1, 2, 3, 4, 5]
+      reduced = pl.reduce(lambda x, y, z: (x + y) * z, z=pl[::-1])
+      self.assertTrue(reduced.aslist() ==
+              [466])
+      self.assertTrue((((((1 + 2) * 5 + 3) * 4 + 4) * 3 + 5) * 2) ==
+              466)
+      foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0), pdict(foo=3, bar=1), pdict(foo=4, bar=0)])
+      (foo.bar == 0).baz = 3 + (foo.bar == 0).foo
+      (foo.bar == 1).baz = 6
+      foo.bin = (foo.baz + foo.bar) * foo.foo
+      by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
+      self.assertTrue(by_bar_baz_bin.aslist() ==
+              [[[[{'bar': 0, 'baz': 3, 'bin': 0, 'foo': 0}]],
+                [[{'bar': 0, 'baz': 5, 'bin': 10, 'foo': 2}]],
+                [[{'bar': 0, 'baz': 7, 'bin': 28, 'foo': 4}]]],
+               [[[{'bar': 1, 'baz': 6, 'bin': 7, 'foo': 1}],
+                 [{'bar': 1, 'baz': 6, 'bin': 21, 'foo': 3}]]]])
+      import operator as op
+      self.assertTrue(by_bar_baz_bin.foo.reduce(op.add, initial_value=0).aslist() ==
+              [10])
+      self.assertTrue(by_bar_baz_bin.foo.reduce_(op.add, initial_value=0).aslist() ==
+              [[6], [4]])
+      self.assertTrue(by_bar_baz_bin.foo.reduce__(op.add, initial_value=0).aslist() ==
+              [[[0], [2], [4]], [[4]]])
+      self.assertTrue(by_bar_baz_bin.foo.reduce___(op.add, initial_value=0).aslist() ==
+              [[[[0]], [[2]], [[4]]], [[[1], [3]]]])
+      self.assertTrue(by_bar_baz_bin.foo.reduce_(op.add, 0).reduce(op.mul, 1).aslist() ==
+              [24])
+      self.assertTrue(by_bar_baz_bin.foo.reduce([op.mul, op.add], 0).aslist() ==
+              [24])
+      self.assertTrue(by_bar_baz_bin.foo.reduce(op.add, by_bar_baz_bin.baz).aslist() ==
+              [37])
+      self.assertTrue(by_bar_baz_bin.foo.reduce([op.mul, op.add, op.mul, op.add], initial_value=by_bar_baz_bin.baz).aslist() ==
+              [1323])
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
+
+
   def test_from_docs_pstar_plist_remix(self):
     foo = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
                  {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
