@@ -60,6 +60,7 @@ PUBLICIZE_SYMBOLS = plist[
     '__neg__',
     '__enter__',
     '__exit__',
+    '__str__',
 ]
 
 tests_from_docs = plist()

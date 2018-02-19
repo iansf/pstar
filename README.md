@@ -38,7 +38,7 @@ from pstar import defaultpdict, pdict, plist, pset
 
 #### `pstar.defaultpdict(defaultdict)`
 
-defaultdict subclass where everything is automatically a property.
+`defaultdict` subclass where everything is automatically a property.
 
 Use with dot notation or subscript notation:
 ```python
@@ -47,7 +47,7 @@ Use with dot notation or subscript notation:
   assert (p['foo'] == p.foo == 1)
 ```
 
-Set the desired defualt constructor as normal to avoid having to construct
+Set the desired default constructor as normal to avoid having to construct
 individual values:
 ```python
   p = defaultpdict(int)
@@ -223,6 +223,15 @@ assert (pd.baz == pd['baz'] == 'three')
 **Returns:**
 
 >    `self`, to allow chaining with direct calls to `defaultpdict.__setitem__`.
+
+
+
+#### `pstar.defaultpdict.__str__(self)`
+
+Readable string representation of `self`.
+
+If the keys in `self` are sortable, returns a string with key/value pairs sorted by key.
+Otherwise, returns a normal `defaultdict.__str__` representation.
 
 
 
@@ -506,6 +515,15 @@ assert (pd.baz == pd['baz'] == 'three')
 **Returns:**
 
 >    `self`, to allow chaining with direct calls to `pdict.__setitem__`.
+
+
+
+#### `pstar.pdict.__str__(self)`
+
+Readable string representation of `self`.
+
+If the keys in `self` are sortable, returns a string with key/value pairs sorted by key.
+Otherwise, returns a normal `dict.__str__` representation.
 
 
 
@@ -1175,45 +1193,85 @@ Delegates to __setitem__ for compatibility with python 2.7.
 
 #### `pstar.plist.all(self, *args, **kwargs)`
 
-Returns self if args[0] evaluates to True for all elements of self.
+Returns `self` if `args[0]` evaluates to `True` for all elements of `self`.
 
-Shortcuts if args[0] ever evaluates to False.
-If args are not passed, the function evaluated is `bool`.
+Shortcuts if `args[0]` ever evaluates to `False`.
+If `args` are not passed, the function evaluated is `bool`.
+
+Useful as an implicit `if` condition in chaining, but can be used explicitly
+in `if` statements as well.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.all(isinstance, pdict).aslist() ==
+        [pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.all(lambda x: x > 0).aslist() == [])
+```
+
+`all` does not recurse into grouped `plist`s, so you must specify the
+desired level of evaluation:
+```python
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.all_(lambda x: x > 0).aslist() ==
+        [[], [1]])
+assert (by_bar.foo.all_(lambda x: x > 0).nonempty().root().aslist() ==
+        [[{'bar': 1, 'foo': 1}]])
+```
 
 **Args:**
 
 >    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
 >           All other args are passed through to that function. If absent, the
->           function is set to bool.
+>           function is set to `bool`.
 
->    **`**kwargs`**: Passed through to the function specified in *args.
+>    **`**kwargs`**: Passed through to the function specified in `*args`.
 
 **Returns:**
 
->    `self` or an empty plist (which evaluates to False).
->  TODO
+>    `self` or an empty `plist` (which evaluates to `False`).
 
 
 
 #### `pstar.plist.any(self, *args, **kwargs)`
 
-Returns self if args[0] evaluates to True for any element of self.
+Returns `self` if `args[0]` evaluates to `True` for any elements of `self`.
 
-Shortcuts as soon as args[0] evaluates to True.
-If args are not passed, the function evaluated is `bool`.
+Shortcuts if `args[0]` ever evaluates to `True`.
+If `args` are not passed, the function evaluated is `bool`.
+
+Useful as an implicit `if` condition in chaining, but can be used explicitly
+in `if` statements as well.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.any(isinstance, pdict).aslist() ==
+        [pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.any(lambda x: x < 0).aslist() == [])
+```
+
+`any` does not recurse into grouped `plist`s, so you must specify the
+desired level of evaluation:
+```python
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.any_(lambda x: x > 1).aslist() ==
+        [[0, 2], []])
+assert (by_bar.foo.any_(lambda x: x > 1).nonempty().root().aslist() ==
+        [[{'bar': 0, 'foo': 0}, {'bar': 0, 'foo': 2}]])
+```
 
 **Args:**
 
 >    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
 >           All other args are passed through to that function. If absent, the
->           function is set to bool.
+>           function is set to `bool`.
 
->    **`**kwargs`**: Passed through to func.
+>    **`**kwargs`**: Passed through to the function specified in `*args`.
 
 **Returns:**
 
->    `self` or an empty plist (which evaluates to False).
->  TODO
+>    `self` or an empty `plist` (which evaluates to `False`).
 
 
 
@@ -1221,21 +1279,67 @@ If args are not passed, the function evaluated is `bool`.
 
 Apply an arbitrary function to elements of self, forwarding arguments.
 
+Any arguments passed to `apply` that are `plist`s and have the same
+length as `self` will be passed one-at-a-time to `func` with each
+element of `self`. Otherwise, arguments are passed in unmodified.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.apply('foo: {}'.format).aslist() ==
+        ['foo: 0', 'foo: 1', 'foo: 2'])
+assert (foos.foo.apply('foo: {}, bar: {}'.format, foos.bar).aslist() ==
+        ['foo: 0, bar: 0', 'foo: 1, bar: 1', 'foo: 2, bar: 0'])
+assert (foos.foo.apply('foo: {}, bar: {bar}'.format, bar=foos.bar).aslist() ==
+        ['foo: 0, bar: 0', 'foo: 1, bar: 1', 'foo: 2, bar: 0'])
+
+# The same as above, but in parallel:
+assert (foos.foo.apply('foo: {}, bar: {}'.format, foos.bar, psplit=1).aslist() ==
+        ['foo: 0, bar: 0', 'foo: 1, bar: 1', 'foo: 2, bar: 0'])
+
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.apply('bar: {bar} => {}'.format, bar=foos.bar.puniq()).aslist() ==
+        ['bar: 0 => [0, 2]', 'bar: 1 => [1]'])
+assert (by_bar.foo.apply_('bar: {bar} => {}'.format, bar=by_bar.bar).aslist() ==
+        [['bar: 0 => 0', 'bar: 0 => 2'], ['bar: 1 => 1']])
+```
+
+Using `paslist` and `psplat`:
+```python
+foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+(foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+(foos.bar == 1).baz = 6
+
+by_bar_baz = foos.bar.groupby().baz.groupby()
+
+by_bar_baz_apply_paslist = by_bar_baz.foo.apply(
+    lambda x, *a, **kw: {'{x}: {a} ({kw})'.format(x=x, a=a, kw=kw)}, by_bar_baz.baz, bar=by_bar_baz.bar, paslist=True)
+by_bar_baz_apply_paslist_psplat = by_bar_baz.foo.apply(
+    lambda *a, **kw: {'{a} ({kw})'.format(a=a, kw=kw)}, by_bar_baz.baz, bar=by_bar_baz.bar, paslist=True, psplat=True)
+
+assert (by_bar_baz_apply_paslist.aslist() ==
+        [["[[0], [2], [4]]: ([[3], [1], [2]],) ({'bar': [[0], [0], [0]]})"],
+         ["[[1, 3]]: ([[6, 6]],) ({'bar': [[1, 1]]})"]])
+assert (by_bar_baz_apply_paslist_psplat.aslist() ==
+        [["([0], [2], [4], [[3], [1], [2]]) ({'bar': [[0], [0], [0]]})"],
+         ["([1, 3], [[6, 6]]) ({'bar': [[1, 1]]})"]])
+```
+
 **Args:**
 
->    **`func`**: callable or string name of method in plist class.
+>    **`func`**: `callable`, `list` of `callable`s, or string name of method in `plist`.
 
->    **`*args`**: Arguments to pass to func.
+>    **`*args`**: Arguments to pass to `func`.
 
 >    **`**kwargs`**: Keyword arguments to pass to `func`, after extracting:
 
 >    **`paslist`**: Boolean (default `False`). If `True`, converts
->             elements of self to list using `plist.aslist()`
+>             elements of `self` to `list` using `plist.aslist()`
 >             before passing them to `func`, and reconverts the
->             result of each call to a plist. Note that this does
->             not guarantee that the returned plist has the same
->             shape as `self`, as plist.aslist() recursively
->             converts all contained plists to lists, but `func`
+>             result of each call to a `plist`. Note that this does
+>             not guarantee that the returned `plist` has the same
+>             shape as `self`, as `plist.aslist()` recursively
+>             converts all contained `plist`s to `list`s, but `func`
 >             might return any arbitrary result, so the same
 >             conversion cannot be inverted automatically.
 
@@ -1243,10 +1347,14 @@ Apply an arbitrary function to elements of self, forwarding arguments.
 >            arguments provided by `self` with the `*` operator
 >            (sometimes called the 'splat' operator).
 
+>    **`psplit`**: Integer (default `0`). If greater than `0`, `func` is
+>            applied in parallel. If `psplit` is `1`, the number of
+>            parallel executions is equal to the length of `self`.
+>            Otherwise, `psplit` is the number of parallel executions.
+
 **Returns:**
 
->    plist resulting from applying func to each element of self.
->  TODO
+>    `plist` resulting from applying `func` to each element of `self`.
 
 
 
@@ -1343,27 +1451,57 @@ Copy `self` to new `plist`.
 
 #### `pstar.plist.enum(self)`
 
-Wrap the current plist values in tuples where the first item is the index.
-TODO
+Wrap the current `plist` values in tuples where the first item is the index.
+
+**Examples:**
+```python
+pl = plist['a', 'b', 'c']
+assert (pl.enum().aslist() ==
+        [(0, 'a'), (1, 'b'), (2, 'c')])
+
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.enum_().aslist() ==
+        [[(0, 0), (1, 2)], [(0, 1)]])
+```
+
+**Returns:**
+
+>    `plist` of `(i, x)` pairs from calling `enumerate` on `self`.
 
 
 
 #### `pstar.plist.filter(self, func=<type 'bool'>, *args, **kwargs)`
 
-Filter self by an arbitrary function on elements of self, forwarding arguments.
+Filter `self` by an arbitrary function on elements of `self`, forwarding arguments.
+
+`filter` always returns the root of the filtered `plist`.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.filter().aslist() ==
+        [dict(foo=1, bar=1), dict(foo=2, bar=0)])
+assert (foos.foo.filter(lambda x: x < 2).aslist() ==
+        [dict(foo=0, bar=0), dict(foo=1, bar=1)])
+
+(foos.bar == 0).bin = 'zero'
+(foos.bar == 1).bin = 1
+assert (foos.bin.filter(isinstance, str).aslist() ==
+        [{'bar': 0, 'bin': 'zero', 'foo': 0}, {'bar': 0, 'bin': 'zero', 'foo': 2}])
+```
 
 **Args:**
 
 >    **`func`**: callable. Defaults to `bool`. Return value will be cast to `bool`.
 
->    **`*args`**: Arguments to pass to func.
+>    **`*args`**: Arguments to pass to `func`.
 
 >    **`**kwargs`**: Keyword arguments to pass to `func`, after extracting the same arguments as `plist.apply`.
 
 **Returns:**
 
->    plist resulting from filtering out elements of `self` for whom `func` evaluated to a False value.
->  TODO
+>    `plist` resulting from filtering out elements of `self` for whom `func` evaluated to a `False` value.
 
 
 
@@ -1609,23 +1747,43 @@ new_context()
 
 #### `pstar.plist.none(self, *args, **kwargs)`
 
-Returns self if args[0] evaluates to False for all elements.
+Returns `self` if `args[0]` evaluates to `False` for all elements of `self`.
 
-Shortcuts if args[0] ever evaluates to evaluates to True.
-If args are not passed, the function evaluated is `bool`.
+Shortcuts if `args[0]` ever evaluates to `True`.
+If `args` are not passed, the function evaluated is `bool`.
+
+Useful as an implicit `if` condition in chaining, but can be used explicitly
+in `if` statements as well.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.none(isinstance, pset).aslist() ==
+        [pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.none(lambda x: x > 1).aslist() == [])
+```
+
+`none` does not recurse into grouped `plist`s, so you must specify the
+desired level of evaluation:
+```python
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.none_(lambda x: x > 1).aslist() ==
+        [[], [1]])
+assert (by_bar.foo.none_(lambda x: x > 1).nonempty().root().aslist() ==
+        [[{'bar': 1, 'foo': 1}]])
+```
 
 **Args:**
 
 >    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
 >           All other args are passed through to that function. If absent, the
->           function is set to bool.
+>           function is set to `bool`.
 
->    **`**kwargs`**: Passed through to func.
+>    **`**kwargs`**: Passed through to the function specified in `*args`.
 
 **Returns:**
 
->    `self` or an empty plist (which evaluates to False).
->  TODO
+>    `self` or an empty `plist` (which evaluates to `False`).
 
 
 
@@ -1914,7 +2072,8 @@ assert (by_bar.pd_().pstr().aslist() ==
 Note the use of `pd_()` on the grouped `plist`. This allows you to get a separate `pandas.DataFrame` for
 each group in your `plist`, and then do normal `DataFrame` manipulations with them individually.
 If you want a `pandas.GroupBy` object, you should convert the `plist` to a `DataFrame` first, and then
-call `DataFrame.groupby`.
+call `DataFrame.groupby`. Also see `plist.remix` for alternative ways of converting `plist`s to
+`DataFrame`s.
 
 **Args:**
 
@@ -2028,19 +2187,19 @@ Shortcutting recursive equality function.
 convenience method for cases when the filtering that happens with `==` is
 undesirable or inconvenient.
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-zero_bars = foo.bar == 0
+zero_bars = foos.bar == 0
 assert (zero_bars.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0}])
-assert ((foo == zero_bars).aslist() ==
+assert ((foos == zero_bars).aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0}])
-assert (foo.pequal(zero_bars) == False)
+assert (foos.pequal(zero_bars) == False)
 ```
 
 **Args:**
@@ -2233,7 +2392,69 @@ assert (filtered.plen(-1, s=True) == 2)
 
 #### `pstar.plist.plt(self, **kwargs)`
 
-TODO
+Convenience method for managing `matplotlib.pyplot` state within a `plist` chain.
+
+`plt()` serves two purposes:
+1. It returns a delegation object that allows calling `pyplot` functions without having to call `apply` -- e.g.,
+   `plist.plt().plot()` instead of `plist.apply(plt.plot)`.
+1. It allows calling of multiple `pyplot` functions in a single call just by passing `**kwargs`. This
+   makes it easier to set up plotting contexts and to control when plots are shown, without adding
+   lots of one-line `plt` calls before and after the data processing and plotting code.
+
+Neither of these use cases provides anything that can't be done directly with normal calls to `plt`
+functions and `plist.apply`. This method is just to make your life easier if you do a lot of
+plotting.
+
+When passing `kwargs` to `plt()`, they are executed in alphabetical order. If that is inappropriate,
+(e.g., when creating a figure and setting other parameters), you can break up the call into two or
+more `plt()` calls to enforce any desired ordering, but you should probably just do that kind of
+complicated setup outside of the `plist` context.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+(foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
+(foos.bar == 1).baz = 6
+
+foos.foo.plt().scatter(foos.bar).plt(show=None)
+# Equivlent to:
+foos.foo.apply(plt.scatter, foos.bar)
+plt.show()
+
+by_bar = foos.bar.groupby()
+by_bar.foo.plt().plot().plt(show=None)
+# Equivlent to:
+by_bar.foo.apply(plt.plot)
+plt.show()
+
+# Create a figure of size 12x8, set the x and y limits, add x and y axis labels,
+# draw a scatter plot with custom colors and labels per group, add the legend, and show the figure.
+by_bar.foo.plt(
+    figure=dict(figsize=(12, 8)), xlim=(-1, 5), ylim=(-1, 7), xlabel='foo', ylabel='baz'
+).scatter(
+    by_bar.baz, c=plist['r', 'g'], label='bar: ' + by_bar.bar.puniq().ungroup().pstr()
+).plt(legend=dict(loc=0), show=None)
+
+# Equivalent to:
+plt.figure(figsize=(12, 8))
+plt.xlabel('foo')
+plt.xlim((-1, 5))
+plt.ylabel('baz')
+plt.ylim((-1, 7))
+by_bar.foo.apply(plt.scatter, by_bar.baz, c=plist['r', 'g'], label='bar: ' + by_bar.bar.puniq().ungroup().pstr())
+plt.legend(loc=0)
+plt.show()
+```
+
+**Args:**
+
+>    **`**kwargs`**: Key/value pairs where the key is a function name on `plt`, and the value is the arguments
+>              to call that function with, or `None` for an empty call.
+
+**Returns:**
+
+>    Delegation object that can call `pyplot` functions like `plt.plot`, as well as accessing whatever
+>    properties are available to elements of `self`.
 
 
 
@@ -2329,7 +2550,23 @@ any duplicates in the elements of `foo`, they would have been removed.
 #### `pstar.plist.pset(self)`
 
 Converts the elements of self into pset objects.
-TODO
+
+Useful for creating `set`s from grouped `plist`s.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.pitems().pset().aslist() ==
+        [{('foo', 0), ('bar', 0)}, {('foo', 1), ('bar', 1)}, {('foo', 2), ('bar', 0)}])
+
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.pset().aslist() ==
+        [{0, 2}, {1}])
+```
+
+**Returns:**
+
+>    New `plist` of `pset`s for each value in `self`.
 
 
 
@@ -2552,6 +2789,15 @@ Applies logging function qj to self for easy in-chain logging.
 
 See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.qj('foo').aslist() ==
+        [0, 1, 2])
+# Logs:
+# qj: <calling_module> calling_func: foo <3869>: [0, 1, 2]
+```
+
 **Args:**
 
 >    **`*args`**: Arguments to pass to `qj`.
@@ -2561,7 +2807,6 @@ See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 **Returns:**
 
 >    `self`
->  TODO
 
 
 
@@ -2722,10 +2967,10 @@ assert (rmx_by_bam.aslist() ==
 This behavior can be useful when integrating with pandas, for example:
 ```python
 df = rmx_by_bam.pd()
-# df is the following dataframe object:
-#           baz     foo
-#   0  [13, -9]  [0, 2]
-#   1      [42]     [1]
+assert (str(df) ==
+        '        baz     foo\n'
+        '0  [13, -9]  [0, 2]\n'
+        '1      [42]     [1]')
 ```
 
 If you instead want `remix` to return grouped pdicts, just pass `pepth=-1`
@@ -2828,16 +3073,16 @@ structure of the plist, only the order of its (or its children's) elements.
 
 A basic sort:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-bar_sorted = foo.bar.sortby()
+bar_sorted = foos.bar.sortby()
 assert (bar_sorted.aslist() ==
         [0, 0, 1])
-foo_sorted_by_bar = bar_sorted.root()
-assert (foo_sorted_by_bar.aslist() ==
+foos_sorted_by_bar = bar_sorted.root()
+assert (foos_sorted_by_bar.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0},
          {'foo': 1, 'bar': 1}])
@@ -2846,16 +3091,16 @@ assert (foo_sorted_by_bar.aslist() ==
 Sorting with groups works in the same way -- the sort is applied to each
 group of `self`:
 ```python
-foo_by_bar = foo.bar.groupby()
-assert (foo_by_bar.aslist() ==
+by_bar = foos.bar.groupby()
+assert (by_bar.aslist() ==
         [[{'foo': 0, 'bar': 0},
           {'foo': 2, 'bar': 0}],
          [{'foo': 1, 'bar': 1}]])
-bar_by_bar_sorted = foo_by_bar.bar.sortby(reverse=True)
-assert (bar_by_bar_sorted.aslist() ==
+by_bar_sorted = by_bar.bar.sortby(reverse=True)
+assert (by_bar_sorted.aslist() ==
         [[1], [0, 0]])
-foo_by_bar_sorted = bar_by_bar_sorted.root()
-assert (foo_by_bar_sorted.aslist() ==
+by_bar_sorted = by_bar_sorted.root()
+assert (by_bar_sorted.aslist() ==
         [[{'foo': 1, 'bar': 1}],
          [{'foo': 0, 'bar': 0},
           {'foo': 2, 'bar': 0}]])
@@ -2878,11 +3123,35 @@ assert (foo_by_bar_sorted.aslist() ==
 
 Inverts the last grouping operation applied and returns a new plist.
 
+`ungroup` undoes the last `groupby` operation by default. It removes
+groupings in the inverse order that they are applied in -- `groupby`
+always adds new groups at the inner most layer, so `ungroup` removes
+groups from the innermost layer. It does not undo any implicit sorting
+caused by the `groupby` operation, however.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foos.bar.sortby().groupby()
+assert (by_bar.ungroup().aslist() ==
+        foos.aslist())
+
+by_bar[0].baz = 6
+by_bar[1].baz = by_bar[1].foo * 2
+by_bar_baz = by_bar.baz.groupby()
+assert (by_bar_baz.ungroup().aslist() ==
+        by_bar.aslist())
+assert (by_bar_baz.ungroup(2).aslist() ==
+        foos.aslist())
+assert (by_bar_baz.ungroup(-1).aslist() ==
+        by_bar.ungroup(-1).aslist())
+```
+
 **Args:**
 
 >    **`r`**: Integer value for the number of groups to remove. If `r == 0`, no
 >       groups are removed. If it is positive, that many groups must be
->       removed, or `upgroup` throws a `ValueError`. If `r < 0`, all groups in
+>       removed, or `upgroup` raises a `ValueError`. If `r < 0`, all groups in
 >       this plist are removed, returning a flat plist.
 
 >    **`s`**: Successor object. Do not pass -- used to track how many ungroupings
@@ -2895,7 +3164,6 @@ Inverts the last grouping operation applied and returns a new plist.
 **Raises:**
 
 >    **`ValueError`**: If there are fewer groups to ungroup than requested.
->  TODO
 
 
 
@@ -2989,8 +3257,33 @@ assert (all_the_same_dict ==
 
 #### `pstar.plist.zip(self, *others)`
 
-Zips self with others, recursively.
-TODO
+Zips `self` with `others`, recursively.
+
+**Examples:**
+```python
+pl1 = plist['a', 'b', 'c']
+pl2 = plist[1, 2, 3]
+pl3 = plist['nother', 'ig', 'odebase']
+assert (pl2.zip(pl1, pl3).aslist() ==
+        [(1, 'a', 'nother'), (2, 'b', 'ig'), (3, 'c', 'odebase')])
+
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foos.bar.groupby()
+assert (by_bar.bar.zip(by_bar.foo).aslist() ==
+        [[(0, 0), (0, 2)], [(1, 1)]])
+```
+
+**Args:**
+
+>    **`*others`**: `iterable`s that have the same length as `self`.
+
+**Returns:**
+
+>    New `plist` with the same structure as `self`.
+
+**Raises:**
+>    `ValueError` if `self` and each `iterable` in `others` don't all have the same length at
+>    level `zip` is initially called at.
 
 
 
