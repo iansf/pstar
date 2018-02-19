@@ -30,7 +30,7 @@ import mock
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pstar import defaultpdict, pdict, plist  # pylint: disable=g-multiple-import
+from pstar import defaultpdict, pdict, plist, pset  # pylint: disable=g-multiple-import
 from qj import qj
 
 DEBUG_TESTS = False

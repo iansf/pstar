@@ -118,6 +118,7 @@ def process_doc(doc):
   doc_lines = plist(doc.replace('Args:', '**Args:**')
                        .replace('Returns:', '**Returns:**\n')
                        .replace('Raises:', '**Raises:**')
+                       .replace('Examples:', '**Examples:**')
                        .replace('\n\n', blank_line)
                        .split('\n'))
   short, body = doc_lines[0], doc_lines[1:]

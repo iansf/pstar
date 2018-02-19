@@ -91,7 +91,7 @@ Nested `defaultpdicts` make nice lightweight objects:
 
 Override `getattr`. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 assert (pd.foo == 1)
@@ -112,7 +112,7 @@ assert (pd.__module__.startswith('pstar'))
 
 Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 assert (pd['foo'] == pd.foo == 1)
@@ -144,7 +144,7 @@ assert (pd[['foo', 'baz']].pdict() ==
 
 Initialize defaultpdict.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int)
 assert (pd.foo == 0)
@@ -236,7 +236,7 @@ Copy `self` to new `defaultpdict`.
 
 Equivalent to `self.values()`, but returns a `plist` with values sorted as in `self.peys()`.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 assert (pd.palues().aslist() ==
@@ -266,7 +266,7 @@ In the common case of a `defaultpdict` with sortable keys, it is often convenien
 to rely on the sort-order of the keys for a variety of operations that would
 otherwise require explicit looping.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 assert (pd.peys().aslist() == ['bar', 'baz', 'foo'])
@@ -286,7 +286,7 @@ assert (pd_str ==
 
 Equivalent to `self.items()`, but returns a `plist` with items sorted as in `self.peys()`.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 assert (pd.pitems().aslist() ==
@@ -311,7 +311,7 @@ Call the `qj` logging function with `self` as the value to be logged. All other 
 
 See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 pd.qj('pd').update(baz=3).qj('pd now')
@@ -336,7 +336,7 @@ old keys to new keys allows easy selective renaming, as any key not in the
 `dict` will be unchanged. Passing a `callable` requires you to return a unique
 value for every key in `self`
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 assert (pd.rekey(dict(foo='floo')) ==
@@ -368,7 +368,7 @@ assert (pd.far == 2.0)
 
 Update `self`. Returns `self`.
 
-Examples:
+**Examples:**
 ```python
 pd = defaultpdict(int)
 assert (pd.update(foo=1, bar=2.0).foo == 1)
@@ -427,7 +427,7 @@ pdict.update() returns self, rather than None, to support chaining:
 
 Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 assert (pd['foo'] == pd.foo == 1)
@@ -459,7 +459,7 @@ assert (pd[['foo', 'baz']].pdict() ==
 
 Initialize pdict.
 
-Examples:
+**Examples:**
 ```python
 pd1 = pdict(foo=1, bar=2.0, baz='three')
 pd2 = pdict({'foo': 1, 'bar': 2.0, 'baz': 'three'})
@@ -519,7 +519,7 @@ Copy `self` to a new `pdict`.
 
 Equivalent to `self.values()`, but returns a `plist` with values sorted as in `self.peys()`.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 assert (pd.palues().aslist() ==
@@ -549,7 +549,7 @@ In the common case of a `pdict` with sortable keys, it is often convenient
 to rely on the sort-order of the keys for a variety of operations that would
 otherwise require explicit looping.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 assert (pd.peys().aslist() == ['bar', 'baz', 'foo'])
@@ -569,7 +569,7 @@ assert (pd_str ==
 
 Equivalent to `self.items()`, but returns a `plist` with items sorted as in `self.peys()`.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 assert (pd.pitems().aslist() ==
@@ -594,7 +594,7 @@ Call the `qj` logging function with `self` as the value to be logged. All other 
 
 See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 pd.qj('pd').update(baz=3).qj('pd now')
@@ -619,7 +619,7 @@ old keys to new keys allows easy selective renaming, as any key not in the
 `dict` will be unchanged. Passing a `callable` requires you to return a unique
 value for every key in `self`
 
-Examples:
+**Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
 assert (pd.rekey(dict(foo='floo')) ==
@@ -651,7 +651,7 @@ assert (pd.far == 2.0)
 
 Update `self`. Returns `self`.
 
-Examples:
+**Examples:**
 ```python
 pd = pdict()
 assert (pd.update(foo=1, bar=2.0).foo == 1)
@@ -680,7 +680,35 @@ See tests/pstar_test.py for usage examples ranging from simple to complex.
 
 #### `pstar.plist._(self)`
 
-Causes the next call to `self` to be performed as deep as possible in the plist.
+Causes the next call to `self` to be performed as deep as possible in the `plist`.
+
+This is a convenience method primarily for easy subscripting of the values of
+a `plist`:
+```python
+pl = plist([np.arange(10) for _ in range(3)])
+assert (pl._[2].aslist() ==
+        [2, 2, 2])
+import operator as op
+assert (pl._[2:4:1].apply(op.eq,
+                          [np.array([2, 3]), np.array([2, 3]), np.array([2, 3])])
+                   .apply(np.all).aslist() ==
+        [True, True, True])
+```
+
+It can be used to call any method on the values of a `plist`, however:
+```python
+pl = plist([['foo'], ['bar']])
+pl._.append('baz')
+assert (pl.apply(type).aslist() ==
+        [list, list])
+assert (pl.aslist() ==
+        [['foo', 'baz'], ['bar', 'baz']])
+```
+
+**Returns:**
+
+>    `self`, but in a state such that the next access to a property or method of
+>    `self` occurs at the maximum depth.
 
 
 
@@ -738,7 +766,16 @@ Call each element of self, possibly recusively.
 
 #### `pstar.plist.comparator(self, other, return_inds=False)`
 
-plist-compatible comparison operator. Note: comparisons filter plists.
+plist-compatible comparison operator. **Comparisons filter plists.**
+
+**IMPORTANT:** `plist` comparisons all filter the `plist` and return a new
+`plist`, rather than a truth value.
+
+`comparator` is not callable directly from `plist`. It implements the various
+python comparison operations: `==`, `<`, `>`, etc. The comparison operators
+can be called directly with their corresponding 'magic' functions,
+`plist.__eq__`, `plist.__lt__`, `plist.__gt__`, etc., but are generally just
+called implicitly.
 
 plist comparators can filter on leaf values:
 ```python
@@ -828,6 +865,13 @@ assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
          [[]]])
 ```
 
+Note that `plist.nonempty` can be used to remove empty internal `plist`s
+after filtering a grouped `plist`:
+```python
+assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
+        [[[{'foo': 1, 'bar': 1}]]])
+```
+
 **Args:**
 
 >    **`self`**: plist object.
@@ -913,11 +957,32 @@ Delegates to __delitem__ for compatibility with python 2.7.
 
 Allow the use of plists in `with` statements.
 
+**Examples:**
+```python
+import glob, os
+path = os.path.dirname(__file__)
+filenames = plist(glob.glob(os.path.join(path, '*.py')))
+with filenames.apply(open, 'r') as f:
+  texts = f.read()
+assert (len(texts) >= 1)
+assert (len(texts.all(isinstance, str)) >= 1)
+```
+
+**Returns:**
+
+>    `plist` of results of calling `__enter__` on each element of `self`.
+
 
 
 #### `pstar.plist.__exit__(self, exc_type, exc_value, traceback)`
 
 Allow the use of plists in `with` statements.
+
+See `plist.__enter__`.
+
+**Returns:**
+
+>    `plist` of results of calling `__exit__` on each element of `self`.
 
 
 
@@ -1126,6 +1191,7 @@ If args are not passed, the function evaluated is `bool`.
 **Returns:**
 
 >    `self` or an empty plist (which evaluates to False).
+>  TODO
 
 
 
@@ -1147,6 +1213,7 @@ If args are not passed, the function evaluated is `bool`.
 **Returns:**
 
 >    `self` or an empty plist (which evaluates to False).
+>  TODO
 
 
 
@@ -1179,30 +1246,105 @@ Apply an arbitrary function to elements of self, forwarding arguments.
 **Returns:**
 
 >    plist resulting from applying func to each element of self.
+>  TODO
 
 
 
 #### `pstar.plist.aslist(self)`
 
-Recursively convert all nested plists from self to lists, inclusive.
+Recursively convert all nested `plist`s from `self` to `list`s, inclusive.
+
+**Examples:**
+```python
+foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foo.bar.groupby()
+assert (by_bar.apply(type).aslist() == [plist, plist])
+assert ([type(x) for x in by_bar.aslist()] == [list, list])
+```
+
+**Returns:**
+
+>    `list` with the same structure and contents as `self`.
+
+
+
+#### `pstar.plist.aspdict(self)`
+
+Convert `self` to a `pdict` if there is a natural mapping of keys to values in `self`.
+
+Recursively creates a `pdict` from `self`. Experimental, likely to change.
+
+**Examples:**
+```python
+pl = plist['foo', 'bar', 'baz']
+assert (pl.pdict() ==
+        dict(foo='foo', bar='bar', baz='baz'))
+assert (pl.replace('a', '').replace('o', '').pdict() ==
+        dict(foo='f', bar='br', baz='bz'))
+
+foos = plist([pdict(foo=0, bar=0, baz=3), pdict(foo=1, bar=1, baz=2), pdict(foo=2, bar=0, baz=1)])
+by_bar = foos.bar.groupby()
+assert (by_bar.bar.ungroup().puniq().zip(by_bar).aspdict() ==
+        {0: [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 1, 'foo': 2}],
+         1: [{'bar': 1, 'baz': 2, 'foo': 1}]})
+assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
+```
+
+**Returns:**
+
+>    New `pdict` based on the contents of `self`.
+
+
+
+#### `pstar.plist.aspset(self)`
+
+Recursively convert all nested `plist`s from `self` to `pset`s, inclusive.
+
+All values must be hashable for the conversion to succeed.
+
+**Examples:**
+```python
+foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foo.bar.aspset() == pset([0, 1]))
+by_bar = foo.bar.groupby()
+assert (by_bar.bar.apply(type).aslist() == [plist, plist])
+assert ([type(x) for x in by_bar.bar.aspset()] == [pset, pset])
+```
+
+**Returns:**
+
+>    `pset` with the same structure and contents as `self`.
 
 
 
 #### `pstar.plist.astuple(self)`
 
-Recursively convert all nested plists from self to tuples, inclusive.
+Recursively convert all nested `plist`s from `self` to `tuple`s, inclusive.
+
+**Examples:**
+```python
+foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foo.bar.groupby()
+assert (by_bar.apply(type).aslist() == [plist, plist])
+assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
+```
+
+**Returns:**
+
+>    `tuple` with the same structure and contents as `self`.
 
 
 
 #### `pstar.plist.copy(self)`
 
-Copy self to new plist.
+Copy `self` to new `plist`.
 
 
 
 #### `pstar.plist.enum(self)`
 
 Wrap the current plist values in tuples where the first item is the index.
+TODO
 
 
 
@@ -1221,6 +1363,7 @@ Filter self by an arbitrary function on elements of self, forwarding arguments.
 **Returns:**
 
 >    plist resulting from filtering out elements of `self` for whom `func` evaluated to a False value.
+>  TODO
 
 
 
@@ -1482,6 +1625,7 @@ If args are not passed, the function evaluated is `bool`.
 **Returns:**
 
 >    `self` or an empty plist (which evaluates to False).
+>  TODO
 
 
 
@@ -1579,7 +1723,49 @@ of empty sublists starting from one layer into `filtered`.
 
 #### `pstar.plist.np(self, *args, **kwargs)`
 
-Converts the elements of self to numpy arrays, forwarding passed args.
+Converts the elements of `self` to `numpy.array`s, forwarding passed args.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+(foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+(foos.bar == 1).baz = 6
+foos.bin = -1
+assert (foos.aslist() ==
+        [{'bar': 0, 'baz': 3, 'bin': -1, 'foo': 0},
+         {'bar': 1, 'baz': 6, 'bin': -1, 'foo': 1},
+         {'bar': 0, 'baz': 5, 'bin': -1, 'foo': 2},
+         {'bar': 1, 'baz': 6, 'bin': -1, 'foo': 3},
+         {'bar': 0, 'baz': 7, 'bin': -1, 'foo': 4}])
+
+assert (foos.foo.join().np().sum().aslist() ==
+        [10])
+
+by_bar = foos.bar.sortby(reverse=True).groupby()
+baz = by_bar.baz
+# Filters for the max per group, which includes the two-way tie in the first group.
+(baz == baz.np().max()).bin = 13
+
+assert (by_bar.aslist() ==
+        [[{'bar': 1, 'baz': 6, 'bin': 13, 'foo': 1},
+          {'bar': 1, 'baz': 6, 'bin': 13, 'foo': 3}],
+         [{'bar': 0, 'baz': 3, 'bin': -1, 'foo': 0},
+          {'bar': 0, 'baz': 5, 'bin': -1, 'foo': 2},
+          {'bar': 0, 'baz': 7, 'bin': 13, 'foo': 4}]])
+
+assert ((by_bar.foo.np() * by_bar.baz.np() - by_bar.bin.np()).sum().aslist() ==
+        [-2, 27])
+```
+
+**Args:**
+
+>    **`*args`**: Positional arguments passed to `np.array`.
+
+>    **`**kwargs`**: Keyword arguments passed to `np.array`.
+
+**Returns:**
+
+>    New `plist` with values from `self` converted to `np.array`s.
 
 
 
@@ -1671,7 +1857,74 @@ shouldn't be used.
 
 #### `pstar.plist.pd(self, *args, **kwargs)`
 
-Converts self into a pandas DataFrame, forwarding passed args.
+Converts `self` into a `pandas.DataFrame`, forwarding passed args.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+(foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+(foos.bar == 1).baz = 6
+foos.bin = -1
+
+assert (foos.aslist() ==
+        [{'bar': 0, 'baz': 3, 'bin': -1, 'foo': 0},
+         {'bar': 1, 'baz': 6, 'bin': -1, 'foo': 1},
+         {'bar': 0, 'baz': 5, 'bin': -1, 'foo': 2},
+         {'bar': 1, 'baz': 6, 'bin': -1, 'foo': 3},
+         {'bar': 0, 'baz': 7, 'bin': -1, 'foo': 4}])
+
+by_bar = foos.bar.sortby(reverse=True).groupby()
+baz = by_bar.baz
+(baz == baz.np().max()).bin = 13
+
+assert (by_bar.aslist() ==
+        [[{'bar': 1, 'baz': 6, 'bin': 13, 'foo': 1},
+          {'bar': 1, 'baz': 6, 'bin': 13, 'foo': 3}],
+         [{'bar': 0, 'baz': 3, 'bin': -1, 'foo': 0},
+          {'bar': 0, 'baz': 5, 'bin': -1, 'foo': 2},
+          {'bar': 0, 'baz': 7, 'bin': 13, 'foo': 4}]])
+
+assert (str(foos.pd()) ==
+        '   bar  baz  bin  foo\n'
+        '0    1    6   13    1\n'
+        '1    1    6   13    3\n'
+        '2    0    3   -1    0\n'
+        '3    0    5   -1    2\n'
+        '4    0    7   13    4')
+
+assert (str(foos.pd(index='foo')) ==
+        '     bar  baz  bin\n'
+        'foo               \n'
+        '1      1    6   13\n'
+        '3      1    6   13\n'
+        '0      0    3   -1\n'
+        '2      0    5   -1\n'
+        '4      0    7   13')
+
+assert (by_bar.pd_().pstr().aslist() ==
+        ['   bar  baz  bin  foo\n'
+         '0    1    6   13    1\n'
+         '1    1    6   13    3',
+
+         '   bar  baz  bin  foo\n'
+         '0    0    3   -1    0\n'
+         '1    0    5   -1    2\n'
+         '2    0    7   13    4'])
+```
+Note the use of `pd_()` on the grouped `plist`. This allows you to get a separate `pandas.DataFrame` for
+each group in your `plist`, and then do normal `DataFrame` manipulations with them individually.
+If you want a `pandas.GroupBy` object, you should convert the `plist` to a `DataFrame` first, and then
+call `DataFrame.groupby`.
+
+**Args:**
+
+>    **`*args`**: Positional arguments passed to `pandas.DataFrame.from_records`.
+
+>    **`**kwargs`**: Keyword arguments passed to `pandas.DataFrame.from_records`.
+
+**Returns:**
+
+>    A `pandas.DataFrame` object constructed from `self`.
 
 
 
@@ -1725,6 +1978,45 @@ assert (filtered.pdepth(True) == 2)
 >    plist whose elements are the recursive depth of the leaf children, or a
 >    scalar representing the maximum depth encountered in self if `s` is
 >    `True`.
+
+
+
+#### `pstar.plist.pdict(self, *args, **kwargs)`
+
+Convert `self` to a `pdict` if there is a natural mapping of keys to values in `self`.
+
+Attempts to treat the contents of `self` as key-value pairs in order to create the `pdict`.
+If that fails, checks if `self.root()` is a `plist` of `KeyValue` tuples. If so, uses
+`self.root().key` for the keys, and the values in `self` for the values. Otherwise,
+attempts to create a `pdict` pairing values from `self.root()` with values from `self`.
+
+**Examples:**
+```python
+pl = plist['foo', 'bar', 'baz']
+assert (pl.pdict() ==
+        dict(foo='foo', bar='bar', baz='baz'))
+assert (pl.replace('a', '').replace('o', '').pdict() ==
+        dict(foo='f', bar='br', baz='bz'))
+
+pd = pdict(foo=1, bar=2, floo=0)
+assert (pd.pitems().pdict() == pd)
+assert (pd.palues().pdict() == pd)
+assert ((pd.palues() + 2).pdict() ==
+        dict(foo=3, bar=4, floo=2))
+assert (pd.peys()._[0].pdict(),
+        pdict(foo='f', bar='b', floo='f'))
+
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.pstr().zip(foos.bar).uproot().pdict() ==
+        {'0': 0, '1': 1, '2': 0})
+
+assert (plist[('foo', 1), ('foo', 2)].pdict() ==
+        dict(foo=2))
+```
+
+**Returns:**
+
+>    New `pdict` based on the contents of `self`.
 
 
 
@@ -1939,6 +2231,12 @@ assert (filtered.plen(-1, s=True) == 2)
 
 
 
+#### `pstar.plist.plt(self, **kwargs)`
+
+TODO
+
+
+
 #### `pstar.plist.puniq(self)`
 
 Returns a new plist with only a single element of each value in self.
@@ -2031,6 +2329,7 @@ any duplicates in the elements of `foo`, they would have been removed.
 #### `pstar.plist.pset(self)`
 
 Converts the elements of self into pset objects.
+TODO
 
 
 
@@ -2083,6 +2382,36 @@ assert (filtered.pshape().aslist() ==
 #### `pstar.plist.pstr(self)`
 
 Returns a plist with leaf elements converted to strings.
+
+Calls `str` on each leaf element of self.
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.pstr().aslist() ==
+        ['0', '1', '2'])
+
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.pstr().aslist() ==
+        [['0', '2'], ['1']])
+```
+
+Note that string concatenation works naturally with `plist`s, so it is easy to build
+up a desired string using `plist.pstr`:
+```python
+assert (('foo: ' + by_bar.foo.pstr() + ', bar: ' + by_bar.bar.pstr()).aslist() ==
+        [['foo: 0, bar: 0', 'foo: 2, bar: 0'], ['foo: 1, bar: 1']])
+```
+
+If you want the string representation of a layer of a grouped `plist`, instead use
+`plist.apply(str)` at the desired depth:
+```python
+assert (by_bar.foo.apply(str).aslist() ==
+        ['[0, 2]', '[1]'])
+```
+
+**Returns:**
+
+>    `plist` of strings.
 
 
 
@@ -2232,6 +2561,7 @@ See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 **Returns:**
 
 >    `self`
+>  TODO
 
 
 
@@ -2424,10 +2754,66 @@ assert (rmx_by_bam.aslist() ==
 
 #### `pstar.plist.root(self)`
 
-Returns the root of the plist.
+Returns the root of the `plist`.
 
-Most plist methods maintain the root pointer so that it is possible to
-return to the plist from which later results are generated.
+When a `plist` is created, by default its root is `self`:
+```python
+pl = plist([1, 2, 3])
+assert (pl.root() is pl)
+```
+
+Subsequent calls to the `plist` will return new `plist`s, but most of those
+calls will retain the original root:
+```python
+pl2 = pl + 3
+assert (pl2.aslist() ==
+        [4, 5, 6])
+assert (pl2.root() is pl)
+assert (pl2.pstr().root() is pl)
+```
+
+Some methods create a new root `plist` in order to keep the values and the root
+syncronized:
+```python
+assert (pl2[0:2].aslist() ==
+        [4, 5])
+assert (pl2[0:2].root().aslist() ==
+        [1, 2])
+assert (pl2.sortby(reverse=True).aslist() ==
+        [6, 5, 4])
+assert (pl2.sortby(reverse=True).root().aslist() ==
+        [3, 2, 1])
+```
+
+`plist` filtering also always returns the root, in order to make the filter easily chainable:
+```python
+foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foo.aslist() ==
+        [{'foo': 0, 'bar': 0},
+         {'foo': 1, 'bar': 1},
+         {'foo': 2, 'bar': 0}])
+filtered = foo.bar == 0
+assert (filtered.aslist() ==
+        [dict(foo=0, bar=0), dict(foo=2, bar=0)])
+assert (filtered.root() is filtered)
+(foo.bar == 0).baz = 6
+(foo.bar == 1).baz = foo.foo * 2
+assert (foo.aslist() ==
+        [dict(foo=0, bar=0, baz=6), dict(foo=1, bar=1, baz=2), dict(foo=2, bar=0, baz=6)])
+```
+
+Grouping also always returns the root:
+```python
+by_bar = foo.bar.groupby()
+assert (by_bar.aslist() ==
+        [[{'bar': 0, 'baz': 6, 'foo': 0}, {'bar': 0, 'baz': 6, 'foo': 2}],
+         [{'bar': 1, 'baz': [0, 2, 4], 'foo': 1}]])
+assert (by_bar.aslist() == by_bar.root().aslist())
+```
+
+**Returns:**
+
+>    The root `plist` of `self`.
 
 
 
@@ -2509,12 +2895,36 @@ Inverts the last grouping operation applied and returns a new plist.
 **Raises:**
 
 >    **`ValueError`**: If there are fewer groups to ungroup than requested.
+>  TODO
 
 
 
 #### `pstar.plist.uproot(self)`
 
-Sets the root to `self` so future `root()` calls return this plist.
+Sets the root to `self` so future `root()` calls return this `plist`.
+
+In some cases it is better reset the root. For example, after applying
+a number of operations to a `plist` to get the data into the desired form,
+resetting the root to `self` often makes sense, as future filtering
+should not return the original data:
+```python
+foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+(foo.bar == 0).baz = 6
+(foo.bar == 1).baz = foo.foo * 2
+floo = foo.rekey(dict(foo='floo'))
+assert (floo.root() is foo)
+assert (floo.peys()[0].aslist() ==
+        ['bar', 'baz', 'floo'])
+assert ((floo.floo < 2).aslist() ==
+        [dict(foo=0, bar=0, baz=6), dict(foo=1, bar=1, baz=2)])
+floo = floo.uproot()
+assert ((floo.floo < 2).aslist() ==
+        [dict(floo=0, bar=0, baz=6), dict(floo=1, bar=1, baz=2)])
+```
+
+**Returns:**
+
+>    `self`.
 
 
 
@@ -2580,10 +2990,11 @@ assert (all_the_same_dict ==
 #### `pstar.plist.zip(self, *others)`
 
 Zips self with others, recursively.
+TODO
 
 
 
-#### `pstar.pset(set)`
+#### `pstar.pset(frozenset)`
 
 Placeholder set subclass. Not yet implemented.
 
