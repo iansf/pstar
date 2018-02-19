@@ -77,7 +77,9 @@ KeyValue = collections.namedtuple('KeyValue', 'key value')
 ################################################################################
 ################################################################################
 class pdict(dict):
-  """dict subclass where everything is automatically a property.
+  """`dict` subclass where everything is automatically a property.
+
+  Examples:
 
   Use with dot notation or subscript notation:
   ```python
@@ -86,14 +88,14 @@ class pdict(dict):
     assert (p['foo'] == p.foo == 1)
   ```
 
-  List subscripts also work and return a plist of the corresponding keys:
+  `list` subscripts also work and return a `plist` of the corresponding keys:
   ```python
     p = pdict(foo=1, bar=2)
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  Setting with a list subscript also works, using a single element or a matching
-  list for the values:
+  Setting with a `list` subscript also works, using a single element or a matching
+  `list` for the values:
   ```python
     p = pdict()
     p[['foo', 'bar']] = 1
@@ -102,7 +104,7 @@ class pdict(dict):
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  pdict.update() returns self, rather than None, to support chaining:
+  `pdict.update()` returns `self`, rather than `None`, to support chaining:
   ```python
     p = pdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
@@ -112,7 +114,7 @@ class pdict(dict):
   """
 
   def __init__(self, *a, **kw):
-    """Initialize pdict.
+    """Initialize `pdict`.
 
     Examples:
     ```python
@@ -122,8 +124,8 @@ class pdict(dict):
     ```
 
     Args:
-      *a: positional arguments passed through to `dict()`.
-      **kw: keyword arguments pass through to `dict()`.
+      *a: Positional arguments passed through to `dict()`.
+      **kw: Keyword arguments passed through to `dict()`.
 
     Returns:
       `None`. `pdict` is initialized.
@@ -142,7 +144,7 @@ class pdict(dict):
     ```
 
     When indexing with a `list`, the returned `plist` is rooted at a `plist` of
-    `KeyValue` tuples, making it easy to recover the keys that gave the values, and
+    `KeyValue` `tuple`s, making it easy to recover the keys that gave the values, and
     allows the `plist` to be turned back into a corresponding `pdict`:
     ```python
     assert (pd[['foo', 'baz']].root().aslist() ==
@@ -152,11 +154,11 @@ class pdict(dict):
     ```
 
     Args:
-      key: Any hashable object, or a `list` of hashable objects.
+      key: Any `hash`able object, or a `list` of `hash`able objects.
 
     Returns:
-      Either the value held at `key`, or a `plist` of values held at each key in the list
-      of keys, when called with a list of keys.
+      Either the value held at `key`, or a `plist` of values held at each key in the `list`
+      of keys, when called with a `list` of keys.
     """
     if isinstance(key, list):
       return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
@@ -164,16 +166,18 @@ class pdict(dict):
       return dict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
-    """Subscript assignment operation. Keys and values can be scalars or lists.
+    """Subscript assignment operation. Keys and values can be scalars or `list`s.
 
-    `pdict` assignment works normally for any hashable `key`:
+    Examples:
+
+    `pdict` assignment works normally for any `hash`able `key`:
     ```python
     pd = pdict()
     pd['foo'] = 1
     assert (pd.foo == pd['foo'] == 1)
     ```
 
-    `pdict` assignment can also work with a list of hashable `key`s:
+    `pdict` assignment can also work with a `list` of `hash`able `key`s:
     ```python
     pd[['bar', 'baz']] = plist[2.0, 'three']
     assert (pd.bar == pd['bar'] == 2.0)
@@ -181,7 +185,7 @@ class pdict(dict):
     ```
 
     Args:
-      key: Any hashable object, or a `list` of hashable objects.
+      key: Any `hash`able object, or a `list` of `hash`able objects.
       value: Any value, or a `plist` of values that matches the shape of `key`, if it
              is a `list`.
 
@@ -199,8 +203,17 @@ class pdict(dict):
   def __str__(self):
     """Readable string representation of `self`.
 
-    If the keys in `self` are sortable, returns a string with key/value pairs sorted by key.
-    Otherwise, returns a normal `dict.__str__` representation.
+    Examples:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz='three')
+    assert (str(pd) ==
+            "{'bar': 2.0, 'baz': 'three', 'foo': 1}")
+    ```
+
+    Returns:
+      If the keys in `self` are sortable, returns a string with key/value pairs
+      sorted by key. Otherwise, returns a normal `dict.__str__`
+      representation.
     """
     try:
       delim = ', ' if len(self) < 8 else ',\n '
@@ -212,7 +225,7 @@ class pdict(dict):
   __repr__ = __str__
 
   def update(self, *a, **kw):
-    """Update `self`. Returns `self`.
+    """Update `self`. **Returns `self` to allow chaining.**
 
     Examples:
     ```python
@@ -233,7 +246,19 @@ class pdict(dict):
     return self
 
   def copy(self):
-    """Copy `self` to a new `pdict`."""
+    """Copy `self` to new `defaultpdict`. Performs a shallow copy.
+
+    Examples:
+    ```python
+    pd1 = pdict(foo=1, bar=2.0, baz='three')
+    pd2 = pd1.copy()
+    assert (pd2 == pd1)
+    assert (pd2 is not pd1)
+    ```
+
+    Returns:
+      A `pdict` that is a shallow copy of `self`.
+    """
     return pdict(dict.copy(self))
 
   def peys(self):
@@ -268,8 +293,9 @@ class pdict(dict):
             [2.0, 'three', 1])
     ```
 
-    The `plist` returned is rooted at a corresponding `plist` of `KeyValue` tuples, allowing
-    easy recovery of an equivalent `pdict`, possibly after modifications to the values:
+    The `plist` returned is rooted at a corresponding `plist` of `KeyValue` `namedtuple`s,
+    allowing easy recovery of an equivalent `pdict`, possibly after modifications to the
+    values:
     ```python
     pd_str = (pd.palues().pstr() + ' foo').pdict()
     assert (pd_str ==
@@ -278,7 +304,7 @@ class pdict(dict):
 
     Returns:
       `plist` of values from `self`, in the same order given by `self.peys()`.
-      The `root()` of the `plist` is `KeyValue` tuples from `self`.
+      The `root()` of the `plist` is `KeyValue` `namedtuple`s from `self`.
     """
     return self[self.peys()]
 
@@ -305,6 +331,9 @@ class pdict(dict):
 
   def qj(self, *a, **kw):
     """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+    `qj` is a debug logging function. Calling `pdict.qj()` is often the fastest way
+    to begin debugging an issue.
 
     See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
@@ -385,6 +414,8 @@ class pdict(dict):
 class defaultpdict(defaultdict):
   """`defaultdict` subclass where everything is automatically a property.
 
+  Examples:
+
   Use with dot notation or subscript notation:
   ```python
     p = defaultpdict()
@@ -399,14 +430,14 @@ class defaultpdict(defaultdict):
     assert (p.foo == 0)
   ```
 
-  List subscripts also work and return a plist of the corresponding keys:
+  `list` subscripts also work and return a `plist` of the corresponding keys:
   ```python
     p = defaultpdict(foo=1, bar=2)
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  Setting with a list subscript also works, using a single element or a matching
-  list for the values:
+  Setting with a `list` subscript also works, using a single element or a matching
+  `list` for the values:
   ```python
     p = defaultpdict()
     p[['foo', 'bar']] = 1
@@ -415,7 +446,7 @@ class defaultpdict(defaultdict):
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  defaultpdict.update() returns `self`, rather than `None`, to support chaining:
+  `defaultpdict.update()` returns `self`, rather than `None`, to support chaining:
   ```python
     p = defaultpdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
@@ -423,7 +454,7 @@ class defaultpdict(defaultdict):
     assert ('baz' in p.keys())
   ```
 
-  Nested `defaultpdicts` make nice lightweight objects:
+  Nested `defaultpdict`s make nice lightweight objects:
   ```python
     p = defaultpdict(lambda: defaultpdict(list))
     p.foo = 1
@@ -434,7 +465,7 @@ class defaultpdict(defaultdict):
   """
 
   def __init__(self, *a, **kw):
-    """Initialize defaultpdict.
+    """Initialize `defaultpdict`.
 
     Examples:
     ```python
@@ -451,8 +482,8 @@ class defaultpdict(defaultdict):
     ```
 
     Args:
-      *a: positional arguments passed through to `defaultdict()`.
-      **kw: keyword arguments pass through to `defaultdict()`.
+      *a: Positional arguments passed through to `defaultdict()`.
+      **kw: Keyword arguments pass through to `defaultdict()`.
 
     Returns:
       `None`. `defaultpdict` is initialized.
@@ -482,7 +513,9 @@ class defaultpdict(defaultdict):
   def __setattr__(self, name, value):
     """Attribute assignment operation. Forwards to subscript assignment.
 
-    Permits `pdict`-style field assignment:
+    Permits `pdict`-style field assignment.
+
+    Examples:
     ```python
     pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
     pd.floo = 4.0
@@ -490,7 +523,7 @@ class defaultpdict(defaultdict):
     ```
 
     Args:
-      name: Any hashable value or list of hashable values, as in `defaultpdict.__setitem__`,
+      name: Any `hash`able value or list of `hash`able values, as in `defaultpdict.__setitem__`,
             but generally just a valid identifier string provided by the compiler.
       value: Any value, or `plist` of values of the same length as the corresponding list in
              `name`.
@@ -512,7 +545,7 @@ class defaultpdict(defaultdict):
     ```
 
     When indexing with a `list`, the returned `plist` is rooted at a `plist` of
-    `KeyValue` tuples, making it easy to recover the keys that gave the values, and
+    `KeyValue` `namedtuple`s, making it easy to recover the keys that gave the values, and
     allows the `plist` to be turned back into a corresponding `pdict`:
     ```python
     assert (pd[['foo', 'baz']].root().aslist() ==
@@ -522,11 +555,11 @@ class defaultpdict(defaultdict):
     ```
 
     Args:
-      key: Any hashable object, or a `list` of hashable objects.
+      key: Any `hash`able object, or a `list` of `hash`able objects.
 
     Returns:
-      Either the value held at `key`, or a `plist` of values held at each key in the list
-      of keys, when called with a list of keys.
+      Either the value held at `key`, or a `plist` of values held at each key in the `list`
+      of keys, when called with a `list` of keys.
     """
     if isinstance(key, list):
       return plist([self[k] for k in key], root=plist([KeyValue(k, self[k]) for k in key]))
@@ -534,16 +567,18 @@ class defaultpdict(defaultdict):
       return defaultdict.__getitem__(self, key)
 
   def __setitem__(self, key, value):
-    """Subscript assignment operation. Keys and values can be scalars or lists.
+    """Subscript assignment operation. Keys and values can be scalars or `list`s.
 
-    `defaultpdict` assignment works normally for any hashable `key`:
+    Examples:
+
+    `defaultpdict` assignment works normally for any `hash`able `key`:
     ```python
     pd = defaultpdict(int)
     pd['foo'] = 1
     assert (pd.foo == pd['foo'] == 1)
     ```
 
-    `defaultpdict` assignment can also work with a list of hashable `key`s:
+    `defaultpdict` assignment can also work with a `list` of `hash`able `key`s:
     ```python
     pd[['bar', 'baz']] = plist[2.0, 'three']
     assert (pd.bar == pd['bar'] == 2.0)
@@ -551,7 +586,7 @@ class defaultpdict(defaultdict):
     ```
 
     Args:
-      key: Any hashable object, or a `list` of hashable objects.
+      key: Any `hash`able object, or a `list` of `hash`able objects.
       value: Any value, or a `plist` of values that matches the shape of `key`, if it
              is a `list`.
 
@@ -569,8 +604,17 @@ class defaultpdict(defaultdict):
   def __str__(self):
     """Readable string representation of `self`.
 
-    If the keys in `self` are sortable, returns a string with key/value pairs sorted by key.
-    Otherwise, returns a normal `defaultdict.__str__` representation.
+    Examples:
+    ```python
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    assert (str(pd) ==
+            "{'bar': 2.0, 'baz': 'three', 'foo': 1}")
+    ```
+
+    Returns:
+      If the keys in `self` are sortable, returns a string with key/value pairs
+      sorted by key. Otherwise, returns a normal `defaultdict.__str__`
+      representation.
     """
     try:
       delim = ', ' if len(self) < 8 else ',\n '
@@ -582,7 +626,7 @@ class defaultpdict(defaultdict):
   __repr__ = __str__
 
   def update(self, *a, **kw):
-    """Update `self`. Returns `self`.
+    """Update `self`. **Returns `self` to allow chaining.**
 
     Examples:
     ```python
@@ -593,8 +637,8 @@ class defaultpdict(defaultdict):
     ```
 
     Args:
-      *a: Positional args passed to `dict.update`.
-      **kw: Keyword args pass to `dict.update`.
+      *a: Positional args passed to `defaultdict.update`.
+      **kw: Keyword args passed to `defaultdict.update`.
 
     Returns:
       `self` to allow chaining.
@@ -603,7 +647,19 @@ class defaultpdict(defaultdict):
     return self
 
   def copy(self):
-    """Copy `self` to new `defaultpdict`."""
+    """Copy `self` to new `defaultpdict`. Performs a shallow copy.
+
+    Examples:
+    ```python
+    pd1 = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
+    pd2 = pd1.copy()
+    assert (pd2 == pd1)
+    assert (pd2 is not pd1)
+    ```
+
+    Returns:
+      A `defaultpdict` that is a shallow copy of `self`.
+    """
     return defaultdict.copy(self)
 
   def peys(self):
@@ -638,8 +694,9 @@ class defaultpdict(defaultdict):
             [2.0, 'three', 1])
     ```
 
-    The `plist` returned is rooted at a corresponding `plist` of `KeyValue` tuples, allowing
-    easy recovery of an equivalent `pdict`, possibly after modifications to the values:
+    The `plist` returned is rooted at a corresponding `plist` of `KeyValue` `namedtuple`s,
+    allowing easy recovery of an equivalent `pdict`, possibly after modifications to the
+    values:
     ```python
     pd_str = (pd.palues().pstr() + ' foo').pdict()
     assert (pd_str ==
@@ -648,7 +705,7 @@ class defaultpdict(defaultdict):
 
     Returns:
       `plist` of values from `self`, in the same order given by `self.peys()`.
-      The `root()` of the `plist` is `KeyValue` tuples from `self`.
+      The `root()` of the `plist` is `KeyValue` `namedtuple`s from `self`.
     """
     return self[self.peys()]
 
@@ -676,6 +733,9 @@ class defaultpdict(defaultdict):
   def qj(self, *a, **kw):
     """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
+    `qj` is a debug logging function. Calling `defaultpdict.qj()` is often the fastest way
+    to begin debugging an issue.
+
     See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
     Examples:
@@ -697,7 +757,7 @@ class defaultpdict(defaultdict):
   def rekey(self, map_or_fn, inplace=False):
     """Change the keys of `self` or a copy while keeping the same values.
 
-    Convenience method for renaming keys in a `pdict`. Passing a `dict` mapping
+    Convenience method for renaming keys in a `defaultpdict`. Passing a `dict` mapping
     old keys to new keys allows easy selective renaming, as any key not in the
     `dict` will be unchanged. Passing a `callable` requires you to return a unique
     value for every key in `self`
@@ -753,7 +813,7 @@ class defaultpdict(defaultdict):
 ################################################################################
 ################################################################################
 class pset(frozenset):
-  """Placeholder set subclass. Not yet implemented."""
+  """Placeholder frozenset subclass. Not yet implemented."""
   pass
 
 
@@ -780,7 +840,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     comparator: The comparison function.
   """
   def comparator(self, other, return_inds=False):
-    """plist-compatible comparison operator. **Comparisons filter plists.**
+    """`plist` comparison operator. **Comparisons filter plists.**
 
     **IMPORTANT:** `plist` comparisons all filter the `plist` and return a new
     `plist`, rather than a truth value.
@@ -791,7 +851,8 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     `plist.__eq__`, `plist.__lt__`, `plist.__gt__`, etc., but are generally just
     called implicitly.
 
-    plist comparators can filter on leaf values:
+    Examples:
+    `plist` comparators can filter on leaf values:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -887,7 +948,6 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     ```
 
     Args:
-      self: plist object.
       other: Object to compare against.
       return_inds: Optional bool. When `True`, causes the comparison to return
                    the plist indices of the matching items. When `False`
@@ -937,7 +997,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
 
 
 def _build_logical_op(op):
-  """Builds a plist logical operation.
+  """Builds a `plist` logical operation.
 
   Args:
     op: Logical operation, such as operator.__and__.
@@ -946,14 +1006,66 @@ def _build_logical_op(op):
     logical_op: The logical operation function.
   """
   def logical_op(self, other):
-    """plist-compatible logical operation; performs a set operation on its args.
+    """`plist` logical operation. **Logical operations perform set operations on `plist`s.**
+
+    **IMPORTANT:** `plist` logical operations between two `plist`s perform `set` operations
+    on the two `plist`s. Logical operations between a `plist` and any other type attempts
+    to perform that operation on the values in the `plist` and `other` itself.
+
+    `logical_op` is not callable directly from `plist`. It implements the various
+    python logical operations: `&`, `|`, `^`, etc. The logical operators
+    can be called directly with their corresponding 'magic' functions,
+    `plist.__and__`, `plist.__or__`, `plist.__xor__`, etc., but are generally just
+    called implicitly.
+
+    Examples:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+
+    assert (((foos.bar == 0) & (foos.baz == 3)).aslist() ==
+            [{'baz': 3, 'foo': 0, 'bar': 0}])
+
+    assert (((foos.bar == 0) | (foos.baz == 3)).aslist() ==
+            [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}])
+
+    assert (((foos.bar == 0) ^ (foos.baz == 3)).aslist() ==
+            [{'bar': 0, 'baz': 5, 'foo': 2}])
+
+    by_bar = foos.bar.groupby()
+
+    assert (((by_bar.bar == 0) & (by_bar.bar == 1)).aslist() ==
+            [[], []])
+    assert (((by_bar.bar == 0) & (by_bar.bar <= 1)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
+
+    assert (((by_bar.baz == 3) | (by_bar.baz == 6)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
+    assert (((by_bar.baz == 6) | (by_bar.baz <= 4)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
+
+    assert (((by_bar.baz == 3) ^ (by_bar.baz == 6)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
+    assert (((by_bar.baz == 6) ^ (by_bar.bar <= 4)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
+    ```
+
+    Logical operations can be applied element-wise if `other` is not a `plist`:
+    ```python
+    assert ((foos.baz & 1).aslist() ==
+            [1, 0, 1])
+    assert ((by_bar.baz | 1).aslist() ==
+            [[3, 5], [7]])
+    assert ((1 ^ by_bar.baz).aslist() ==
+            [[2, 4], [7]])
+    ```
 
     Args:
-      self: plist object.
       other: Object to perform the logical operation with.
 
     Returns:
-      A new plist, merging `self` and other according to the operation provided
+      New `plist`, merging `self` and `other` according to the operation provided
       to `_build_logical_op`.
     """
     if isinstance(other, plist):
@@ -989,10 +1101,54 @@ def _build_binary_op(op):
     binary_op: The binary operation function.
   """
   def binary_op(self, other):
-    """plist-compatible binary operation; applied element-wise to its args.
+    """`plist` binary operation; applied element-wise to `self`.
+
+    `binary_op` is not callable directly from `plist`. It implements the various
+    python binary operations: `+`, `-`, `*`, etc. The binary operators
+    can be called directly with their corresponding 'magic' functions,
+    `plist.__add__`, `plist.__sub__`, `plist.__mul__`, etc., but are generally just
+    called implicitly.
+
+    Examples:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+
+    assert ((foos.foo + foos.baz).aslist() ==
+            [3, 7, 7])
+    assert ((2 * (foos.foo + 7)).aslist() ==
+            [14, 16, 18])
+
+    by_bar = foos.bar.groupby()
+
+    assert ((by_bar.foo + by_bar.baz).aslist() ==
+            [[3, 7], [7]])
+    assert ((2 * (by_bar.foo + 7)).aslist() ==
+            [[14, 18], [16]])
+    ```
+
+    The only binary operation that doesn't work as expected is string interpolation:
+    `'foo: %d' % foos.foo`. This can't work as expected because python handles that
+    operation in a special manner. However, `+` works on `plist`s of strings, as
+    does `plist.apply('{}'.format)`:
+    ```python
+    assert (('foo: ' + foos.foo.pstr() + ' bar: ' + foos.bar.pstr()).aslist() ==
+            ['foo: 0 bar: 0', 'foo: 1 bar: 1', 'foo: 2 bar: 0'])
+    assert (foos.foo.apply('foo: {} bar: {}'.format, foos.bar).aslist() ==
+            ['foo: 0 bar: 0', 'foo: 1 bar: 1', 'foo: 2 bar: 0'])
+
+    assert (('foo: ' + by_bar.foo.pstr() + ' bar: ' + by_bar.bar.pstr()).aslist() ==
+            [['foo: 0 bar: 0', 'foo: 2 bar: 0'], ['foo: 1 bar: 1']])
+    assert (by_bar.foo.apply('foo: {} bar: {}'.format, by_bar.bar).aslist() ==
+            ['foo: [0, 2] bar: [0, 0]', 'foo: [1] bar: [1]'])
+    assert (by_bar.foo.apply_('foo: {} bar: {}'.format, by_bar.bar).aslist() ==
+            [['foo: 0 bar: 0', 'foo: 2 bar: 0'], ['foo: 1 bar: 1']])
+    ```
+    Note the difference between the final two examples using `apply()` vs. `apply_()` on
+    grouped `plist`s.
 
     Args:
-      self: plist object.
       other: Object to perform the binary operation with.
 
     Returns:
@@ -1003,6 +1159,8 @@ def _build_binary_op(op):
     if isinstance(other, plist):
       if len(self) == len(other):
         return plist([op(x, o) for x, o in zip(self, other)], root=self.__root__)
+      else:
+        qj((len(self), len(other)))
     return plist([op(x, other) for x in self], root=self.__root__)
 
   return binary_op
@@ -1040,19 +1198,41 @@ def _build_unary_op(op):
   """Builds a plist unary operation.
 
   Args:
-    op: Unary operation, such as operator.__not__.
+    op: Unary operation, such as operator.__neg__.
 
   Returns:
     unary_op: The unary operation function.
   """
   def unary_op(self):
-    """plist-compatible unary operation; applied element-wise to its args.
+    """`plist` unary operation; applied element-wise to `self`.
 
-    Args:
-      self: plist object.
+    `unary_op` is not callable directly from `plist`. It implements the various
+    python unary operations: `-`, `~`, `abs`, etc. The unary operators
+    can be called directly with their corresponding 'magic' functions,
+    `plist.__neg__`, `plist.__invert__`, `plist.__abs__`, etc., but are generally just
+    called implicitly.
+
+    Examples:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+
+    assert ((-foos.foo).aslist() ==
+            [0, -1, -2])
+    assert ((~foos.foo).aslist() ==
+            [-1, -2, -3])
+
+    by_bar = foos.bar.groupby()
+
+    assert ((-by_bar.foo).aslist() ==
+            [[0, -2], [-1]])
+    assert ((~by_bar.foo).aslist() ==
+            [[-1, -3], [-2]])
+    ```
 
     Returns:
-      A new plist, where each element of `self` had the operation passed to
+      A new `plist`, where each element of `self` had the operation passed to
       `_build_unary_op` applied to it.
     """
     return plist([op(x) for x in self], root=self.__root__)
@@ -1084,10 +1264,10 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
     _pobj: Object that the attribute will be called on. May not be a plist
            if `pepth != 0`.
     _pname: Name of the attribute being called.
-    _pattr: Bound attribute found by a __getattribute__ or getattr call.
+    _pattr: Bound attribute found by a `__getattribute__` or `getattr` call.
     *_pargs: Arguments passed directly to the attribute.
     **_pkwargs: Keyword arguments passed directly to the attribute, except
-                `pepth` and `call_pepth`, which are removed.
+                `pepth`, `call_pepth`, and `psplit`, which are removed.
                 `pepth` tracks the desired depth in the plist of the
                 attribute. When `pepth == 0`, the attribute is called or
                 returned (for non-callable attributes).
@@ -1095,6 +1275,8 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
                 only passed on to a known list of plist methods that need it
                 in order to correctly handle stack frames between the original
                 caller and the final call.
+                `psplit` causes calling to happen in parallel, with the same
+                semantics as in `plist.apply`.
 
   Returns:
     Either the value of the attribute, if the attribute is a known
@@ -1161,23 +1343,24 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
 
 
 def _ensure_len(length, x, strict=False):
-  """Convert x to a list of length `length` if necessary and return it.
+  """Convert `x` to a `list` of length `length` if necessary and return it.
 
-  This function is the core of plist 'deepcasting', which is conceptually
-  similar to 'broadcasting' in numpy and tensorflow, but is intentionally much
+  This function is the core of `plist` 'deepcasting', which is conceptually
+  similar to 'broadcasting' in `numpy` and `tensorflow`, but is intentionally much
   more permissive. Deepcasting relies on the fact that most functions will
-  crash if they receive a list when they were expecting a scalar value. Allowing
-  the called function to crash, rather than crashing in plist, allows plist to
-  be optimistic, and avoids plist having to guess how a user-supplied function
+  crash if they receive a `list` when they were expecting a scalar value. Allowing
+  the called function to crash, rather than crashing in `plist`, allows `plist` to
+  be optimistic, and avoids `plist` having to guess how a user-supplied function
   is meant to be called.
 
   Args:
     length: int.
     x: object to convert.
-    strict: Boolean. If True, only plists are returned without being wrapped. Lists
-            and other iterables of the correct length are still returned wrapped in
-            a new list of the correct length. Defaults to False, which means that
-            lists and other iterables of the correct length are returned unchanged.
+    strict: Boolean. If `True`, only `plist`s are returned without being wrapped.
+            `list`s and other iterables of the correct length are still returned
+            wrapped in a new `list` of the correct length. Defaults to `False`,
+            which means that `list`s and other iterables of the correct length
+            are returned unchanged.
 
   Returns:
     `x` if `x` is a non-string sequence and `len(x) == length`.
@@ -1293,6 +1476,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def __getattribute__(self, name):
     """Returns a plist of the attribute for self, or for each element.
 
+    TODO
+
     Args:
       name: Name of the attribute.
 
@@ -1349,6 +1534,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def __getattr__(self, name, _pepth=0):
     """Recursively attempt to get the attribute `name`.
 
+    TODO
+
     Args:
       name: Attribute name.
       _pepth: plist depth at which the found attribute should be applied.
@@ -1381,6 +1568,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
   def __getitem__(self, key):
     """Returns a new plist using a variety of potential indexing styles.
+
+    TODO
 
     Args:
       key: The key to index by.
@@ -1435,7 +1624,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
 
   def __getslice__(self, i, j):
-    """Delegates to __getitem__ for compatibility with python 2.7."""
+    """Delegates to `__getitem__` for compatibility with python 2.7.
+
+    TODO
+
+    """
     if self.__pepth__ != 0:
       if '__warned__' not in plist.__getslice__.__dict__:
         qj('Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!\n'
@@ -1455,6 +1648,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   ##############################################################################
   def __setattr__(self, name, val):
     """Sets an attribute on a plist or its elements to `val`.
+
+    TODO
 
     Args:
       name: Name of the attribute to set.
@@ -1477,6 +1672,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
   def __setitem__(self, key, val):
     """Sets items of self using a variety of potential indexing styles.
+
+    TODO
 
     Args:
       key: The key to index by.
@@ -1549,7 +1746,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def __setslice__(self, i, j, sequence):
-    """Delegates to __setitem__ for compatibility with python 2.7."""
+    """Delegates to __setitem__ for compatibility with python 2.7.
+
+    TODO
+
+    """
     if self.__pepth__ != 0:
       return plist.__getattr__(self, '__setslice__')(i, j, sequence)
     try:
@@ -1563,6 +1764,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   ##############################################################################
   def __delattr__(self, name):
     """Recursively attempt to get the attribute `name`.
+
+    TODO
 
     Args:
       name: Name of attribute to delete.
@@ -1578,6 +1781,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
   def __delitem__(self, key):
     """Deletes items of self using a variety of potential indexing styles.
+
+    TODO
 
     Args:
       key: The key to index by.
@@ -1639,7 +1844,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def __delslice__(self, i, j):
-    """Delegates to __delitem__ for compatibility with python 2.7."""
+    """Delegates to __delitem__ for compatibility with python 2.7.
+
+    TODO
+
+    """
     if self.__pepth__ != 0:
       return plist.__getattr__(self, '__delslice__')(i, j)
     try:
@@ -1653,6 +1862,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   ##############################################################################
   def __call__(self, *args, **kwargs):
     """Call each element of self, possibly recusively.
+
+    TODO
 
     Args:
       *args: The arguments to apply to the callables in self.
@@ -1699,7 +1910,13 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   # __contains__
   ##############################################################################
   def __contains__(self, other):
-    """Implements the `in` operator to avoid inappropriate use of plist comparators."""
+    """Implements the `in` operator to avoid inappropriate use of `plist` comparators.
+
+    TODO
+
+    Returns:
+      `bool` value indicating whether `other` was found in `self`.
+    """
     if self is other:
       return False
     found = False
@@ -1874,7 +2091,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Causes the next call to `self` to be performed as deep as possible in the `plist`.
 
     This is a convenience method primarily for easy subscripting of the values of
-    a `plist`:
+    a `plist`.
+
+    Examples:
     ```python
     pl = plist([np.arange(10) for _ in range(3)])
     assert (pl._[2].aslist() ==
@@ -1908,6 +2127,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   ##############################################################################
   def root(self):
     """Returns the root of the `plist`.
+
+    Examples:
 
     When a `plist` is created, by default its root is `self`:
     ```python
@@ -1972,6 +2193,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def uproot(self):
     """Sets the root to `self` so future `root()` calls return this `plist`.
 
+    Examples:
+
     In some cases it is better reset the root. For example, after applying
     a number of operations to a `plist` to get the data into the desired form,
     resetting the root to `self` often makes sense, as future filtering
@@ -1991,6 +2214,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
             [dict(floo=0, bar=0, baz=6), dict(floo=1, bar=1, baz=2)])
     ```
 
+    See `plist.root` for more details.
+
     Returns:
       `self`.
     """
@@ -2001,9 +2226,33 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   # Conversion methods.
   ##############################################################################
   def copy(self):
-    """Copy `self` to new `plist`."""
-    new_root = None if self.__root__ is self else self.__root__.copy()
-    return plist(list.copy(self), root=new_root)
+    """Copy `self` to new `plist`. Performs a shallow copy.
+
+    `self.root()` is copied as well and used to root the copy if
+    `self.root() is not self`.
+    If `self.root() is self`, the root is not maintained.
+
+    Examples:
+    ```python
+    pl1 = plist[1, 2, 3]
+    pl2 = pl1.copy()
+    assert (pl1 is not pl2)
+    assert (pl1.root() is pl1 and pl2.root() is pl2)
+
+    pl3 = pl2 + 1
+    pl4 = pl3.copy()
+    assert (pl4.root().aslist() == pl3.root().aslist())
+    assert (pl4.root() is not pl3.root())
+    assert (pl4.root().aslist() == pl2.aslist())
+    assert (pl4.root() is not pl2)
+    ```
+
+    Returns:
+      Copy of `self` with `self.root()` handled appropriately.
+    """
+    if self.__root__ is self:
+      return plist(self)
+    return plist(self, root=self.__root__.copy())
 
   def aslist(self):
     """Recursively convert all nested `plist`s from `self` to `list`s, inclusive.
@@ -2309,6 +2558,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Returns a plist with leaf elements converted to strings.
 
     Calls `str` on each leaf element of self.
+
     Examples:
     ```python
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
@@ -2615,12 +2865,16 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `pequal` always returns `True` or `False` rather than a plist. This is a
     convenience method for cases when the filtering that happens with `==` is
     undesirable or inconvenient.
+
+    Examples:
     ```python
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
+    assert (foos.pequal(foos) == True)
+
     zero_bars = foos.bar == 0
     assert (zero_bars.aslist() ==
             [{'foo': 0, 'bar': 0},
@@ -2781,6 +3035,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     or by the first value in `args`, if anything is passed to `args`, or from the first value
     in `self`, if the other options are not present.
 
+    Examples:
+
     This is an example of passing `initial_value` as the first value in `args`:
     ```python
     s = 'foo bar was a baz of bin'
@@ -2808,7 +3064,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     assert (reduced.root().root() is pl)
     ```
 
-    Using `self`:
+    Using the first value in `self` for the initial value:
     ```python
     pl = plist[1, 2, 3, 4, 5]
     reduced = pl.reduce(lambda x, y, z: (x + y) * z, z=pl[::-1])
@@ -2881,7 +3137,6 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     results, and is not recommended.
 
     Args:
-      self: `plist` to reduce over.
       func: function to call. Must take at least two positional arguments of the same type as `self`,
             and return a value of that type.
       *args: Additional arguments to pass to func at each step. If `initial_value` is not in
@@ -2966,6 +3221,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def qj(self, *args, **kwargs):
     """Applies logging function qj to self for easy in-chain logging.
 
+    `qj` is a debug logging function. Calling `plist.qj()` is often the fastest way
+    to begin debugging an issue.
+
     See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
     Examples:
@@ -2991,7 +3249,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   # Grouping and sorting methods.
   ##############################################################################
   def groupby(self):
-    """Group self.root() by the values in self.
+    """Group `self.root()` by the values in `self` and return `self.root()`.
+
+    Examples:
 
     Given a plist:
     ```python
@@ -3081,7 +3341,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return plist(enumerate(self), root=self.__root__)
 
   def join(self):
-    """Adds and returns an outer plist around self.
+    """Adds and returns an outer `plist` around `self`.
+
+    Examples:
 
     `join` is useful when you wish to call a function on the top-level plist,
     but you don't want to stop your call chain:
@@ -3125,12 +3387,14 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return plist([self])
 
   def sortby(self, key=None, reverse=False):
-    """Sorts self and self.root() in-place and returns self.
+    """Sorts `self` and `self.root()` in-place and returns `self`.
 
     `sortby` and `groupby` work together nicely to create sorted, nested plists.
-    Note that `sortby` modifies and returns self, whereas `groupby` returns a
-    new plist with a new root. This is because `sortby` doesn't change the
+    Note that `sortby` modifies and returns `self`, whereas `groupby` returns a
+    new `plist` with a new root. This is because `sortby` doesn't change the
     structure of the plist, only the order of its (or its children's) elements.
+
+    Examples:
 
     A basic sort:
     ```python
@@ -3173,7 +3437,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       reverse: Boolean specifying whether to sort in reverse order or not.
 
     Returns:
-      self, sorted.
+      `self`, sorted.
     """
     key = key or (lambda x: x)
     sorted_inds = [i for i, _ in sorted(enumerate(self), key=lambda x: key(x[1]), reverse=reverse)]
@@ -3288,7 +3552,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   # Additional filtering methods.
   ##############################################################################
   def nonempty(self, r=0):
-    """Returns a new plist with empty sublists removed.
+    """Returns a new `plist` with empty sublists removed.
+
+    Examples:
 
     `nonempty` is useful in combination with grouping and filtering:
     ```python
@@ -3385,7 +3651,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
                  root=plist([self.__root__[i] for i, x in enumerate(new_plist) if len(x)]))
 
   def puniq(self):
-    """Returns a new plist with only a single element of each value in self.
+    """Returns a new `plist` with only a single element of each value in `self`.
+
+    Examples:
 
     `puniq` reduces the values of the groups of self using an equality check:
     ```python
@@ -3465,8 +3733,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     any duplicates in the elements of `foo`, they would have been removed.
 
     Returns:
-      New plist with a new `root` where there is only one example of each value
-      in each sublist. The corresponding `root` element is the first element in
+      New `plist` with a new `root` where there is only one example of each value
+      in each sublist. The corresponding root element is the first element in
       `self.root()` that has that value.
     """
     try:
@@ -3495,7 +3763,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   preduce_eq = puniq
 
   def remix(self, *args, **kwargs):
-    r"""Returns a new plist of pdicts based on selected data from self.
+    r"""Returns a new `plist` of `pdicts` based on selected data from `self`.
+
+    Examples:
 
     `remix` allows you to easily restructure your data into a manageable form:
     ```python
@@ -3549,8 +3819,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
                 the remix and the value is a deepcast and set to that key.
 
     Returns:
-      Flat plist of flat pdicts based on data from self and the passed arguments
-      and keyword arguments.
+      Flat `plist` of flat `pdicts` based on data from `self` and the passed
+      arguments and keyword arguments.
     """
     kwargs = {
         k: _ensure_len(len(self), v, strict=True) for k, v in kwargs.items()
@@ -3573,7 +3843,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
   # Depth, length, shape, and structure.
   def pdepth(self, s=False):
-    """Returns a plist of the recursive depth of each leaf element, from 0.
+    """Returns a `plist` of the recursive depth of each leaf element, from 0.
+
+    Examples:
 
     `pdepth` returns a plist of the same plist structure as self:
     ```python
@@ -3632,7 +3904,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return d
 
   def plen(self, r=0, s=False):
-    """Returns a plist of the length of a recursively-selected layer of self.
+    """Returns a `plist` of the length of a recursively-selected layer of `self`.
+
+    Examples:
 
     `plen` returns a plist of the same depth as self, up to `r`:
     ```python
@@ -3684,12 +3958,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       r: Target recursion depth. Defaults to 0. Set to -1 to recurse as deep as
          possible.
       s: Boolean that controls whether a scalar is returned (when `True`) or a
-         plist of the same depth as self (when `False`, the default).
+         `plist` of the same depth as `self` (when `False`, the default).
 
     Returns:
-      plist whose depth equals the requested recursion depth (or less, if
+      `plist` whose depth equals the requested recursion depth (or less, if
       `r > self.pdepth()`), containing a single value which is the number of
-      plist elements at that depth, or that value as a scalar if `s` is `True`.
+      `plist` elements at that depth, or that value as a scalar if `s` is `True`.
     """
     l = None
     if r != 0:
@@ -3707,9 +3981,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return l
 
   def pshape(self):
-    """Returns a plist of the same structure as self, filled with leaf lengths.
+    """Returns a `plist` of the same structure as `self`, filled with leaf lengths.
 
-    `pshape` returns a plist of the same structure as self:
+    Examples:
+
+    `pshape` returns a plist of the same structure as `self`:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -3745,8 +4021,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     Returns:
-      plist of the same structure as self, where each leaf plist has a single
-      element, which is the length of the corresponding leaf plist in `self`.
+      New `plist` of the same structure as `self`, where each leaf `plist` has a
+      single element, which is the length of the corresponding leaf `plist` in
+      `self`.
     """
     try:
       return plist([x.pshape() for x in self], root=self.__root__)
@@ -3754,12 +4031,14 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       return plist([len(self)], root=self.__root__)
 
   def pstructure(self):
-    """Returns a list of the number of elements in each layer of self.
+    """Returns a `list` of the number of elements in each layer of `self`.
 
     Gives a snapshot view of the structure of `self`. The length of the returned
     list is the depth of `self`. Each value in the list is the result of calling
     `self.plen(r)`, where `r` ranges from 0 to `self.pdepth()`. `plen(r)` gives
     the sum of the lengths of all plists at layer `r`.
+
+    Examples:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -3787,8 +4066,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     Returns:
-      A list (not a plist) of `self.pdepth()` integers, where each integer is
-      the number of elements in all plists at that layer, 0-indexed according to
+      A `list` (not a `plist`) of `self.pdepth()` integers, where each integer is
+      the number of elements in all `plist`s at that layer, 0-indexed according to
       depth.
     """
     s = []
@@ -3798,9 +4077,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
   # Fill with different values.
   def lfill(self, v=0, s=None):
-    """Returns a list with the structure of `self` filled in order from `v`.
+    """Returns a **`list`** with the structure of `self` filled in order from `v`.
 
-    Identical to `plist.pfill()`, but returns a list instead of a plist.
+    Identical to `plist.pfill()`, but returns a **`list`** instead of a `plist`.
+
+    Examples:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -3839,7 +4120,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
          across the recursive traversal of `self`.
 
     Returns:
-      A list (not a plist) of possibly nested plists where each leaf element is
+      A **`list`** (not a `plist`) of possibly nested `list`s where each leaf element is
       an integer, starting with the value of `v` in the 'top left' element of
       the structure.
     """
@@ -3850,9 +4131,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       return [s.s() for _ in range(len(self))]
 
   def pfill(self, v=0, s=None):
-    """Returns a plist with the structure of `self` filled in order from `v`.
+    """Returns a `plist` with the structure of `self` filled in order from `v`.
 
-    Identical to `plist.lfill()`, but returns a plist instead of a list.
+    Identical to `plist.lfill()`, but returns a **`plist`** instead of a `list`.
+
+    Examples:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -3891,7 +4174,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
          across the recursive traversal of `self`.
 
     Returns:
-      A plist of possibly nested plists where each leaf element is an integer,
+      A `plist` of possibly nested `plist`s where each leaf element is an integer,
       starting with the value of `v` in the 'top left' element of the structure.
     """
     s = _successor(v - 1) if s is None else s
@@ -3901,9 +4184,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       return plist([s.s() for _ in range(len(self))], root=self.__root__)
 
   def pleft(self):
-    """Returns a plist with the structure of `self` filled `plen(-1)` to 0.
+    """Returns a `plist` with the structure of `self` filled `plen(-1)` to 0.
 
-    Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`:
+    Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`.
+
+    Examples:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -3933,9 +4218,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     assert (filtered.pleft().aslist() ==
             [[[1], [0]], [[]]])
     ```
+
     This is useful for calling functions that have some global state that should
     change each time a new grouping is started, such as generating many plots
-    from a single grouped plist using pyplot, where the function would need to
+    from a single grouped plist using `pyplot`, where the function would need to
     call `plt.show()` after each group was completed:
     ```python
     def plot(x, remaining):
@@ -3952,15 +4238,16 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     Returns:
-      A plist of possibly nested plists where each leaf element is an integer,
+      A `plist` of possibly nested `plist`s where each leaf element is an integer,
       starting with `self.plen(-1)` in the 'top left' element of the structure
       and counting down to 0.
     """
     return -self.pfill(1) + self.plen(-1, s=True)
 
   def values_like(self, value=0):
-    """Returns a plist with the structure of `self` filled with `value`.
+    """Returns a `plist` with the structure of `self` filled with `value`.
 
+    Examples:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     assert (foo.aslist() ==
@@ -3994,8 +4281,9 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     assert (tuples.aslist() ==
             [[[(1, 2, 3)], [(1, 2, 3)]], [[]]])
     ```
-    Note the example above that filling with a mutable object like a dict gives
-    a plist filled that single object, which might be surprising, but is the
+
+    Note in the example above that filling with a mutable object like a `dict` gives
+    a `plist` filled that single object, which might be surprising, but is the
     same as other common python idioms, such as:
     ```python
     all_the_same_dict = [{}] * 3
@@ -4007,10 +4295,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     Args:
-      value: Value to fill the returned plist with. Can by any python object.
+      value: Value to fill the returned `plist` with. Can by any python object.
 
     Returns:
-      A plist with the structure of `self` filled with `value`.
+      A `plist` with the structure of `self` filled with `value`.
     """
     values = _ensure_len(len(self), value, strict=True)
     try:
@@ -4026,14 +4314,16 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Sets the current plist as a variable available in the caller's context.
 
     `me` is a convenience method to naturally enable long chaining to prepare
-    the data in the plist for a future call to `apply` or some other call. It
-    attempts to add the current plist to the caller's context, either as a
+    the data in the `plist` for a future call to `apply` or some other call. It
+    attempts to add the current `plist` to the caller's context, either as a
     local variable, or as a global (module-level) variable. Because it modifies
     the caller's frame, it is not recommended for production code, but can be
-    qutie useful in jupyter notebooks during exploration of datasets.
+    useful in jupyter notebooks and colabs during exploration of datasets.
+
+    Examples:
 
     Using `me` with a local variable requires that the variable already exist in
-    the local context, and that it be a plist:
+    the local context, and that it be a `plist`:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     foo.baz = 3 * foo.foo + foo.bar
@@ -4055,7 +4345,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     new_context()
     ```
 
-    You can pass the plist you want to use instead:
+    You can pass the `plist` you want to use instead:
     ```python
     def new_context():
       me2 = plist()
@@ -4063,8 +4353,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     new_context()
     ```
 
-    If there isn't a local variable of that name, `me()` will put the plist into
-    the caller's `globals()` dict under the requested name. The following both
+    If there isn't a local variable of that name, `me()` will put the `plist` into
+    the caller's `globals()` `dict` under the requested name. The following both
     work if there are no local or global variables named `me` or `baz`:
     ```python
     def new_context():
@@ -4088,8 +4378,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Raises:
       ValueError: If `name_or_plist` is a string, and that name appears in the
-                  caller's local variables, but does not evaluate to a plist.
-      ValueError: If something other than a string or a plist is passed to
+                  caller's local variables, but does not evaluate to a `plist`.
+      ValueError: If something other than a string or a `plist` is passed to
                   `name_or_plist`.
     """
     try:
@@ -4125,18 +4415,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def pand(self, name='__plist_and_var__', call_pepth=0):
-    """Stores `self` into a plist of tuples that gets extended with each call.
+    """Stores `self` into a `plist` of `tuple`s that gets extended with each call.
 
     `pand` is meant to facilitate building up tuples of values to be sent as
     a single block to a chained call to `apply`, or as `*args` when calling
     `plist.apply(psplat=True)`. The name is `pand` to evoke conjunction: the
-    caller wants a plist with this *and* this *and* this.
+    caller wants a `plist` with this *and* this *and* this.
 
     `pand` stores a variable in the caller's frame that isn't visible to the
     caller, but is visible to future calls to `pand` due to how `locals()`
     works.
 
-    Basic usage might look like:
+    Examples:
     ```python
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     foo.baz = 3 * foo.foo + foo.bar
@@ -4162,8 +4452,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```python
     def new_context():
       (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
-          .ungroup().qj('pand').apply_(qj, psplat=True, b=0))
+          .ungroup().apply_(qj, psplat=True, b=0))
     new_context()
+    # Logs:
+    #   qj: <pstar> apply: (foo, bar) <2876>: (0, 0)
+    #   qj: <pstar> apply: (foo, bar) <2876>: (2, 0)
+    #   qj: <pstar> apply: (foo, bar) <2876>: (1, 1)
+    #   qj: <pstar> apply: (0, 0) <2876>: (0, 0)
+    #   qj: <pstar> apply: (2, 0) <2876>: (2, 0)
+    #   qj: <pstar> apply: (1, 1) <2876>: (1, 1)
     ```
 
     Building multiple tuples in the same context requires passing `name` to keep
@@ -4189,18 +4486,18 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Args:
       name: String naming an available variable in the caller's context. Should
             only be passed if the calling frame needs to create multiple
-            different tuples. Defaults to '__plist_and_var__'. If a variable of
+            different `tuple`s. Defaults to '__plist_and_var__'. If a variable of
             the same name exists in the caller's context, `pand` will fail to
             write to it.
       call_pepth: Do not pass. Used by `plist.__call__` to keep track of how
                   many stack frames occur between the caller and `pand()`.
 
     Returns:
-      The current plist of tuples, with `self` added.
+      The current `plist` of `tuple`s, with `self` added.
 
     Raises:
       ValueError: If the variable named by `name` is already present in the
-                  caller's frame and is not a plist, or has different `pshape()`
+                  caller's frame and is not a `plist`, or has different `pshape()`
                   than `self`.
     """
     try:
