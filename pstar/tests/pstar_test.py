@@ -3149,6 +3149,56 @@ class PStarTest(unittest.TestCase):
             [[2, 4], [7]])
 
 
+  def test_from_docs_pstar_plist___call__(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    # A plist of callables, one for each pdict:
+    foos_peys = foos.peys
+    self.assertTrue(foos_peys.all(callable))
+    # The actual call to plist.__call__ (separated out for demonstration):
+    self.assertTrue(foos_peys().aslist() ==
+            [['bar', 'foo'], ['bar', 'foo'], ['bar', 'foo']])
+    # Of course, you would normally do the above like this, which is the same:
+    self.assertTrue(foos.peys().aslist() ==
+            [['bar', 'foo'], ['bar', 'foo'], ['bar', 'foo']])
+    by_bar = foos.bar.groupby()
+    # There's rarely any need to pass pepth, as the call gets routed to the
+    # correct object by default in almost all situations, even with grouped
+    # plists:
+    self.assertTrue(by_bar.peys().aslist() ==
+            [[['bar', 'foo'], ['bar', 'foo']], [['bar', 'foo']]])
+    pl = plist['foo {}', 'bar {}', 'baz {}']
+    # Basic positional argument passing:
+    self.assertTrue(pl.format(0).aslist() ==
+            ['foo 0', 'bar 0', 'baz 0'])
+    # Passing a plist in a positional argument:
+    self.assertTrue(pl.format(pl._[:3:1]).aslist() ==
+            ['foo foo', 'bar bar', 'baz baz'])
+    # Basic keyword argument passing:
+    pl = pl.replace('{}', '{foo}')
+    self.assertTrue(pl.format(foo=0).aslist() ==
+            ['foo 0', 'bar 0', 'baz 0'])
+    # Passing a plist as a keyword argument:
+    self.assertTrue(pl.format(foo=pl._[:3:1]).aslist() ==
+            ['foo foo', 'bar bar', 'baz baz'])
+    pl = plist['foo {}', 'bar {}', 'baz {}']
+    by = pl._[0].groupby()  # Group by first character.
+    self.assertTrue(by.aslist() ==
+            [['foo {}'], ['bar {}', 'baz {}']])
+    # Basic positional argument passing:
+    self.assertTrue(by.format(0).aslist() ==
+            [['foo 0'], ['bar 0', 'baz 0']])
+    # Passing a plist in a positional argument:
+    self.assertTrue(by.format(by._[:3:1]).aslist() ==
+            [['foo foo'], ['bar bar', 'baz baz']])
+    # Basic keyword argument passing:
+    by = by.replace('{}', '{foo}')
+    self.assertTrue(by.format(foo=0).aslist() ==
+            [['foo 0'], ['bar 0', 'baz 0']])
+    # Passing a plist as a keyword argument:
+    self.assertTrue(by.format(foo=by._[:3:1]).aslist() ==
+            [['foo foo'], ['bar bar', 'baz baz']])
+
+
   def test_from_docs_pstar_plist_comparator(self):
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     self.assertTrue(foo.aslist() ==
@@ -3213,6 +3263,49 @@ class PStarTest(unittest.TestCase):
             [[[{'foo': 1, 'bar': 1}]]])
 
 
+  def test_from_docs_pstar_plist___contains__(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    self.assertTrue(2 in foos.foo)
+    self.assertTrue(dict(foo=0, bar=0) in foos)
+    by_bar = foos.bar.groupby()
+    self.assertTrue(2 in by_bar.foo)
+    self.assertTrue(dict(foo=0, bar=0) in by_bar)
+
+
+  def test_from_docs_pstar_plist___delslice__(self):
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      pl = plist['abc', 'def', 'ghi']
+      del pl[:2:1]
+      self.assertTrue(pl.aslist() ==
+              ['ghi'])
+      # Change slices of the lists:
+      pl = plist['abc', 'def', 'ghi']
+      # Turn strings into mutable lists:
+      pl = pl.apply(list)
+      del pl._[:2:1]
+      # Turn lists back into strings:
+      pl = pl.apply(''.join)
+      self.assertTrue(pl.aslist() ==
+              ['c', 'f', 'i'])
+      pl = plist['abc', 'def', 'ghi']
+      # Turn strings into mutable lists:
+      pl = pl.apply(list)
+      del pl._[:2]
+      # Turn lists back into strings:
+      pl = pl.apply(''.join)
+      self.assertTrue(pl.aslist() ==
+              ['c', 'f', 'i'])
+      # Logs:
+      #   qj: <pstar> __delslice__: WARNING! <1711>: (multiline log follows)
+      #   Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!
+      #   Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.
+      #   This avoids the broken code path in the python compiler.
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
+
+
   def test_from_docs_pstar_plist___enter__(self):
     import glob, os
     path = os.path.dirname(__file__)
@@ -3221,6 +3314,46 @@ class PStarTest(unittest.TestCase):
       texts = f.read()
     self.assertTrue(len(texts) >= 1)
     self.assertTrue(len(texts.all(isinstance, str)) >= 1)
+
+
+  def test_from_docs_pstar_plist___getattribute__(self):
+    pl = plist[[1, 2, 3], [4, 5, 6]]
+    pl.append([7, 8, 9])
+    self.assertTrue(pl.aslist() ==
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    pl.append_(10)
+    self.assertTrue(pl.aslist() ==
+            [[1, 2, 3, 10], [4, 5, 6, 10], [7, 8, 9, 10]])
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
+    self.assertTrue(by_bar.foo.apply(str).aslist() ==
+            ['[0, 2]', '[1]'])
+    self.assertTrue(by_bar.foo.apply_(str).aslist() ==
+            [['0', '2'], ['1']])
+    # (Note that it is better to use `plist.pstr` to get string representation of
+    # leaf elements:)
+    self.assertTrue(by_bar.foo.pstr().aslist() ==
+            [['0', '2'], ['1']])
+
+
+  def test_from_docs_pstar_plist___getslice__(self):
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      pl = plist['abc', 'def', 'ghi']
+      self.assertTrue(pl[:2:1].aslist() ==
+              ['abc', 'def'])
+      self.assertTrue(pl._[:2:1].aslist() ==
+              ['ab', 'de', 'gh'])
+      self.assertTrue(pl._[:2].aslist() ==
+              ['ab', 'de', 'gh'])
+      # Logs:
+      #   qj: <pstar> __getslice__: WARNING! <1711>: (multiline log follows)
+      #   Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!
+      #   Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.
+      #   This avoids the broken code path in the python compiler.
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
 
 
   def test_from_docs_pstar_plist_unary_op(self):
@@ -3236,6 +3369,36 @@ class PStarTest(unittest.TestCase):
             [[0, -2], [-1]])
     self.assertTrue((~by_bar.foo).aslist() ==
             [[-1, -3], [-2]])
+
+
+  def test_from_docs_pstar_plist___setslice__(self):
+    log_fn = qj.LOG_FN
+    with mock.patch('logging.info') as mock_log_fn:
+      qj.LOG_FN = mock_log_fn
+      pl = plist['abc', 'def', 'ghi']
+      pl[:2:1] = plist['dec', 'abf']
+      self.assertTrue(pl.aslist() ==
+              ['dec', 'abf', 'ghi'])
+      # Turn strings into mutable lists:
+      pl = pl.apply(list)
+      # Change slices of the lists:
+      pl._[:2:1] = pl._[1:3:1]
+      # Turn the lists back into strings
+      pl = pl.apply(''.join)
+      self.assertTrue(pl.aslist() ==
+              ['ecc', 'bff', 'hii'])
+      pl = pl.apply(list)
+      pl._[:2] = plist['ab', 'de', 'gh']
+      pl = pl.apply(''.join)
+      self.assertTrue(pl.aslist() ==
+              ['abc', 'def', 'ghi'])
+      # Logs:
+      #   qj: <pstar> __setslice__: WARNING! <1711>: (multiline log follows)
+      #   Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!
+      #   Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.
+      #   This avoids the broken code path in the python compiler.
+    qj.LOG_FN = log_fn
+    qj.COLOR = True
 
 
   def test_from_docs_pstar_plist_all(self):

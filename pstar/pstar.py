@@ -1476,26 +1476,61 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def __getattribute__(self, name):
     """Returns a plist of the attribute for self, or for each element.
 
-    TODO
+    If `name` exists as an attribute of plist, that attribute is returned.
+    Otherwise, removes trailing underscores from `name` (apart from those
+    normally part of a `__*__` name), and uses the count of underscores to
+    indicate how deep into the plist `name` should be searched for. Attempts
+    to find the modified `name` on plist first, and then looks for `name` on
+    each element of self.
+
+    When attempting to find `name` on the elements of self, first it checks
+    if the elements all have `name` as an attribute. If so, it returns that
+    attribute (`[getattr(x, name) for x in self]`). Otherwise, it attempts to
+    return `name` as an index of each element (`[x[name] for x in self]`).
+
+    Examples:
+
+    A `plist` of `list`s has `append` methods at two levels -- the `plist`
+    and the contained `list`s. To chose `list.append` them, you can add
+    an '_' to the method name:
+    ```python
+    pl = plist[[1, 2, 3], [4, 5, 6]]
+    pl.append([7, 8, 9])
+    assert (pl.aslist() ==
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    pl.append_(10)
+    assert (pl.aslist() ==
+            [[1, 2, 3, 10], [4, 5, 6, 10], [7, 8, 9, 10]])
+    ```
+
+    Grouped `plist`s also have methods that you might want to call at different
+    depths. Adding an '_' for each layer of the `plist` you want to skip
+    allows you to control which depth the method is executed at:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
+
+    assert (by_bar.foo.apply(str).aslist() ==
+            ['[0, 2]', '[1]'])
+    assert (by_bar.foo.apply_(str).aslist() ==
+            [['0', '2'], ['1']])
+
+    # (Note that it is better to use `plist.pstr` to get string representation of
+    # leaf elements:)
+    assert (by_bar.foo.pstr().aslist() ==
+            [['0', '2'], ['1']])
+    ```
 
     Args:
       name: Name of the attribute.
 
     Returns:
-      If `name` exists as an attribute of plist, that attribute is returned.
-      Otherwise, removes trailing underscores from `name` (apart from those
-      normally part of a `__*__` name), and uses the count of underscores to
-      indicate how deep into the plist `name` should be searched for. Attempts
-      to find the modified `name` on plist first, and then looks for `name` on
-      each element of self.
-
-      When attempting to find `name` on the elements of self, first it checks
-      if the elements all have `name` as an attribute. If so, it returns that
-      attribute (`[getattr(x, name) for x in self]`). Otherwise, it attempts to
-      return `name` as an index of each element (`[x[name] for x in self]`).
+      Bound `plist` attribute, or `plist` of bound attributes of the elements
+      of `self`.
 
     Raises:
-      AttributeError: If `name` is not found on self or the elements of self.
+      AttributeError: If `name` is is a reserved member of the elements of `self`.
+      AttributeError: If `name` is not found on `self` or the elements of `self`.
     """
     if name == '__root__' or name == '__pepth__':
       return list.__getattribute__(self, name)
@@ -1534,7 +1569,16 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def __getattr__(self, name, _pepth=0):
     """Recursively attempt to get the attribute `name`.
 
-    TODO
+    Handles getting attributes from `self`, rather than from elements of `self`,
+    which is handled in `plist.__getattribute__`. The only exception is for
+    requests to method names that are present on both `plist` and its leaf
+    elements, for example if the leaves are all `list`s, and a sufficiently high
+    `_pepth` value, or `_pepth < 0`, in which case the final calls will be
+    executed on the leaf elements.
+
+    The attribute gets wrapped in a callable that handles any requested recursion,
+    as specified by having called `self._` immediately previously, or due to
+    trailing '_' in the name that were detected by `__getattribute__`.
 
     Args:
       name: Attribute name.
@@ -1624,10 +1668,44 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         raise TypeError('Failed to apply index to self or elements.\nself exception: %s\nelements exception: %s' % (str(first_exception), str(second_exception)))
 
   def __getslice__(self, i, j):
-    """Delegates to `__getitem__` for compatibility with python 2.7.
+    """Delegates to `__getitem__` whenever possible. For compatibility with python 2.7.
 
-    TODO
+    Avoid using `__getslice__` whenever possible in python 2.7, as the bytecode compiler
+    assumes that the slice is for the given object on the stack, and modifies negative
+    indices relative to that object's length. In `plist`s and other dynamic apis like
+    `numpy`, that assumption can cause undetectable and unrecoverable errors.
 
+    To avoid the errors caused by this api in python 2.7, simply use three argument
+    slices instead of two; e.g., `plist[::1]`.
+
+    Examples:
+
+    The following examples are safe uses of slicing with `plist`s:
+    ```python
+    pl = plist['abc', 'def', 'ghi']
+    assert (pl[:2:1].aslist() ==
+            ['abc', 'def'])
+    assert (pl._[:2:1].aslist() ==
+            ['ab', 'de', 'gh'])
+    ```
+
+    The following example will log a warning -- even though it appears to work, the
+    underlying bytecode is incorrect:
+    ```python
+    assert (pl._[:2].aslist() ==
+            ['ab', 'de', 'gh'])
+    # Logs:
+    #   qj: <pstar> __getslice__: WARNING! <1711>: (multiline log follows)
+    #   Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!
+    #   Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.
+    #   This avoids the broken code path in the python compiler.
+    ```
+
+    Args:
+      i, j: Beginning and ending indices of `slice`.
+
+    Returns:
+      `plist` slice of `self`.
     """
     if self.__pepth__ != 0:
       if '__warned__' not in plist.__getslice__.__dict__:
@@ -1746,12 +1824,63 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def __setslice__(self, i, j, sequence):
-    """Delegates to __setitem__ for compatibility with python 2.7.
+    """Delegates to `__setitem__` whenever possible. For compatibility with python 2.7.
 
-    TODO
+    Avoid using `__setslice__` whenever possible in python 2.7, as the bytecode compiler
+    assumes that the slice is for the given object on the stack, and modifies negative
+    indices relative to that object's length. In `plist`s and other dynamic apis like
+    `numpy`, that assumption can cause undetectable and unrecoverable errors.
 
+    To avoid the errors caused by this api in python 2.7, simply use three argument
+    slices instead of two; e.g., `plist[::1]`.
+
+    Examples:
+
+    The following examples are safe uses of slicing with `plist`s:
+    ```python
+    pl = plist['abc', 'def', 'ghi']
+    pl[:2:1] = plist['dec', 'abf']
+    assert (pl.aslist() ==
+            ['dec', 'abf', 'ghi'])
+
+    # Turn strings into mutable lists:
+    pl = pl.apply(list)
+    # Change slices of the lists:
+    pl._[:2:1] = pl._[1:3:1]
+    # Turn the lists back into strings
+    pl = pl.apply(''.join)
+    assert (pl.aslist() ==
+            ['ecc', 'bff', 'hii'])
+    ```
+
+    The following example will log a warning -- even though it appears to work, the
+    underlying bytecode is incorrect:
+    ```python
+    pl = pl.apply(list)
+    pl._[:2] = plist['ab', 'de', 'gh']
+    pl = pl.apply(''.join)
+    assert (pl.aslist() ==
+            ['abc', 'def', 'ghi'])
+    # Logs:
+    #   qj: <pstar> __setslice__: WARNING! <1711>: (multiline log follows)
+    #   Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!
+    #   Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.
+    #   This avoids the broken code path in the python compiler.
+    ```
+
+    Args:
+      i, j: Beginning and ending indices of `slice`.
+      sequence: `iterable` object to assign to the slice.
+
+    Returns:
+      `self`, to permit chaining through direct calls to `plist.__setslice__`.
     """
     if self.__pepth__ != 0:
+      if '__warned__' not in plist.__setslice__.__dict__:
+        qj('Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!\n'
+           'Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.\n'
+           'This avoids the broken code path in the python compiler.', 'WARNING!')
+        plist.__setslice__.__dict__['__warned__'] = True
       return plist.__getattr__(self, '__setslice__')(i, j, sequence)
     try:
       list.__setslice__(self, i, j, sequence)
@@ -1844,12 +1973,67 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def __delslice__(self, i, j):
-    """Delegates to __delitem__ for compatibility with python 2.7.
+    """Delegates to `__delitem__` whenever possible. For compatibility with python 2.7.
 
-    TODO
+    Avoid using `__delslice__` whenever possible in python 2.7, as the bytecode compiler
+    assumes that the slice is for the given object on the stack, and modifies negative
+    indices relative to that object's length. In `plist`s and other dynamic apis like
+    `numpy`, that assumption can cause undetectable and unrecoverable errors.
 
+    To avoid the errors caused by this api in python 2.7, simply use three argument
+    slices instead of two; e.g., `plist[::1]`.
+
+    Examples:
+
+    The following examples are safe uses of slicing with `plist`s:
+    ```python
+    pl = plist['abc', 'def', 'ghi']
+    del pl[:2:1]
+    assert (pl.aslist() ==
+            ['ghi'])
+
+    # Change slices of the lists:
+    pl = plist['abc', 'def', 'ghi']
+    # Turn strings into mutable lists:
+    pl = pl.apply(list)
+    del pl._[:2:1]
+    # Turn lists back into strings:
+    pl = pl.apply(''.join)
+    assert (pl.aslist() ==
+            ['c', 'f', 'i'])
+    ```
+
+    The following example will log a warning -- even though it appears to work, the
+    underlying bytecode is incorrect:
+    ```python
+    pl = plist['abc', 'def', 'ghi']
+    # Turn strings into mutable lists:
+    pl = pl.apply(list)
+    del pl._[:2]
+    # Turn lists back into strings:
+    pl = pl.apply(''.join)
+    assert (pl.aslist() ==
+            ['c', 'f', 'i'])
+    # Logs:
+    #   qj: <pstar> __delslice__: WARNING! <1711>: (multiline log follows)
+    #   Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!
+    #   Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.
+    #   This avoids the broken code path in the python compiler.
+    ```
+
+    Args:
+      i, j: Beginning and ending indices of `slice`.
+      sequence: `iterable` object to assign to the slice.
+
+    Returns:
+      `self`, to permit chaining through direct calls to `plist.__setslice__`.
     """
     if self.__pepth__ != 0:
+      if '__warned__' not in plist.__delslice__.__dict__:
+        qj('Slicing of inner plist elements with negative indices in python 2.7 does not work, and the error cannot be detected or corrected!\n'
+           'Instead of slicing with one or two arguments: `plist._[-2:]`, use the three argument slice: `plist._[-2::1]`.\n'
+           'This avoids the broken code path in the python compiler.', 'WARNING!')
+        plist.__delslice__.__dict__['__warned__'] = True
       return plist.__getattr__(self, '__delslice__')(i, j)
     try:
       list.__delslice__(self, i, j)
@@ -1863,15 +2047,101 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def __call__(self, *args, **kwargs):
     """Call each element of self, possibly recusively.
 
-    TODO
+    Any arguments passed to `__call__` that are `plist`s and have the same
+    length as `self` will be passed one-at-a-time to the each of the `callable`s
+    in `self`. Otherwise, arguments are passed in unmodified.
+
+    Examples:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+
+    # A plist of callables, one for each pdict:
+    foos_peys = foos.peys
+    assert (foos_peys.all(callable))
+
+    # The actual call to plist.__call__ (separated out for demonstration):
+    assert (foos_peys().aslist() ==
+            [['bar', 'foo'], ['bar', 'foo'], ['bar', 'foo']])
+
+    # Of course, you would normally do the above like this, which is the same:
+    assert (foos.peys().aslist() ==
+            [['bar', 'foo'], ['bar', 'foo'], ['bar', 'foo']])
+
+    by_bar = foos.bar.groupby()
+
+    # There's rarely any need to pass pepth, as the call gets routed to the
+    # correct object by default in almost all situations, even with grouped
+    # plists:
+    assert (by_bar.peys().aslist() ==
+            [[['bar', 'foo'], ['bar', 'foo']], [['bar', 'foo']]])
+    ```
+
+    All argument calling conventions are possible:
+    ```python
+    pl = plist['foo {}', 'bar {}', 'baz {}']
+
+    # Basic positional argument passing:
+    assert (pl.format(0).aslist() ==
+            ['foo 0', 'bar 0', 'baz 0'])
+
+    # Passing a plist in a positional argument:
+    assert (pl.format(pl._[:3:1]).aslist() ==
+            ['foo foo', 'bar bar', 'baz baz'])
+
+    # Basic keyword argument passing:
+    pl = pl.replace('{}', '{foo}')
+    assert (pl.format(foo=0).aslist() ==
+            ['foo 0', 'bar 0', 'baz 0'])
+
+    # Passing a plist as a keyword argument:
+    assert (pl.format(foo=pl._[:3:1]).aslist() ==
+            ['foo foo', 'bar bar', 'baz baz'])
+    ```
+
+    They work the same way on grouped plists:
+    ```python
+    pl = plist['foo {}', 'bar {}', 'baz {}']
+    by = pl._[0].groupby()  # Group by first character.
+    assert (by.aslist() ==
+            [['foo {}'], ['bar {}', 'baz {}']])
+
+    # Basic positional argument passing:
+    assert (by.format(0).aslist() ==
+            [['foo 0'], ['bar 0', 'baz 0']])
+
+    # Passing a plist in a positional argument:
+    assert (by.format(by._[:3:1]).aslist() ==
+            [['foo foo'], ['bar bar', 'baz baz']])
+
+    # Basic keyword argument passing:
+    by = by.replace('{}', '{foo}')
+    assert (by.format(foo=0).aslist() ==
+            [['foo 0'], ['bar 0', 'baz 0']])
+
+    # Passing a plist as a keyword argument:
+    assert (by.format(foo=by._[:3:1]).aslist() ==
+            [['foo foo'], ['bar bar', 'baz baz']])
+    ```
 
     Args:
-      *args: The arguments to apply to the callables in self.
-      **kwargs: The keyword arguments to apply to the callables in self.
-                pepth and call_pepth are updated before calling the callables.
+      *args: Arguments to pass to elements of `self`.
+      **kwargs: Keyword arguments to pass to elements of `self`, after extracting:
+      pepth: Integer (default `0`). If greater than `0`, calls occur at that
+             depth in the `plist`. Equivalent to appending '_'s at the end of the
+             name of the attribute (see `plist.__getattribute__`). If less than
+             `0`, calls occur as deep in the `plist` as possible. Equivalent to
+             calling `plist._` before calling the attribute.
+      psplit: Integer (default `0`). If greater than `0`, calls to elements of
+              `self` are applied in parallel. If `psplit` is `1`, the number of
+              parallel executions is equal to the length of `self`.
+              Otherwise, `psplit` is the number of parallel executions.
+      call_pepth: *Private -- do not pass.* Internal state variable for tracking
+                  how deep the call stack is in `plist` code, for use with
+                  internal methods that need access to the original caller's
+                  stack frame.
 
     Returns:
-      A new plist with the return values of calling each callable in self.
+      New `plist` resulting from calling element of `self`.
     """
     pepth = kwargs.pop('pepth', self.__pepth__)
     self.__pepth__ = 0
@@ -1912,7 +2182,16 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def __contains__(self, other):
     """Implements the `in` operator to avoid inappropriate use of `plist` comparators.
 
-    TODO
+    Examples:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (2 in foos.foo)
+    assert (dict(foo=0, bar=0) in foos)
+
+    by_bar = foos.bar.groupby()
+    assert (2 in by_bar.foo)
+    assert (dict(foo=0, bar=0) in by_bar)
+    ```
 
     Returns:
       `bool` value indicating whether `other` was found in `self`.
@@ -2105,7 +2384,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
             [True, True, True])
     ```
 
-    It can be used to call any method on the values of a `plist`, however:
+    It can be used to call any method on the values of a `plist` as well:
     ```python
     pl = plist([['foo'], ['bar']])
     pl._.append('baz')
