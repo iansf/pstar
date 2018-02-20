@@ -1,7 +1,7 @@
 # `pstar`
 ## `numpy` for arbitrary data.
 
-`pstar` provides easy, expressive, concise manipulation of arbitrary data.
+`pstar` provides easy, expressive, and concise manipulation of arbitrary data.
 
 ## Examples:
 
@@ -128,6 +128,87 @@ whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj(
 
 ## Philosophy:
 
+`pstar` makes writing and debugging data-processing code easy and concise.
+
+### `pdict` and `defaultpdict`:
+
+`pdict` and `defaultpdict` are drop-in replacements for `dict` and `defaultdict`, but
+provide substantial usability improvements, including dot notation for field access,
+chaining from calls to `update`, and easy methods to modify their keys and values.
+
+### `plist`:
+
+`plist` is close to a drop-in replacement for `list`. It is also close to a drop-in
+replacement for whatever values it contains. This is the core trick of `plist`:
+write your data processing code like you are working with one datum. The closer your
+code gets to that ideal, the easier it is to write, debug, and understand.
+
+### Chaining:
+
+`pstar` attempts to always maintain the possibility of chaining. Chaining allows you
+to write code like a sentence, without needing to break up your thoughts to define
+intermediate variables or to introduce obvious control flow, such as `for` loops.
+
+The consequence of this perspective is that code written using `pstar` can often
+be written with no explicit looping, and each line of code can be read as a
+straightforward transformation of data from one relevant state to another.
+
+### Debugging:
+
+During data processing, it is easy to spend a great deal of time debugging while
+getting the data into the desired shape or format. Most debugging starts with
+log statements. `pstar` incorporates in-chain logging with `qj` so that code can
+be minimally modified to add and remove logging.
+
+`qj` is a logger built for debugging, and has many useful features that are
+available directly in `pstar`, including dropping into the debugger at any
+point in your code:
+```python
+pl = plist['abc', 'def', '123']
+pl = pl.qj().replace(pl._[0].qj(d=1), pl._[-1].qj()).qj()
+# Logs:
+#   qj: module_level_code: <empty log> <2>: ['abc', 'def', '123']
+#   qj: module_level_code:  <empty log> <2>: ['a', 'd', '1']
+# Then drops into the debugger. After debugging completes, logs:
+#   qj: module_level_code:   <empty log> <2>: ['c', 'f', '3']
+#   qj: module_level_code:    <empty log> <2>: ['cbc', 'fef', '323']
+```
+
+See [`qj`](https://github.com/iansf/qj) for documentation.
+
+### Concision:
+
+In the very simple example below, `pstar` does in six lines with no explicit
+control flow, what takes 10 lines and three levels of indentation in regular
+python. The extra lines are from the explicit control flow and the inability
+to chain the output to a print statement.
+```python
+# Trvial pstar data processing:
+pl = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+pl.baz = (pl.foo + pl.bar) % (len(pl) // 2 + 1)
+by_bar = pl.bar.groupby()
+(by_bar.bar == 0).bin = '{floo} {blaz} {other}'
+(by_bar.bar != 0).bin = '{floo} {blar} {blaz}'
+output = by_bar.bin.format(floo=by_bar.foo, blar=by_bar.bar, blaz=by_bar.baz, other=(by_bar.baz + by_bar.foo) * by_bar.bar).qj('output')
+
+# Non-pstar equivalent:
+l = [dict(foo=i, bar=i % 2) for i in range(5)]
+output = [[], []]
+for d in l:
+  d['baz'] = (d['foo'] + d['bar']) % (len(l) // 2 + 1)
+  if d['bar'] == 0:
+    d['bin'] = '{floo} {blaz} {other}'
+  else:
+    d['bin'] = '{floo} {blar} {blaz}'
+  output[d['bar']].append(d['bin'].format(floo=d['foo'], blar=d['bar'], blaz=d['baz'], other=(d['baz'] + d['foo']) * d['bar']))
+print('output: ', output)
+```
+
+Worse than the extra length and complexity, the non-`plist`
+code has a bug: if the values for `bar` are ever something other than 0 or 1,
+the output list will fail. The `pstar` version of the code is completely robust
+to that kind of bug. The only assumptions about the data are that it is provided
+with two fields, 'foo' and 'bar', and that both of the fields are numeric.
 
 ## Basic Usage:
 
