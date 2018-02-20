@@ -1,12 +1,50 @@
-# pstar
-## better python collections
-
+# `pstar`
+## `numpy` for arbitrary data.
 
 ## Overview:
 
+`pstar` provides easy, expressive, concise manipulation of arbitrary data.
 
 ## Examples:
 
+```bash
+$ pip install pstar
+
+$ python  # Give it a spin! (Or use ipython, if installed.)
+```
+
+```python
+from pstar import *
+
+pd = pdict(foo=1, bar=2.0)
+pd.baz = 'three'
+
+pd.qj('Hello, pdict!')
+# Logs:
+#   qj: <module_level_code> Hello, pdict! <6>: {'bar': 2.0, 'baz': 'three', 'foo': 1}
+
+pd.update({'bin': 44}).qj('Chaining through update!')
+# Logs:
+#   qj: <module_level_code> Chaining through update! <10>: {'bar': 2.0, 'baz': 'three', 'bin': 44, 'foo': 1}
+
+pd[['foo', 'bar']].qj('Multi-indexing!')
+# Logs:
+#   qj: <module_level_code> Multi-indexing! <14>: [1, 2.0]
+
+pd[['foo', 'bar', 'bin']] = ['one', 'ii', '44']
+pd.qj('Multi-assignment!')
+# Logs:
+#   qj: <module_level_code> Multi-assignment! <19>: {'bar': 'ii', 'baz': 'three', 'bin': '44', 'foo': 'one'}
+
+pd[pd.peys()] = 'what?! ' + pd.palues()
+pd.qj('Easy manipulation of values!')
+# Logs:
+#   qj: <module_level_code> Easy manipulation of values! <24>: {'bar': 'what?! ii', 'baz': 'what?! three', 'bin': 'what?! 44', 'foo': 'what?! one'}
+
+pd.rekey(foo='floo').qj('Easy manipulation of keys!')
+# Logs:
+#   qj: <module_level_code> Easy manipulation of keys! <28>: {'bar': 'what?! ii', 'baz': 'what?! three', 'bin': 'what?! 44', 'floo': 'what?! one'}
+```
 
 ## Philosophy:
 
@@ -14,15 +52,36 @@
 ## Basic Usage:
 
 ### Install with pip:
-```
+```bash
 $ pip install pstar
 ```
 
 ### Add the following import:
-```
+```python
 from pstar import *
 ```
 
+### Equivalently:
+```python
+from pstar import defaultpdict, pdict, plist, pset
+```
+
+### Basic `pdict` use:
+```python
+# Create empty pdict:
+pd = pdict()
+
+# Add and access fields with dot notation:
+pd.foo = 13
+pd.bar = 'abc'
+
+# Log the contents of the pdict with a message:
+pd.qj('Hello, pdict')
+# Logs:
+#   qj: <some_file> some_function: Hello, pdict: {'bar': 'abc', 'foo': 13}
+
+
+```
 
 ## Advanced Usage:
 
@@ -31,7 +90,7 @@ from pstar import *
 ## Testing:
 
 pstar has extensive tests. You can run them with nosetests:
-```
+```bash
 $ nosetests
 ........................................................................................
 ----------------------------------------------------------------------
@@ -41,7 +100,7 @@ OK
 ```
 
 Or you can run them directly:
-```
+```bash
 $ python pstar/tests/pstar_test.py
 ........................................................................................
 ----------------------------------------------------------------------

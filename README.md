@@ -1,12 +1,50 @@
-# pstar
-## better python collections
-
+# `pstar`
+## `numpy` for arbitrary data.
 
 ## Overview:
 
+`pstar` provides easy, expressive, concise manipulation of arbitrary data.
 
 ## Examples:
 
+```bash
+$ pip install pstar
+
+$ python  # Give it a spin! (Or use ipython, if installed.)
+```
+
+```python
+from pstar import *
+
+pd = pdict(foo=1, bar=2.0)
+pd.baz = 'three'
+
+pd.qj('Hello, pdict!')
+# Logs:
+#   qj: <module_level_code> Hello, pdict! <6>: {'bar': 2.0, 'baz': 'three', 'foo': 1}
+
+pd.update({'bin': 44}).qj('Chaining through update!')
+# Logs:
+#   qj: <module_level_code> Chaining through update! <10>: {'bar': 2.0, 'baz': 'three', 'bin': 44, 'foo': 1}
+
+pd[['foo', 'bar']].qj('Multi-indexing!')
+# Logs:
+#   qj: <module_level_code> Multi-indexing! <14>: [1, 2.0]
+
+pd[['foo', 'bar', 'bin']] = ['one', 'ii', '44']
+pd.qj('Multi-assignment!')
+# Logs:
+#   qj: <module_level_code> Multi-assignment! <19>: {'bar': 'ii', 'baz': 'three', 'bin': '44', 'foo': 'one'}
+
+pd[pd.peys()] = 'what?! ' + pd.palues()
+pd.qj('Easy manipulation of values!')
+# Logs:
+#   qj: <module_level_code> Easy manipulation of values! <24>: {'bar': 'what?! ii', 'baz': 'what?! three', 'bin': 'what?! 44', 'foo': 'what?! one'}
+
+pd.rekey(foo='floo').qj('Easy manipulation of keys!')
+# Logs:
+#
+```
 
 ## Philosophy:
 
@@ -14,15 +52,36 @@
 ## Basic Usage:
 
 ### Install with pip:
-```
+```bash
 $ pip install pstar
 ```
 
 ### Add the following import:
-```
+```python
 from pstar import *
 ```
 
+### Equivalently:
+```python
+from pstar import defaultpdict, pdict, plist, pset
+```
+
+### Basic `pdict` use:
+```python
+# Create empty pdict:
+pd = pdict()
+
+# Add and access fields with dot notation:
+pd.foo = 13
+pd.bar = 'abc'
+
+# Log the contents of the pdict with a message:
+pd.qj('Hello, pdict')
+# Logs:
+#   qj: <some_file> some_function: Hello, pdict: {'bar': 'abc', 'foo': 13}
+
+
+```
 
 ## Advanced Usage:
 
@@ -368,19 +427,19 @@ assert (pd.baz == 3)
 
 
 
-#### `pstar.defaultpdict.rekey(self, map_or_fn, inplace=False)`
+#### `pstar.defaultpdict.rekey(self, map_or_fn=None, inplace=False, **kw)`
 
 Change the keys of `self` or a copy while keeping the same values.
 
 Convenience method for renaming keys in a `defaultpdict`. Passing a `dict` mapping
 old keys to new keys allows easy selective renaming, as any key not in the
 `dict` will be unchanged. Passing a `callable` requires you to return a unique
-value for every key in `self`
+value for every key in `self`.
 
 **Examples:**
 ```python
 pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
-assert (pd.rekey(dict(foo='floo')) ==
+assert (pd.rekey(foo='floo') ==
         dict(floo=1, bar=2.0, baz='three'))
 assert (pd.foo == 1)  # pd is unmodified by default.
 pd.rekey(dict(bar='car'), True)
@@ -392,6 +451,18 @@ assert ('car' not in pd)
 assert (pd.far == 2.0)
 ```
 
+**Args:**
+
+>    **`map_or_fn`**: `dict` mapping current keys to new keys, or `callable` taking a single
+>               argument (the key) and returning a new key, or `None`, in which case
+>               `**kw` should map keys to new keys.
+
+>    **`inplace`**: Boolean (default: `False`). If `True`, updates the keys of `self`. If
+>             `False`, returns a new `defaultpdict`.
+
+>    **`**kw`**: Additional keys to rekey. Convenience for existing keys that are valid
+>          identifiers.
+
 **Returns:**
 
 >    `self` if `inplace` evaluates to `True`, otherwise a new `defaultpdict`. The keys will
@@ -399,7 +470,7 @@ assert (pd.far == 2.0)
 
 **Raises:**
 
->    **`ValueError`**: If `map_or_fn` isn't a `dict` or a `callable`.
+>    **`ValueError`**: If `map_or_fn` isn't a `dict` or a `callable` or `None`.
 
 >    **`ValueError`**: If `map_or_fn` fails to generate a unique key for every key in `self`.
 
@@ -690,19 +761,19 @@ assert (pd.baz == 3)
 
 
 
-#### `pstar.pdict.rekey(self, map_or_fn, inplace=False)`
+#### `pstar.pdict.rekey(self, map_or_fn=None, inplace=False, **kw)`
 
 Change the keys of `self` or a copy while keeping the same values.
 
 Convenience method for renaming keys in a `pdict`. Passing a `dict` mapping
 old keys to new keys allows easy selective renaming, as any key not in the
 `dict` will be unchanged. Passing a `callable` requires you to return a unique
-value for every key in `self`
+value for every key in `self`.
 
 **Examples:**
 ```python
 pd = pdict(foo=1, bar=2.0, baz='three')
-assert (pd.rekey(dict(foo='floo')) ==
+assert (pd.rekey(foo='floo') ==
         dict(floo=1, bar=2.0, baz='three'))
 assert (pd.foo == 1)  # pd is unmodified by default.
 pd.rekey(dict(bar='car'), True)
@@ -714,6 +785,18 @@ assert ('car' not in pd)
 assert (pd.far == 2.0)
 ```
 
+**Args:**
+
+>    **`map_or_fn`**: `dict` mapping current keys to new keys, or `callable` taking a single
+>               argument (the key) and returning a new key, or `None`, in which case
+>               `**kw` should map keys to new keys.
+
+>    **`inplace`**: Boolean (default: `False`). If `True`, updates the keys of `self`. If
+>             `False`, returns a new `pdict`.
+
+>    **`**kw`**: Additional keys to rekey. Convenience for existing keys that are valid
+>          identifiers.
+
 **Returns:**
 
 >    `self` if `inplace` evaluates to `True`, otherwise a new `pdict`. The keys will
@@ -721,7 +804,7 @@ assert (pd.far == 2.0)
 
 **Raises:**
 
->    **`ValueError`**: If `map_or_fn` isn't a `dict` or a `callable`.
+>    **`ValueError`**: If `map_or_fn` isn't a `dict` or a `callable` or `None`.
 
 >    **`ValueError`**: If `map_or_fn` fails to generate a unique key for every key in `self`.
 
@@ -4088,7 +4171,7 @@ Placeholder frozenset subclass. Not yet implemented.
 ## Testing:
 
 pstar has extensive tests. You can run them with nosetests:
-```
+```bash
 $ nosetests
 ........................................................................................
 ----------------------------------------------------------------------
@@ -4098,7 +4181,7 @@ OK
 ```
 
 Or you can run them directly:
-```
+```bash
 $ python pstar/tests/pstar_test.py
 ........................................................................................
 ----------------------------------------------------------------------

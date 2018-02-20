@@ -148,7 +148,10 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(p.rekey(lambda k: 'bin' if k == 'floo' else k),
                      dict(foo=1, bar=2, bin=0))
 
-    self.assertRaises(ValueError, lambda: p.rekey(None))
+    self.assertEqual(p.rekey(floo='blaz'),
+                     dict(foo=1, bar=2, blaz=0))
+
+    self.assertRaises(ValueError, lambda: p.rekey(13))
     self.assertRaises(ValueError, lambda: p.rekey({'floo': 'foo'}))
 
     pp = p.copy()
@@ -157,6 +160,13 @@ class PStarTest(unittest.TestCase):
                      dict(foo=1, bar=2, floo=0))
     self.assertEqual(pp,
                      dict(foo=1, bar=2, bin=0))
+
+    pp = p.copy()
+    pp.rekey({'foo': 'floo'}, floo='bin', inplace=True)
+    self.assertEqual(p,
+                     dict(foo=1, bar=2, floo=0))
+    self.assertEqual(pp,
+                     dict(floo=1, bar=2, bin=0))
 
   def test_empty_defaultpdict(self):
     self.assertFalse(defaultpdict())
@@ -228,7 +238,10 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(p.rekey(lambda k: 'bin' if k == 'floo' else k),
                      dict(foo=1, bar=2, bin=0))
 
-    self.assertRaises(ValueError, lambda: p.rekey(None))
+    self.assertEqual(p.rekey(floo='blaz'),
+                     dict(foo=1, bar=2, blaz=0))
+
+    self.assertRaises(ValueError, lambda: p.rekey(13))
     self.assertRaises(ValueError, lambda: p.rekey({'floo': 'foo'}))
 
     pp = p.copy()
@@ -237,6 +250,13 @@ class PStarTest(unittest.TestCase):
                      dict(foo=1, bar=2, floo=0))
     self.assertEqual(pp,
                      dict(foo=1, bar=2, bin=0))
+
+    pp = p.copy()
+    pp.rekey({'foo': 'floo'}, floo='bin', inplace=True)
+    self.assertEqual(p,
+                     dict(foo=1, bar=2, floo=0))
+    self.assertEqual(pp,
+                     dict(floo=1, bar=2, bin=0))
 
   def test_empty_plist(self):
     self.assertFalse(plist())
@@ -2941,7 +2961,7 @@ class PStarTest(unittest.TestCase):
 
   def test_from_docs_pstar_defaultpdict_rekey(self):
     pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
-    self.assertTrue(pd.rekey(dict(foo='floo')) ==
+    self.assertTrue(pd.rekey(foo='floo') ==
             dict(floo=1, bar=2.0, baz='three'))
     self.assertTrue(pd.foo == 1)  # pd is unmodified by default.
     pd.rekey(dict(bar='car'), True)
@@ -3058,7 +3078,7 @@ class PStarTest(unittest.TestCase):
 
   def test_from_docs_pstar_pdict_rekey(self):
     pd = pdict(foo=1, bar=2.0, baz='three')
-    self.assertTrue(pd.rekey(dict(foo='floo')) ==
+    self.assertTrue(pd.rekey(foo='floo') ==
             dict(floo=1, bar=2.0, baz='three'))
     self.assertTrue(pd.foo == 1)  # pd is unmodified by default.
     pd.rekey(dict(bar='car'), True)
