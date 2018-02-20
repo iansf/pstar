@@ -1611,35 +1611,86 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return wrap
 
   def __getitem__(self, key):
-    """Returns a new plist using a variety of potential indexing styles.
+    """Returns a new `plist` using a variety of indexing styles.
 
-    TODO
+    Examples:
+
+    Indexing into the `plist` itself:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+
+    # Basic scalar indexing:
+    assert (foos[0] ==
+            dict(foo=0, bar=0))
+
+    # plist slice indexing:
+    assert (foos[:2].aslist() ==
+            [dict(foo=0, bar=0), dict(foo=1, bar=1)])
+
+    # plist int list indexing:
+    assert (foos[[0, 2]].aslist() ==
+            [dict(foo=0, bar=0), dict(foo=2, bar=0)])
+    ```
+
+    Indexing into the elements of the `plist`:
+    ```python
+    # Basic scalar indexing:
+    assert (foos['foo'].aslist() ==
+            [0, 1, 2])
+
+    # tuple indexing
+    assert (foos[('foo', 'bar')].aslist() ==
+            [(0, 0), (1, 1), (2, 0)])
+
+    # list indexing
+    assert (foos[['foo', 'bar', 'bar']].aslist() ==
+            [0, 1, 0])
+    ```
+
+    Indexing into the elementes of the `plist` when the elements are indexed by
+    `int`s, `slice`s, or other means that confict with `plist` indexing:
+    ```python
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+    # Basic scalar indexing:
+    assert (pl._[0].aslist() ==
+            [1, 4, 7])
+
+    # slice indexing (note the use of the 3-argument version of slicing):
+    assert (pl._[:2:1].aslist() ==
+            [[1, 2], [4, 5], [7, 8]])
+
+    # list indexing:
+    pl = pl.np()
+    assert (pl._[[True, False, True]].apply(list).aslist() ==
+            [[1, 3], [4, 6], [7, 9]])
+    ```
 
     Args:
       key: The key to index by.
-           The key can be applied to self directly as:
-             A list of ints: Returns a plist using those ints as indices.
-             A slice: Returns a plist based on the slice.
-             An int: Returns the value at that index (may not be a plist).
-           The key can be applied to elements of self individually:
-             A generic list: Returns a plist using the elements of the key in
-                             order on the elements of self.
-             A tuple when the elements of self can be indexed by tuple:
-                      Returns a plist applying that tuple to each element of
-                      self.
-             A tuple, otherwise:
-                      Returns a plist where each element of the new plist is a
-                      tuple of each value in the key tuple applied to each
-                      element of self. E.g., `foo[('bar', 'baz')]` might return
-                      `plist([(1, 2), (3, 4), ...])`.
-             Anything else: Returns a plist of the key applied to each of its
-                            elements.
+           `key` can be applied to `self` directly as:
+             A `list` of `int`s: Returns a `plist` using those `int`s as indices.
+             A `slice`: Returns a `plist` based on the `slice`.
+             An `int`: Returns the value at that index (may not be a `plist`).
+           `key` can be applied to elements of `self` individually:
+             A generic `list`:
+              Returns a `plist` using the elements of `key` in order on the
+              elements of `self`.
+             A `tuple` when the elements of `self` can be indexed by `tuple`:
+              Returns a `plist` applying that `tuple` to each element of `self`.
+             A `tuple`, otherwise:
+              Returns a `plist` where each element of the new `plist` is a `tuple`
+              of each value in the `key` `tuple` applied to each element of
+              `self`. E.g., `foo[('bar', 'baz')]` might return
+              `plist([(1, 2), (3, 4), ...])`.
+             Anything else:
+              Returns a `plist` of the `key` applied to each of its elements.
 
     Returns:
-      A plist based on the order of attempting to apply the key described above.
+      A `plist` based on the order of attempting to apply `key` described above.
 
     Raises:
-      TypeError: If the key fails to be applied directly to self and fails to be
+      TypeError: If `key` fails to be applied directly to `self` and fails to be
                  applied to its elements individually.
     """
     if self.__pepth__ != 0:
@@ -1791,37 +1842,96 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def __setitem__(self, key, val):
-    """Sets items of self using a variety of potential indexing styles.
+    """Sets items of `self` using a variety of indexing styles.
 
-    TODO
+    Examples:
+
+    Indexing into the `plist` itself:
+    ```python
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[0] = 13
+    assert (foos.aslist() ==
+            [13, dict(foo=1, bar=1), dict(foo=2, bar=0)])
+
+    # plist slice indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[:2] = plist[12, 13]
+    assert (foos.aslist() ==
+            [12, 13, dict(foo=2, bar=0)])
+
+    # plist int list indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[[0, 2]] = plist[12, 13]
+    assert (foos.aslist() ==
+            [12, dict(foo=1, bar=1), 13])
+    ```
+
+    Indexing into the elements of the `plist`:
+    ```python
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos['foo'] = plist[4, 5, 6]
+    assert (foos.aslist() ==
+            [dict(foo=4, bar=0), dict(foo=5, bar=1), dict(foo=6, bar=0)])
+
+    # list indexing
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[['foo', 'bar', 'bar']] = plist[4, 5, 6]
+    assert (foos.aslist() ==
+            [dict(foo=4, bar=0), dict(foo=1, bar=5), dict(foo=2, bar=6)])
+    ```
+
+    Indexing into the elementes of the `plist` when the elements are indexed by
+    `int`s, `slice`s, or other means that confict with `plist` indexing:
+    ```python
+    # Basic scalar indexing:
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    pl._[0] = 13
+    assert (pl.aslist() ==
+            [[13, 2, 3], [13, 5, 6], [13, 8, 9]])
+
+    # slice indexing (note the use of the 3-argument version of slicing):
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    pl._[:2:1] = pl._[1:3:1]
+    assert (pl.aslist() ==
+            [[2, 3, 3], [5, 6, 6], [8, 9, 9]])
+
+    # list indexing:
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]].np()
+    pl._[[True, False, True]] = plist[[5, 6], [7, 8], [9, 0]]
+    assert (pl.apply(list).aslist() ==
+            [[5, 2, 6], [7, 5, 8], [9, 8, 0]])
+    ```
 
     Args:
       key: The key to index by.
-           The key can be applied to self directly as:
-             A list of ints: Sets items using those ints as indices.
-             A slice: Sets items based on the slice.
-             An int: Sets the item at that index.
-           The key can be applied to elements of self individually:
-             A generic list: Sets the items of self using the elements of the
-                             key in order.
-             A tuple when the elements of self can be indexed by tuple:
-                      Sets the elements of self using that tuple to index into
-                      each element.
-             A tuple, otherwise:
-                      Sets the elements of self using each element of the tuple
-                      key tuple on each element. E.g., `foo[('bar', 'baz')] = 1`
-                      will set the `bar` and `baz` keys of `foo` to `1`.
-             Anything else: Sets the elements of self indexed by key to `val`.
-      val: Value to assign. If val is a sequence and its length matches either
+           `key` can be applied to `self` directly as:
+             A `list` of `int`s: Sets items using those `int`s as indices.
+             A `slice`: Sets items based on the `slice`.
+             An `int`: Sets the item at that index.
+           `key` can be applied to elements of `self` individually:
+             A generic `list`:
+              Sets the items of `self` using the elements of `key` in order.
+             A `tuple` when the elements of `self` can be indexed by `tuple`:
+              Sets the elements of `self` using that `tuple` to index into each
+              element.
+             A `tuple`, otherwise:
+              Sets the elements of `self` using each element of the `key`
+              `tuple` on each element. E.g., `foo[('bar', 'baz')] = 1`
+              will set the `bar` and `baz` keys of `foo` to `1`.
+             Anything else:
+              Sets the elements of `self` indexed by `key` to `val`.
+      val: Value to assign. If `val` is a `plist` and its length matches either
            `len(self)` (in most cases described above for `key`) or `len(key)`,
-           each element of val is applied to each corresponding element of
+           each element of `val` is applied to each corresponding element of
            `self` or `self[k]`.
 
     Returns:
-      self, in order to allow chaining through `pl.__setitem__(key, val).foo`.
+      `self`, in order to allow chaining through `plist.__setitem__(key, val)`.
 
     Raises:
-      TypeError: If the key fails to be applied directly to self and fails to be
+      TypeError: If `key` fails to be applied directly to `self` and fails to be
                  applied to its elements individually.
     """
     if self.__pepth__ != 0:
@@ -1969,35 +2079,93 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     return self
 
   def __delitem__(self, key):
-    """Deletes items of self using a variety of potential indexing styles.
+    """Deletes items of `self` using a variety of indexing styles.
 
-    TODO
+    Examples:
+
+    Indexing into the `plist` itself:
+    ```python
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[0]
+    assert (foos.aslist() ==
+            [dict(foo=1, bar=1), dict(foo=2, bar=0)])
+
+    # plist slice indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[:2]
+    assert (foos.aslist() ==
+            [dict(foo=2, bar=0)])
+
+    # plist int list indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[[0, 2]]
+    assert (foos.aslist() ==
+            [dict(foo=1, bar=1)])
+    ```
+
+    Indexing into the elements of the `plist`:
+    ```python
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos['foo']
+    assert (foos.aslist() ==
+            [dict(bar=0), dict(bar=1), dict(bar=0)])
+
+    # tuple indexing
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[('foo', 'bar')]
+    assert (foos.aslist() ==
+            [dict(), dict(), dict()])
+
+    # list indexing
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[['foo', 'bar', 'bar']]
+    assert (foos.aslist() ==
+            [dict(bar=0), dict(foo=1), dict(foo=2)])
+    ```
+
+    Indexing into the elementes of the `plist` when the elements are indexed by
+    `int`s, `slice`s, or other means that confict with `plist` indexing:
+    ```python
+    # Basic scalar indexing:
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    del pl._[0]
+    assert (pl.aslist() ==
+            [[2, 3], [5, 6], [8, 9]])
+
+    # slice indexing (note the use of the 3-argument version of slicing):
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    del pl._[:2:1]
+    assert (pl.aslist() ==
+            [[3], [6], [9]])
+    ```
 
     Args:
       key: The key to index by.
-           The key can be applied to self directly as:
-             A list of ints: Deletes from self using those ints as indices.
-             A slice: Deletes from self based on the slice.
-             An int: Deletes the value at that index.
-           The key can be applied to elements of self individually:
-             A generic list: Deletes from the elements of self using the
-                             elements of the key in order on the elements of
-                             self.
-             A tuple when the elements of self can be indexed by tuple:
-                      Deletes from the elements of self by applying that tuple
-                      to each element of self.
-             A tuple, otherwise:
-                      Deletes from the elements of self where each element gets
-                      each element in the key tuple deleted. E.g.,
-                      `del foo[('bar', 'baz')]` deletes all `'bar'` and `'baz'`
-                      keys from each element of foo.
-             Anything else: Deletes the key from each of its elements.
+           `key` can be applied to `self` directly as:
+             A `list` of `int`s: Deletes from `self` using those `int`s as indices.
+             A `slice`: Deletes from `self` based on the `slice`.
+             An `int`: Deletes the value at that index.
+           `key` can be applied to elements of `self` individually:
+             A generic `list`:
+              Deletes from the elements of `self` using the elements of `key`
+              in order on the elements of `self`.
+             A `tuple` when the elements of `self` can be indexed by `tuple`:
+              Deletes from the elements of `self` by applying that `tuple` to each
+              element of `self`.
+             A `tuple`, otherwise:
+              Deletes from the elements of `self` where each element gets each
+              element in the `key` `tuple` deleted. E.g., `del foo[('bar', 'baz')]`
+              deletes all `'bar'` and `'baz'` keys from each element of `foo`.
+             Anything else:
+              Deletes `key` from each of its elements.
 
     Returns:
-      self, in order to allow chaining through `pl.__delitem__(key).foo`.
+      `self`, in order to allow chaining through `plist.__delitem__(key)`.
 
     Raises:
-      TypeError: If the key fails to be applied directly to self and fails to be
+      TypeError: If `key` fails to be applied directly to `self` and fails to be
                  applied to its elements individually.
     """
     if self.__pepth__ != 0:

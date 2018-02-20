@@ -3286,6 +3286,49 @@ class PStarTest(unittest.TestCase):
             [[{'bar': 0}, {'bar': 0}], [{'bar': 1}]])
 
 
+  def test_from_docs_pstar_plist___delitem__(self):
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[0]
+    self.assertTrue(foos.aslist() ==
+            [dict(foo=1, bar=1), dict(foo=2, bar=0)])
+    # plist slice indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[:2]
+    self.assertTrue(foos.aslist() ==
+            [dict(foo=2, bar=0)])
+    # plist int list indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[[0, 2]]
+    self.assertTrue(foos.aslist() ==
+            [dict(foo=1, bar=1)])
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos['foo']
+    self.assertTrue(foos.aslist() ==
+            [dict(bar=0), dict(bar=1), dict(bar=0)])
+    # tuple indexing
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[('foo', 'bar')]
+    self.assertTrue(foos.aslist() ==
+            [dict(), dict(), dict()])
+    # list indexing
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos[['foo', 'bar', 'bar']]
+    self.assertTrue(foos.aslist() ==
+            [dict(bar=0), dict(foo=1), dict(foo=2)])
+    # Basic scalar indexing:
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    del pl._[0]
+    self.assertTrue(pl.aslist() ==
+            [[2, 3], [5, 6], [8, 9]])
+    # slice indexing (note the use of the 3-argument version of slicing):
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    del pl._[:2:1]
+    self.assertTrue(pl.aslist() ==
+            [[3], [6], [9]])
+
+
   def test_from_docs_pstar_plist___delslice__(self):
     log_fn = qj.LOG_FN
     with mock.patch('logging.info') as mock_log_fn:
@@ -3348,6 +3391,39 @@ class PStarTest(unittest.TestCase):
     # leaf elements:)
     self.assertTrue(by_bar.foo.pstr().aslist() ==
             [['0', '2'], ['1']])
+
+
+  def test_from_docs_pstar_plist___getitem__(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    # Basic scalar indexing:
+    self.assertTrue(foos[0] ==
+            dict(foo=0, bar=0))
+    # plist slice indexing:
+    self.assertTrue(foos[:2].aslist() ==
+            [dict(foo=0, bar=0), dict(foo=1, bar=1)])
+    # plist int list indexing:
+    self.assertTrue(foos[[0, 2]].aslist() ==
+            [dict(foo=0, bar=0), dict(foo=2, bar=0)])
+    # Basic scalar indexing:
+    self.assertTrue(foos['foo'].aslist() ==
+            [0, 1, 2])
+    # tuple indexing
+    self.assertTrue(foos[('foo', 'bar')].aslist() ==
+            [(0, 0), (1, 1), (2, 0)])
+    # list indexing
+    self.assertTrue(foos[['foo', 'bar', 'bar']].aslist() ==
+            [0, 1, 0])
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    # Basic scalar indexing:
+    self.assertTrue(pl._[0].aslist() ==
+            [1, 4, 7])
+    # slice indexing (note the use of the 3-argument version of slicing):
+    self.assertTrue(pl._[:2:1].aslist() ==
+            [[1, 2], [4, 5], [7, 8]])
+    # list indexing:
+    pl = pl.np()
+    self.assertTrue(pl._[[True, False, True]].apply(list).aslist() ==
+            [[1, 3], [4, 6], [7, 9]])
 
 
   def test_from_docs_pstar_plist___getslice__(self):
@@ -3413,6 +3489,49 @@ class PStarTest(unittest.TestCase):
     by_bar.baz *= by_bar.foo + by_bar.bar
     self.assertTrue(by_bar.baz.aslist() ==
             [[-1, -3], [-3]])
+
+
+  def test_from_docs_pstar_plist___setitem__(self):
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[0] = 13
+    self.assertTrue(foos.aslist() ==
+            [13, dict(foo=1, bar=1), dict(foo=2, bar=0)])
+    # plist slice indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[:2] = plist[12, 13]
+    self.assertTrue(foos.aslist() ==
+            [12, 13, dict(foo=2, bar=0)])
+    # plist int list indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[[0, 2]] = plist[12, 13]
+    self.assertTrue(foos.aslist() ==
+            [12, dict(foo=1, bar=1), 13])
+    # Basic scalar indexing:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos['foo'] = plist[4, 5, 6]
+    self.assertTrue(foos.aslist() ==
+            [dict(foo=4, bar=0), dict(foo=5, bar=1), dict(foo=6, bar=0)])
+    # list indexing
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos[['foo', 'bar', 'bar']] = plist[4, 5, 6]
+    self.assertTrue(foos.aslist() ==
+            [dict(foo=4, bar=0), dict(foo=1, bar=5), dict(foo=2, bar=6)])
+    # Basic scalar indexing:
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    pl._[0] = 13
+    self.assertTrue(pl.aslist() ==
+            [[13, 2, 3], [13, 5, 6], [13, 8, 9]])
+    # slice indexing (note the use of the 3-argument version of slicing):
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    pl._[:2:1] = pl._[1:3:1]
+    self.assertTrue(pl.aslist() ==
+            [[2, 3, 3], [5, 6, 6], [8, 9, 9]])
+    # list indexing:
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]].np()
+    pl._[[True, False, True]] = plist[[5, 6], [7, 8], [9, 0]]
+    self.assertTrue(pl.apply(list).aslist() ==
+            [[5, 2, 6], [7, 5, 8], [9, 8, 0]])
 
 
   def test_from_docs_pstar_plist___setslice__(self):
