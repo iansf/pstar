@@ -1180,17 +1180,35 @@ assert (dict(foo=0, bar=0) in by_bar)
 
 #### `pstar.plist.__delattr__(self, name)`
 
-Recursively attempt to get the attribute `name`.
+Deletes an attribute on elements of `self`.
 
-TODO
+This delegates entirely to the elements of `self`, allowing natural
+deletion of attributes.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+del foos.foo
+assert (foos.aslist() ==
+        [{'bar': 0}, {'bar': 1}, {'bar': 0}])
+
+# Deletion works on grouped plists as well:
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foos.bar.groupby()
+
+# Assignment to an existing attribute:
+del by_bar.foo
+assert (by_bar.aslist() ==
+        [[{'bar': 0}, {'bar': 0}], [{'bar': 1}]])
+```
 
 **Args:**
 
->    **`name`**: Name of attribute to delete.
+>    **`name`**: Name of the attribute to delete.
 
 **Returns:**
 
->    self, in order to allow chaining through `pl.__delattr__(name).foo`.
+>    `self`, in order to allow chaining through `plist.__delattr__(name)`.
 
 
 
@@ -1562,21 +1580,63 @@ assert ((~by_bar.foo).aslist() ==
 
 #### `pstar.plist.__setattr__(self, name, val)`
 
-Sets an attribute on a plist or its elements to `val`.
+Sets an attribute on a `plist` or its elements to `val`.
 
-TODO
+This delegates almost entirely to the elements of `self`, allowing natural
+assignments of attributes.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+
+# Assignment to an existing attribute:
+foos.foo += 1
+assert (foos.foo.aslist() ==
+        [1, 2, 3])
+
+# Scalar assignment to a new attribute:
+foos.baz = -1
+assert (foos.baz.aslist() ==
+        [-1, -1, -1])
+
+# plist assignment to an attribute:
+foos.baz *= foos.foo + foos.bar
+assert (foos.baz.aslist() ==
+        [-1, -3, -3])
+```
+
+All of the same things work naturally on a grouped `plist` as well:
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foos.bar.groupby()
+
+# Assignment to an existing attribute:
+by_bar.foo += 1
+assert (by_bar.foo.aslist() ==
+        [[1, 3], [2]])
+
+# Scalar assignment to a new attribute:
+by_bar.baz = -1
+assert (by_bar.baz.aslist() ==
+        [[-1, -1], [-1]])
+
+# plist assignment to an attribute:
+by_bar.baz *= by_bar.foo + by_bar.bar
+assert (by_bar.baz.aslist() ==
+        [[-1, -3], [-3]])
+```
 
 **Args:**
 
 >    **`name`**: Name of the attribute to set.
 
->    **`val`**: Value to set the attribute to. If val is a sequence and its length
->         matches len(self), the elements of val are set on the elements of
->         self. Otherwise, the elements of self are all set to val.
+>    **`val`**: Value to set the attribute to. If `val` is a `plist` and its length
+>         matches `len(self)`, the elements of `val` are set on the elements of
+>         `self`. Otherwise, the elements of `self` are all set to `val`.
 
 **Returns:**
 
->    self, in order to allow chaining through `pl.__setattr__(name, val).foo`.
+>    `self`, in order to allow chaining through `plist.__setattr__(name, val)`.
 
 
 

@@ -3272,6 +3272,20 @@ class PStarTest(unittest.TestCase):
     self.assertTrue(dict(foo=0, bar=0) in by_bar)
 
 
+  def test_from_docs_pstar_plist___delattr__(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    del foos.foo
+    self.assertTrue(foos.aslist() ==
+            [{'bar': 0}, {'bar': 1}, {'bar': 0}])
+    # Deletion works on grouped plists as well:
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
+    # Assignment to an existing attribute:
+    del by_bar.foo
+    self.assertTrue(by_bar.aslist() ==
+            [[{'bar': 0}, {'bar': 0}], [{'bar': 1}]])
+
+
   def test_from_docs_pstar_plist___delslice__(self):
     log_fn = qj.LOG_FN
     with mock.patch('logging.info') as mock_log_fn:
@@ -3369,6 +3383,36 @@ class PStarTest(unittest.TestCase):
             [[0, -2], [-1]])
     self.assertTrue((~by_bar.foo).aslist() ==
             [[-1, -3], [-2]])
+
+
+  def test_from_docs_pstar_plist___setattr__(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    # Assignment to an existing attribute:
+    foos.foo += 1
+    self.assertTrue(foos.foo.aslist() ==
+            [1, 2, 3])
+    # Scalar assignment to a new attribute:
+    foos.baz = -1
+    self.assertTrue(foos.baz.aslist() ==
+            [-1, -1, -1])
+    # plist assignment to an attribute:
+    foos.baz *= foos.foo + foos.bar
+    self.assertTrue(foos.baz.aslist() ==
+            [-1, -3, -3])
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
+    # Assignment to an existing attribute:
+    by_bar.foo += 1
+    self.assertTrue(by_bar.foo.aslist() ==
+            [[1, 3], [2]])
+    # Scalar assignment to a new attribute:
+    by_bar.baz = -1
+    self.assertTrue(by_bar.baz.aslist() ==
+            [[-1, -1], [-1]])
+    # plist assignment to an attribute:
+    by_bar.baz *= by_bar.foo + by_bar.bar
+    self.assertTrue(by_bar.baz.aslist() ==
+            [[-1, -3], [-3]])
 
 
   def test_from_docs_pstar_plist___setslice__(self):
