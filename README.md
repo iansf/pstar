@@ -1,8 +1,6 @@
 # `pstar`
 ## `numpy` for arbitrary data.
 
-## Overview:
-
 `pstar` provides easy, expressive, concise manipulation of arbitrary data.
 
 ## Examples:
@@ -16,6 +14,8 @@ $ python  # Give it a spin! (Or use ipython, if installed.)
 ```python
 from pstar import *
 
+
+# pdict basics
 pd = pdict(foo=1, bar=2.0)
 pd.baz = 'three'
 
@@ -43,7 +43,87 @@ pd.qj('Easy manipulation of values!')
 
 pd.rekey(foo='floo').qj('Easy manipulation of keys!')
 # Logs:
-#
+#   qj: <module_level_code> Easy manipulation of keys! <28>: {'bar': 'what?! ii', 'baz': 'what?! three', 'bin': 'what?! 44', 'floo': 'what?! one'}
+
+
+# defaultpdict basics
+dpd = defaultpdict(int)
+dpd.bar = dpd.foo + 1
+
+dpd.qj('Hello, defaultpdict!')
+# Logs:
+#   qj: module_level_code: Hello, defaultpdict! <39>: {'bar': 1, 'foo': 0}
+
+dpd[['foo', 'bar']].qj('The same api as pdict!')
+# Logs:
+#   qj: module_level_code:   The same api as pdict! <43>: [0, 1]
+
+dpd = defaultpdict(lambda: defaultpdict(list))
+dpd.name = 'Thing 1'
+dpd.stats.foo.append(1)
+dpd.stats.bar.append(22)
+
+dpd.qj('Nested defaultpdicts make great lightweight objects!')
+# Logs:
+#   qj: module_level_code: Nested defaultpdicts make great lightweight objects! <6>: {'name': 'Thing 1', 'stats': {'bar': [22], 'foo': [1]}}
+
+
+# plist basics
+pl = plist[1, 2, 3]
+pl.qj('Hello, plist!')
+# Logs:
+#   qj: module_level_code: Hello, plist! <33>: [1, 2, 3]
+
+pl *= pl
+pl.qj('plists can mostly be used as if they are a single instance of the type they contain!')
+# Logs:
+#   qj: module_level_code: plists can mostly be used as if they are a single instance of the type they contain! <8>: [1, 4, 9]
+
+pl = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
+pl.baz = pl.foo % 3
+
+pl.qj('That includes plists of pdicts, or other arbitrary objects!')
+# Logs:
+#   qj: module_level_code: That includes plists of pdicts, or other arbitrary objects! <4>: [{'bar': 0, 'baz': 0, 'foo': 0}, {'bar': 1, 'baz': 1, 'foo': 1}, {'bar': 0, 'baz': 2, 'foo': 2}, {'bar': 1, 'baz': 0, 'foo': 3}, {'bar': 0, 'baz': 1, 'foo': 4}]
+
+(pl.bar == 0).qj('Data are meant to be filtered!')[('foo', 'baz')].pstr().replace(', ', ' {bar} ').qj('And processed!').format(bar=(pl.bar == 0).bar).qj('And merged!')
+# Logs:
+#   qj: module_level_code: Data are meant to be filtered! <1>: [{'bar': 0, 'baz': 0, 'foo': 0}, {'bar': 0, 'baz': 2, 'foo': 2}, {'bar': 0, 'baz': 1, 'foo': 4}]
+#   qj: module_level_code:  And processed! <1>: ['(0 {bar} 0)', '(2 {bar} 2)', '(4 {bar} 1)']
+#   qj: module_level_code:   And merged! <1>: ['(0 0 0)', '(2 0 2)', '(4 0 1)']
+
+by_bar = pl.bar.groupby().qj('Grouping data is also powerful!')
+# Logs:
+#   qj: module_level_code: Grouping data is also powerful! <1>: [[{'bar': 0, 'baz': 0, 'foo': 0}, {'bar': 0, 'baz': 2, 'foo': 2}, {'bar': 0, 'baz': 1, 'foo': 4}], [{'bar': 1, 'baz': 1, 'foo': 1}, {'bar': 1, 'baz': 0, 'foo': 3}]]
+
+by_bar[('foo', 'baz')].pstr().replace(', ', ' {bar} ').format(bar=by_bar.bar).qj('Now we can get same result for all of the data!')
+# Logs:
+#   qj: module_level_code: Now we can get same result for all of the data! <1>: [['(0 0 0)', '(2 0 2)', '(4 0 1)'], ['(1 1 1)', '(3 1 0)']]
+
+by_bar.qj('Note that the original data are unchanged!')
+# Logs:
+#   qj: module_level_code: Note that the original data are unchanged! <1>: [[{'bar': 0, 'baz': 0, 'foo': 0}, {'bar': 0, 'baz': 2, 'foo': 2}, {'bar': 0, 'baz': 1, 'foo': 4}], [{'bar': 1, 'baz': 1, 'foo': 1}, {'bar': 1, 'baz': 0, 'foo': 3}]]
+
+pl.foo.apply(lambda floo, blar, blaz: floo * (blar + blaz), pl.bar, blaz=pl.baz).qj('Want to send your data element-wise to a function? Easy!')
+# Logs:
+#   qj: module_level_code: Want to send your data element-wise to a function? Easy! <1>: [0, 2, 4, 3, 4]
+
+by_bar.foo.apply(lambda floo, blar, blaz: floo * (blar + blaz), by_bar.bar, blaz=by_bar.baz).qj('The same function just works when using groups!')
+# Logs:
+#   qj: module_level_code: The same function just works when using groups! <3>: [[0, 4, 4], [2, 3]]
+
+new_pd = pd.qj('Remember pdicts?').palues().qj('Some of their functions return plists').replace('what?! ', 'sweet! ').qj('allowing you to update their values naturally').pdict().qj('and turn it back into a new pdict!')
+# Logs:
+#   qj: module_level_code: Remember pdicts? <101>: {'bar': 'what?! ii', 'baz': 'what?! three', 'bin': 'what?! 44', 'foo': 'what?! one'}
+#   qj: module_level_code:  Some of their functions return plists <101>: ['what?! ii', 'what?! three', 'what?! 44', 'what?! one']
+#   qj: module_level_code:   allowing you to update their values naturally <101>: ['sweet! ii', 'sweet! three', 'sweet! 44', 'sweet! one']
+#   qj: module_level_code:    and turn it back into a new pdict! <101>: {'bar': 'sweet! ii', 'baz': 'sweet! three', 'bin': 'sweet! 44', 'foo': 'sweet! one'}
+
+# A hint at how easy it can be to do complex data manipulations...
+whoa = plist[pd, new_pd]
+whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj('whoa!')
+# Logs:
+#   qj: module_level_code: whoa! <2>: [{'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}, {'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}]
 ```
 
 ## Philosophy:
