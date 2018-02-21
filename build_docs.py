@@ -106,7 +106,7 @@ def child_item(symbol, parent_name, base_depth):
 
 
 def _get_children(symbol, base_depth):
-  return '\n\n'.join(symbols[(symbols.peys() != symbol.name).filter(str.startswith, symbol.name + '.')].apply(child_item, symbol.name, base_depth))
+  return '\n\n'.join(symbols[(symbols.peys() != symbol.name).startswith(symbol.name + '.').filter()].apply(child_item, symbol.name, base_depth))
 
 
 def children(symbol):
