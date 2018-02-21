@@ -244,9 +244,9 @@ pd.qj('Hello, pdict')
 
 ```
 
-## Advanced Usage:
+## API Overview:
 
-<<advanced_usage>>
+<<api_overview>>
 
 ## Testing:
 

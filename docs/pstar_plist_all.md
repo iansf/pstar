@@ -1,0 +1,42 @@
+# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`all(self, *args, **kwargs)`
+
+Returns `self` if `args[0]` evaluates to `True` for all elements of `self`.
+
+Shortcuts if `args[0]` ever evaluates to `False`.
+If `args` are not passed, the function evaluated is `bool`.
+
+Useful as an implicit `if` condition in chaining, but can be used explicitly
+in `if` statements as well.
+
+**Examples:**
+```python
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.all(isinstance, pdict).aslist() ==
+        [pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.foo.all(lambda x: x > 0).aslist() == [])
+```
+
+`all` does not recurse into grouped [`plist`](/docs/pstar_plist.md)s, so you must specify the
+desired level of evaluation:
+```python
+by_bar = foos.bar.groupby()
+assert (by_bar.foo.all_(lambda x: x > 0).aslist() ==
+        [[], [1]])
+assert (by_bar.foo.all_(lambda x: x > 0).nonempty().root().aslist() ==
+        [[{'bar': 1, 'foo': 1}]])
+```
+
+**Args:**
+
+>    **`*args`**: Optional. If present, the first entry must be a function to evaluate.
+>           All other args are passed through to that function. If absent, the
+>           function is set to `bool`.
+
+>    **`**kwargs`**: Passed through to the function specified in `*args`.
+
+**Returns:**
+
+>    `self` or an empty [`plist`](/docs/pstar_plist.md) (which evaluates to `False`).
+
+
+
