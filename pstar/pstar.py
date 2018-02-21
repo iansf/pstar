@@ -4253,7 +4253,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
              [[{'foo': 1, 'bar': 1}]]])
     ```
 
-    As with `plist.groupby`, `preduce_eq` relies on the values being hashable.
+    As with `plist.groupby`, `puniq` relies on the values being hashable.
     If, for some reason, you need to reduce by a non-hashable value, you should
     convert it to a hashable representation first, for example using
     `plist.pstr()` or `plist.apply(id)`:
@@ -4311,8 +4311,6 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     if not_root:
       return plist(new_items, root=plist(new_roots))
     return plist(new_items)
-
-  preduce_eq = puniq
 
   def remix(self, *args, **kwargs):
     r"""Returns a new `plist` of `pdicts` based on selected data from `self`.
@@ -4449,7 +4447,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     except Exception:
       d = plist([0], root=self.__root__)
     if s:
-      d = d.ungroup(-1).preduce_eq()
+      d = d.ungroup(-1).puniq()
       if d:
         return max(d)
       return 0
@@ -4526,7 +4524,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     if l is None:
       l = plist([len(self)], root=self.__root__)
     if s:
-      l = l.ungroup(-1).preduce_eq()
+      l = l.ungroup(-1).puniq()
       if l:
         return max(l)
       return 0

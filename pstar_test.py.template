@@ -711,14 +711,14 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos[('bar', 'baz')].aslist(),
                      [(0, 3), (1, 6), (0, 1), (1, 6), (0, 2)])
 
-  def test_plist_of_pdict_preduce_eq(self):
+  def test_plist_of_pdict_puniq(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
-    self.assertEqual(foos.bar.preduce_eq().aslist(),
+    self.assertEqual(foos.bar.puniq().aslist(),
                      [0, 1])
-    self.assertEqual(foos.bar.preduce_eq().root().aslist(),
+    self.assertEqual(foos.bar.puniq().root().aslist(),
                      [{'baz': 3, 'foo': 0, 'bar': 0}, {'baz': 6, 'foo': 1, 'bar': 1}])
 
   def test_plist_of_pdict_puniq(self):
@@ -740,16 +740,16 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz[('bar', 'baz')].aslist(),
                      [[[(1, 6), (1, 6)]], [[(0, 1)], [(0, 2)], [(0, 3)]]])
 
-  def test_plist_of_pdict_groupby_preduce_eq(self):
+  def test_plist_of_pdict_groupby_puniq(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
-    self.assertEqual(by_bar_baz.bar.preduce_eq().aslist(),
+    self.assertEqual(by_bar_baz.bar.puniq().aslist(),
                      [[[1]], [[0], [0], [0]]])
 
-    self.assertEqual(by_bar_baz.bar.preduce_eq().root__().aslist(),
+    self.assertEqual(by_bar_baz.bar.puniq().root__().aslist(),
                      [[[{'baz': 6, 'foo': 1, 'bar': 1}]],
                       [[{'baz': 1, 'foo': 2, 'bar': 0}],
                        [{'baz': 2, 'foo': 4, 'bar': 0}],
@@ -2605,7 +2605,7 @@ class PStarTest(unittest.TestCase):
 
       rmx = by.ungroup(-1).remix('bun', bam=by.baz.np__().mean().ungroup(-1), *fields).bun.sortby().groupby()[fields].sortby().root()
 
-      rmx.bam.qj(rmx.bun.ungroup(-1).preduce_eq().pstr().qj('bun'), n=1, pepth=1)
+      rmx.bam.qj(rmx.bun.ungroup(-1).puniq().pstr().qj('bun'), n=1, pepth=1)
       mock_log_fn.assert_has_calls(
           [
               mock.call(
@@ -2631,7 +2631,7 @@ class PStarTest(unittest.TestCase):
       self.assertEqual(mock_log_fn.call_count, 2)
       mock_log_fn.reset_mock()
 
-      rmx_x = rmx.bun.preduce_eq(pepth=1).ungroup().qj('rmx_x')
+      rmx_x = rmx.bun.puniq(pepth=1).ungroup().qj('rmx_x')
       mock_log_fn.assert_has_calls(
           [
               mock.call(
@@ -2817,7 +2817,7 @@ class PStarTest(unittest.TestCase):
     by.baz = by.foo % (by.bin + by.bun + 1)
     qj(tic=1, toc=1)
 
-    by.baz.qj(by[fields].preduce_eq().ungroup().pstr(), n=10, pepth=2)
+    by.baz.qj(by[fields].puniq().ungroup().pstr(), n=10, pepth=2)
     qj(tic=1, toc=1)
 
   #############################################################################

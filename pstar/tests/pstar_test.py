@@ -711,14 +711,14 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(foos[('bar', 'baz')].aslist(),
                      [(0, 3), (1, 6), (0, 1), (1, 6), (0, 2)])
 
-  def test_plist_of_pdict_preduce_eq(self):
+  def test_plist_of_pdict_puniq(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
-    self.assertEqual(foos.bar.preduce_eq().aslist(),
+    self.assertEqual(foos.bar.puniq().aslist(),
                      [0, 1])
-    self.assertEqual(foos.bar.preduce_eq().root().aslist(),
+    self.assertEqual(foos.bar.puniq().root().aslist(),
                      [{'baz': 3, 'foo': 0, 'bar': 0}, {'baz': 6, 'foo': 1, 'bar': 1}])
 
   def test_plist_of_pdict_puniq(self):
@@ -740,16 +740,16 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(by_bar_baz[('bar', 'baz')].aslist(),
                      [[[(1, 6), (1, 6)]], [[(0, 1)], [(0, 2)], [(0, 3)]]])
 
-  def test_plist_of_pdict_groupby_preduce_eq(self):
+  def test_plist_of_pdict_groupby_puniq(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
     by_bar_baz = foos.bar.sortby(reverse=True).groupby().baz.groupby().baz.sortby_().root()
-    self.assertEqual(by_bar_baz.bar.preduce_eq().aslist(),
+    self.assertEqual(by_bar_baz.bar.puniq().aslist(),
                      [[[1]], [[0], [0], [0]]])
 
-    self.assertEqual(by_bar_baz.bar.preduce_eq().root__().aslist(),
+    self.assertEqual(by_bar_baz.bar.puniq().root__().aslist(),
                      [[[{'baz': 6, 'foo': 1, 'bar': 1}]],
                       [[{'baz': 1, 'foo': 2, 'bar': 0}],
                        [{'baz': 2, 'foo': 4, 'bar': 0}],
@@ -2605,7 +2605,7 @@ class PStarTest(unittest.TestCase):
 
       rmx = by.ungroup(-1).remix('bun', bam=by.baz.np__().mean().ungroup(-1), *fields).bun.sortby().groupby()[fields].sortby().root()
 
-      rmx.bam.qj(rmx.bun.ungroup(-1).preduce_eq().pstr().qj('bun'), n=1, pepth=1)
+      rmx.bam.qj(rmx.bun.ungroup(-1).puniq().pstr().qj('bun'), n=1, pepth=1)
       mock_log_fn.assert_has_calls(
           [
               mock.call(
@@ -2631,7 +2631,7 @@ class PStarTest(unittest.TestCase):
       self.assertEqual(mock_log_fn.call_count, 2)
       mock_log_fn.reset_mock()
 
-      rmx_x = rmx.bun.preduce_eq(pepth=1).ungroup().qj('rmx_x')
+      rmx_x = rmx.bun.puniq(pepth=1).ungroup().qj('rmx_x')
       mock_log_fn.assert_has_calls(
           [
               mock.call(
@@ -2817,7 +2817,7 @@ class PStarTest(unittest.TestCase):
     by.baz = by.foo % (by.bin + by.bun + 1)
     qj(tic=1, toc=1)
 
-    by.baz.qj(by[fields].preduce_eq().ungroup().pstr(), n=10, pepth=2)
+    by.baz.qj(by[fields].puniq().ungroup().pstr(), n=10, pepth=2)
     qj(tic=1, toc=1)
 
   #############################################################################
@@ -4216,64 +4216,6 @@ class PStarTest(unittest.TestCase):
       by_bar.foo.apply(plt.scatter, by_bar.baz, c=plist['r', 'g'], label='bar: ' + by_bar.bar.puniq().ungroup().pstr())
       plt.legend(loc=0)
       plt.show()
-
-
-  def test_from_docs_pstar_plist_puniq(self):
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    self.assertTrue(foo.aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1},
-             {'foo': 2, 'bar': 0}])
-    reduced = foo.bar.puniq()
-    self.assertTrue(reduced.aslist() ==
-            [0, 1])
-    self.assertTrue(reduced.root().aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1}])
-    foo_by_bar = foo.bar.groupby()
-    self.assertTrue(foo_by_bar.aslist() ==
-            [[{'foo': 0, 'bar': 0},
-              {'foo': 2, 'bar': 0}],
-             [{'foo': 1, 'bar': 1}]])
-    reduced = foo_by_bar.bar.puniq()
-    self.assertTrue(reduced.aslist() ==
-            [[0], [1]])
-    self.assertTrue(reduced.root().aslist() ==
-            [[{'foo': 0, 'bar': 0}],
-             [{'foo': 1, 'bar': 1}]])
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    self.assertTrue(foo_by_bar_foo.aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              [{'foo': 2, 'bar': 0}]],
-             [[{'foo': 1, 'bar': 1}]]])
-    reduced_no_effect = foo_by_bar_foo.bar.puniq()
-    self.assertTrue(reduced_no_effect.aslist() ==
-            [[[0], [0]], [[1]]])
-    self.assertTrue(reduced_no_effect.root().aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              [{'foo': 2, 'bar': 0}]],
-             [[{'foo': 1, 'bar': 1}]]])
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
-    self.assertTrue(foo.aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1},
-             {'foo': 0, 'bar': 0}])
-    try:
-      reduced_crash = foo.puniq()  # CRASHES!
-    except Exception as e:
-      self.assertTrue(isinstance(e, TypeError))
-    reduced_pstr = foo.pstr().puniq()
-    self.assertTrue(reduced_pstr.aslist() ==
-            ["{'bar': 0, 'foo': 0}",
-             "{'bar': 1, 'foo': 1}"])
-    self.assertTrue(reduced_pstr.root().aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1}])
-    reduced_id = foo.apply(id).puniq()
-    self.assertTrue(reduced_id.root().aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1},
-             {'foo': 0, 'bar': 0}])
 
 
   def test_from_docs_pstar_plist_pset(self):
