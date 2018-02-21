@@ -3457,6 +3457,24 @@ class PStarTest(unittest.TestCase):
     qj.COLOR = True
 
 
+  def test_from_docs_pstar_plist___init__(self):
+    # Empty plists:
+    pl = plist()
+    pl = plist([])
+    # Convenience constructor for list literals:
+    pl = plist[1, 2, 3]
+    pl = plist[1,]  # Note the trailing comma, which is required for 1-element lists.
+    # Initialization from other lists or plists:
+    pl = plist(['a', 'b', 'c'])
+    pl = plist(pl)
+    # Initialization from iterables:
+    pl = plist(range(5))
+    pl = plist([i for i in range(5)])
+    pl = plist((i for i in range(5)))
+    # Passing root (advanced usage -- not generally necessary):
+    pl = plist([1, 2, 3], root=plist(['a', 'b', 'c']))
+
+
   def test_from_docs_pstar_plist_unary_op(self):
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
