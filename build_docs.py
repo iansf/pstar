@@ -30,7 +30,6 @@ import pstar
 from pstar import *
 
 
-SECTIONS = plist['api_overview',]
 SKIP_SYMBOLS = plist['pstar.pstar',]
 PUBLICIZE_SYMBOLS = plist[
     '__init__',
@@ -63,7 +62,6 @@ PUBLICIZE_SYMBOLS = plist[
     '__str__',
 ]
 
-API_SECTIONS = plist['full_signature', 'doc', 'children', 'source']
 API_DOC_TEMPLATE = """
 <<full_signature>>
 
@@ -114,15 +112,17 @@ def doc(symbol):
   return _make_links(symbol.doc, symbol.name)
 
 
-def child_item(child_name, symbol_name):
-  return '##' + ('#' * len(child_name.replace(symbol_name + '.', '').split('.'))) + ' [`%s%s`](%s)\n\n%s' % (child_name, signature(symbols[child_name]), url_for(child_name), short_doc(symbols[child_name]))
+def child_item(symbol, parent_name, base_depth):
+  return  ('#' * (base_depth + len(symbol.name.replace(parent_name + '.', '').split('.')))) + ' [`%s%s`](%s)\n\n%s' % (symbol.name, signature(symbol), url_for(symbol.name), short_doc(symbol))
+
+
+def _get_children(symbol, base_depth):
+  return '\n\n'.join(symbols[(symbols.peys() != symbol.name).filter(str.startswith, symbol.name + '.')].apply(child_item, symbol.name, base_depth))
 
 
 def children(symbol):
-  children = '\n\n'.join((symbols.peys() != symbol.name).filter(str.startswith, symbol.name + '.').apply(child_item, symbol.name))
-  if children:
-    return '## Children:\n\n%s' % children
-  return ''
+  children = _get_children(symbol, base_depth=2)
+  return '## Children:\n\n%s' % children if children else ''
 
 
 def source(symbol):
@@ -130,10 +130,11 @@ def source(symbol):
 
 
 def build_api_doc(symbol):
-  return ('<<' + API_SECTIONS + '>>').reduce(
-      lambda s, l, section: s.replace(l, globals()[section](symbol)),
-      API_DOC_TEMPLATE,
-      API_SECTIONS)[0]
+  return process_template(API_DOC_TEMPLATE, symbol)
+
+
+def api_overview(symbol):
+  return '%s\n\n' % _get_children(symbol, base_depth=2)
 
 
 def extract_tests(name, doc):
@@ -180,10 +181,6 @@ def extract_tests(name, doc):
     tests_from_docs.append(test)
 
 
-def api_overview(base_path):
-  return '##%s\n\n' % build_api_doc(symbols[base_path])
-
-
 def find_public_symbols(obj):
   if obj.__name__ == '__init__' or isinstance(obj, types.MethodType):
     return plist()
@@ -204,20 +201,11 @@ def process_doc(doc):
   body = body._[min_spaces::1].rstrip()
 
   def maybe_indent_line(line):
-    if '**Args:**' in line:
+    if plist['**Args:**', '**Returns:**', '**Raises:**'].any(lambda s: s in line):
       maybe_indent_line.indentation_block = True
-      return line
-    if '**Returns:**' in line:
-      maybe_indent_line.indentation_block = True
-      return line
-    if '**Raises:**' in line:
-      maybe_indent_line.indentation_block = True
-      return line
-
-    if maybe_indent_line.indentation_block:
+    elif maybe_indent_line.indentation_block:
       line = '>  ' + line if line.strip() else line
       line = re.sub('^(\s*)>(\s+)([^\s:]+):', r'\n\1>\2**`\3`**:', line)
-      return line
     return line
   maybe_indent_line.indentation_block = False
 
@@ -226,7 +214,7 @@ def process_doc(doc):
   return plist['\n'.join([short] + body.aslist()), short]
 
 
-def get_signature(obj, full_name):
+def get_signature(obj):
   signature = ''
   try:
     signature = inspect.formatargspec(*inspect.getargspec(obj))
@@ -234,7 +222,7 @@ def get_signature(obj, full_name):
     try:
       signature = '(%s)' % inspect.getmro(obj)[1].__name__
     except Exception as e:
-      qj(e)
+      pass
   return signature
 
 
@@ -245,13 +233,21 @@ def collect_docs_and_tests(obj, base_name, full_base_name):
     full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
     if full_name in symbols:
       raise RuntimeError('Found duplicate symbol: %s' % full_name)
-    symbols[full_name][['name', 'signature']] = plist[full_name, get_signature(obj, full_name)]
+    symbols[full_name][['name', 'signature']] = plist[full_name, get_signature(obj)]
     symbols[full_name][['doc', 'short_doc']] = process_doc(inspect.getdoc(obj))
     extract_tests(full_name, symbols[full_name].doc)
     (find_public_symbols(obj) != obj).apply(collect_docs_and_tests, base_name, full_name)
   except AttributeError as e:
     # qj(str(e), 'Error processing %s' % str(obj))
     pass
+
+
+def process_template(template, symbol):
+  sections = plist(re.findall('<<([^\s]+)>>', template))
+  return ('<<' + sections + '>>').reduce(
+      lambda s, l, section: s.replace(l, globals()[section](symbol)),
+      template,
+      sections)[0]
 
 
 def build_docs():
@@ -264,11 +260,7 @@ def build_docs():
 
   collect_docs_and_tests(pstar, pstar.__name__, '')
 
-  section_labels = '<<' + SECTIONS + '>>'
-  docs_md = section_labels.reduce(
-      lambda s, l, section: s.replace(l, globals()[section](pstar.__name__)),
-      template,
-      SECTIONS)[0]
+  docs_md = process_template(template, symbols[pstar.__name__])
 
   with open(readme_path, 'w') as f:
     f.write(docs_md)

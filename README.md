@@ -246,17 +246,6 @@ pd.qj('Hello, pdict')
 
 ## API Overview:
 
-### `pstar`
-
-`pstar` module.
-
-Import like this:
-```python
-from pstar import defaultpdict, pdict, plist, pset
-```
-
-## Children:
-
 ### [`pstar.defaultpdict(defaultdict)`](/docs/pstar_defaultpdict.md)
 
 `defaultdict` subclass where everything is automatically a property.
@@ -608,8 +597,6 @@ Zips `self` with `others`, recursively.
 ### [`pstar.pset(frozenset)`](/docs/pstar_pset.md)
 
 Placeholder frozenset subclass. Not yet implemented.
-
-
 
 
 
