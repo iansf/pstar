@@ -1,11 +1,11 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pand(self, name='__plist_and_var__', call_pepth=0)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pand(self, name='__plist_and_var__', call_pepth=0)`
 
-Stores `self` into a [`plist`](/docs/pstar_plist.md) of `tuple`s that gets extended with each call.
+Stores `self` into a [`plist`](./pstar_plist.md) of `tuple`s that gets extended with each call.
 
 `pand` is meant to facilitate building up tuples of values to be sent as
-a single block to a chained call to [`apply`](/docs/pstar_plist_apply.md), or as `*args` when calling
+a single block to a chained call to [`apply`](./pstar_plist_apply.md), or as `*args` when calling
 `plist.apply(psplat=True)`. The name is `pand` to evoke conjunction: the
-caller wants a [`plist`](/docs/pstar_plist.md) with this *and* this *and* this.
+caller wants a [`plist`](./pstar_plist.md) with this *and* this *and* this.
 
 `pand` stores a variable in the caller's frame that isn't visible to the
 caller, but is visible to future calls to `pand` due to how `locals()`
@@ -81,13 +81,14 @@ shouldn't be used.
 
 **Returns:**
 
->    The current [`plist`](/docs/pstar_plist.md) of `tuple`s, with `self` added.
+>    The current [`plist`](./pstar_plist.md) of `tuple`s, with `self` added.
 
 **Raises:**
 
 >    **`ValueError`**: If the variable named by `name` is already present in the
->                caller's frame and is not a [`plist`](/docs/pstar_plist.md), or has different `pshape()`
+>                caller's frame and is not a [`plist`](./pstar_plist.md), or has different `pshape()`
 >                than `self`.
 
 
 
+## [Source](../pstar/pstar.py#L4969-L5082)

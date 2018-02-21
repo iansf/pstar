@@ -1,10 +1,10 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__setitem__(self, key, val)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__setitem__(self, key, val)`
 
 Sets items of `self` using a variety of indexing styles.
 
 **Examples:**
 
-Indexing into the [`plist`](/docs/pstar_plist.md) itself:
+Indexing into the [`plist`](./pstar_plist.md) itself:
 ```python
 # Basic scalar indexing:
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
@@ -25,7 +25,7 @@ assert (foos.aslist() ==
         [12, dict(foo=1, bar=1), 13])
 ```
 
-Indexing into the elements of the [`plist`](/docs/pstar_plist.md):
+Indexing into the elements of the [`plist`](./pstar_plist.md):
 ```python
 # Basic scalar indexing:
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
@@ -40,8 +40,8 @@ assert (foos.aslist() ==
         [dict(foo=4, bar=0), dict(foo=1, bar=5), dict(foo=2, bar=6)])
 ```
 
-Indexing into the elementes of the [`plist`](/docs/pstar_plist.md) when the elements are indexed by
-`int`s, `slice`s, or other means that confict with [`plist`](/docs/pstar_plist.md) indexing:
+Indexing into the elementes of the [`plist`](./pstar_plist.md) when the elements are indexed by
+`int`s, `slice`s, or other means that confict with [`plist`](./pstar_plist.md) indexing:
 ```python
 # Basic scalar indexing:
 pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
@@ -82,7 +82,7 @@ assert (pl.apply(list).aslist() ==
 >           Anything else:
 >            Sets the elements of `self` indexed by `key` to `val`.
 
->    **`val`**: Value to assign. If `val` is a [`plist`](/docs/pstar_plist.md) and its length matches either
+>    **`val`**: Value to assign. If `val` is a [`plist`](./pstar_plist.md) and its length matches either
 >         `len(self)` (in most cases described above for `key`) or `len(key)`,
 >         each element of `val` is applied to each corresponding element of
 >         `self` or `self[k]`.
@@ -98,3 +98,4 @@ assert (pl.apply(list).aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L1891-L2024)

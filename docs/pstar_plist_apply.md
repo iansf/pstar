@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`apply(self, func, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`apply(self, func, *args, **kwargs)`
 
 Apply an arbitrary function to elements of self, forwarding arguments.
 
-Any arguments passed to `apply` that are [`plist`](/docs/pstar_plist.md)s and have the same
+Any arguments passed to `apply` that are [`plist`](./pstar_plist.md)s and have the same
 length as `self` will be passed one-at-a-time to `func` with each
 element of `self`. Otherwise, arguments are passed in unmodified.
 
@@ -50,7 +50,7 @@ assert (by_bar_baz_apply_paslist_psplat.aslist() ==
 
 **Args:**
 
->    **`func`**: `callable`, `list` of `callable`s, or string name of method in [`plist`](/docs/pstar_plist.md).
+>    **`func`**: `callable`, `list` of `callable`s, or string name of method in [`plist`](./pstar_plist.md).
 
 >    **`*args`**: Arguments to pass to `func`.
 
@@ -59,10 +59,10 @@ assert (by_bar_baz_apply_paslist_psplat.aslist() ==
 >    **`paslist`**: Boolean (default `False`). If `True`, converts
 >             elements of `self` to `list` using `plist.aslist()`
 >             before passing them to `func`, and reconverts the
->             result of each call to a [`plist`](/docs/pstar_plist.md). Note that this does
->             not guarantee that the returned [`plist`](/docs/pstar_plist.md) has the same
+>             result of each call to a [`plist`](./pstar_plist.md). Note that this does
+>             not guarantee that the returned [`plist`](./pstar_plist.md) has the same
 >             shape as `self`, as `plist.aslist()` recursively
->             converts all contained [`plist`](/docs/pstar_plist.md)s to `list`s, but `func`
+>             converts all contained [`plist`](./pstar_plist.md)s to `list`s, but `func`
 >             might return any arbitrary result, so the same
 >             conversion cannot be inverted automatically.
 
@@ -77,7 +77,8 @@ assert (by_bar_baz_apply_paslist_psplat.aslist() ==
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) resulting from applying `func` to each element of `self`.
+>    [`plist`](./pstar_plist.md) resulting from applying `func` to each element of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L3466-L3584)

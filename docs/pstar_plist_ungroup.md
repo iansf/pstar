@@ -1,12 +1,12 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`ungroup(self, r=1, s=None)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`ungroup(self, r=1, s=None)`
 
 Inverts the last grouping operation applied and returns a new plist.
 
-`ungroup` undoes the last [`groupby`](/docs/pstar_plist_groupby.md) operation by default. It removes
-groupings in the inverse order that they are applied in -- [`groupby`](/docs/pstar_plist_groupby.md)
+`ungroup` undoes the last [`groupby`](./pstar_plist_groupby.md) operation by default. It removes
+groupings in the inverse order that they are applied in -- [`groupby`](./pstar_plist_groupby.md)
 always adds new groups at the inner most layer, so `ungroup` removes
 groups from the innermost layer. It does not undo any implicit sorting
-caused by the [`groupby`](/docs/pstar_plist_groupby.md) operation, however.
+caused by the [`groupby`](./pstar_plist_groupby.md) operation, however.
 
 **Examples:**
 ```python
@@ -46,3 +46,4 @@ assert (by_bar_baz.ungroup(-1).aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L4003-L4067)

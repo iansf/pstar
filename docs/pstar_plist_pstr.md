@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pstr(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pstr(self)`
 
 Returns a plist with leaf elements converted to strings.
 
@@ -15,14 +15,14 @@ assert (by_bar.foo.pstr().aslist() ==
         [['0', '2'], ['1']])
 ```
 
-Note that string concatenation works naturally with [`plist`](/docs/pstar_plist.md)s, so it is easy to build
+Note that string concatenation works naturally with [`plist`](./pstar_plist.md)s, so it is easy to build
 up a desired string using `plist.pstr`:
 ```python
 assert (('foo: ' + by_bar.foo.pstr() + ', bar: ' + by_bar.bar.pstr()).aslist() ==
         [['foo: 0, bar: 0', 'foo: 2, bar: 0'], ['foo: 1, bar: 1']])
 ```
 
-If you want the string representation of a layer of a grouped [`plist`](/docs/pstar_plist.md), instead use
+If you want the string representation of a layer of a grouped [`plist`](./pstar_plist.md), instead use
 `plist.apply(str)` at the desired depth:
 ```python
 assert (by_bar.foo.apply(str).aslist() ==
@@ -31,7 +31,8 @@ assert (by_bar.foo.apply(str).aslist() ==
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) of strings.
+>    [`plist`](./pstar_plist.md) of strings.
 
 
 
+## [Source](../pstar/pstar.py#L3111-L3148)

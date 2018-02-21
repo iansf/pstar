@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`enum(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`enum(self)`
 
-Wrap the current [`plist`](/docs/pstar_plist.md) values in tuples where the first item is the index.
+Wrap the current [`plist`](./pstar_plist.md) values in tuples where the first item is the index.
 
 **Examples:**
 ```python
@@ -16,7 +16,8 @@ assert (by_bar.foo.enum_().aslist() ==
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) of `(i, x)` pairs from calling `enumerate` on `self`.
+>    [`plist`](./pstar_plist.md) of `(i, x)` pairs from calling `enumerate` on `self`.
 
 
 
+## [Source](../pstar/pstar.py#L3877-L3896)

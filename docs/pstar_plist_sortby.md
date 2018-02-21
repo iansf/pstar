@@ -1,10 +1,10 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`sortby(self, key=None, reverse=False)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`sortby(self, key=None, reverse=False)`
 
 Sorts `self` and `self.root()` in-place and returns `self`.
 
-`sortby` and [`groupby`](/docs/pstar_plist_groupby.md) work together nicely to create sorted, nested plists.
-Note that `sortby` modifies and returns `self`, whereas [`groupby`](/docs/pstar_plist_groupby.md) returns a
-new [`plist`](/docs/pstar_plist.md) with a new root. This is because `sortby` doesn't change the
+`sortby` and [`groupby`](./pstar_plist_groupby.md) work together nicely to create sorted, nested plists.
+Note that `sortby` modifies and returns `self`, whereas [`groupby`](./pstar_plist_groupby.md) returns a
+new [`plist`](./pstar_plist.md) with a new root. This is because `sortby` doesn't change the
 structure of the plist, only the order of its (or its children's) elements.
 
 **Examples:**
@@ -57,3 +57,4 @@ assert (by_bar_sorted.aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L3943-L4002)

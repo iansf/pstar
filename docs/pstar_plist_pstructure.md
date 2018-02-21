@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pstructure(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pstructure(self)`
 
 Returns a `list` of the number of elements in each layer of `self`.
 
@@ -36,9 +36,10 @@ assert (filtered.pstructure().aslist() ==
 
 **Returns:**
 
->    A `list` (not a [`plist`](/docs/pstar_plist.md)) of `self.pdepth()` integers, where each integer is
->    the number of elements in all [`plist`](/docs/pstar_plist.md)s at that layer, 0-indexed according to
+>    A `list` (not a [`plist`](./pstar_plist.md)) of `self.pdepth()` integers, where each integer is
+>    the number of elements in all [`plist`](./pstar_plist.md)s at that layer, 0-indexed according to
 >    depth.
 
 
 
+## [Source](../pstar/pstar.py#L4585-L4629)

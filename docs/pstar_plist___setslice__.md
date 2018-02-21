@@ -1,10 +1,10 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__setslice__(self, i, j, sequence)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__setslice__(self, i, j, sequence)`
 
-Delegates to [`__setitem__`](/docs/pstar_defaultpdict___setitem__.md) whenever possible. For compatibility with python 2.7.
+Delegates to [`__setitem__`](./pstar_defaultpdict___setitem__.md) whenever possible. For compatibility with python 2.7.
 
 Avoid using `__setslice__` whenever possible in python 2.7, as the bytecode compiler
 assumes that the slice is for the given object on the stack, and modifies negative
-indices relative to that object's length. In [`plist`](/docs/pstar_plist.md)s and other dynamic apis like
+indices relative to that object's length. In [`plist`](./pstar_plist.md)s and other dynamic apis like
 `numpy`, that assumption can cause undetectable and unrecoverable errors.
 
 To avoid the errors caused by this api in python 2.7, simply use three argument
@@ -12,7 +12,7 @@ slices instead of two; e.g., `plist[::1]`.
 
 **Examples:**
 
-The following examples are safe uses of slicing with [`plist`](/docs/pstar_plist.md)s:
+The following examples are safe uses of slicing with [`plist`](./pstar_plist.md)s:
 ```python
 pl = plist['abc', 'def', 'ghi']
 pl[:2:1] = plist['dec', 'abf']
@@ -55,3 +55,4 @@ assert (pl.aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L2025-L2089)

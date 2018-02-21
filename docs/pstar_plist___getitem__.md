@@ -1,10 +1,10 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__getitem__(self, key)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__getitem__(self, key)`
 
-Returns a new [`plist`](/docs/pstar_plist.md) using a variety of indexing styles.
+Returns a new [`plist`](./pstar_plist.md) using a variety of indexing styles.
 
 **Examples:**
 
-Indexing into the [`plist`](/docs/pstar_plist.md) itself:
+Indexing into the [`plist`](./pstar_plist.md) itself:
 ```python
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 
@@ -21,7 +21,7 @@ assert (foos[[0, 2]].aslist() ==
         [dict(foo=0, bar=0), dict(foo=2, bar=0)])
 ```
 
-Indexing into the elements of the [`plist`](/docs/pstar_plist.md):
+Indexing into the elements of the [`plist`](./pstar_plist.md):
 ```python
 # Basic scalar indexing:
 assert (foos['foo'].aslist() ==
@@ -36,8 +36,8 @@ assert (foos[['foo', 'bar', 'bar']].aslist() ==
         [0, 1, 0])
 ```
 
-Indexing into the elementes of the [`plist`](/docs/pstar_plist.md) when the elements are indexed by
-`int`s, `slice`s, or other means that confict with [`plist`](/docs/pstar_plist.md) indexing:
+Indexing into the elementes of the [`plist`](./pstar_plist.md) when the elements are indexed by
+`int`s, `slice`s, or other means that confict with [`plist`](./pstar_plist.md) indexing:
 ```python
 pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
@@ -59,26 +59,26 @@ assert (pl._[[True, False, True]].apply(list).aslist() ==
 
 >    **`key`**: The key to index by.
 >         `key` can be applied to `self` directly as:
->           A `list` of `int`s: Returns a [`plist`](/docs/pstar_plist.md) using those `int`s as indices.
->           A `slice`: Returns a [`plist`](/docs/pstar_plist.md) based on the `slice`.
->           An `int`: Returns the value at that index (may not be a [`plist`](/docs/pstar_plist.md)).
+>           A `list` of `int`s: Returns a [`plist`](./pstar_plist.md) using those `int`s as indices.
+>           A `slice`: Returns a [`plist`](./pstar_plist.md) based on the `slice`.
+>           An `int`: Returns the value at that index (may not be a [`plist`](./pstar_plist.md)).
 >         `key` can be applied to elements of `self` individually:
 >           A generic `list`:
->            Returns a [`plist`](/docs/pstar_plist.md) using the elements of `key` in order on the
+>            Returns a [`plist`](./pstar_plist.md) using the elements of `key` in order on the
 >            elements of `self`.
 >           A `tuple` when the elements of `self` can be indexed by `tuple`:
->            Returns a [`plist`](/docs/pstar_plist.md) applying that `tuple` to each element of `self`.
+>            Returns a [`plist`](./pstar_plist.md) applying that `tuple` to each element of `self`.
 >           A `tuple`, otherwise:
->            Returns a [`plist`](/docs/pstar_plist.md) where each element of the new [`plist`](/docs/pstar_plist.md) is a `tuple`
+>            Returns a [`plist`](./pstar_plist.md) where each element of the new [`plist`](./pstar_plist.md) is a `tuple`
 >            of each value in the `key` `tuple` applied to each element of
 >            `self`. E.g., `foo[('bar', 'baz')]` might return
 >            `plist([(1, 2), (3, 4), ...])`.
 >           Anything else:
->            Returns a [`plist`](/docs/pstar_plist.md) of the `key` applied to each of its elements.
+>            Returns a [`plist`](./pstar_plist.md) of the `key` applied to each of its elements.
 
 **Returns:**
 
->    A [`plist`](/docs/pstar_plist.md) based on the order of attempting to apply `key` described above.
+>    A [`plist`](./pstar_plist.md) based on the order of attempting to apply `key` described above.
 
 **Raises:**
 
@@ -87,3 +87,4 @@ assert (pl._[[True, False, True]].apply(list).aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L1660-L1767)

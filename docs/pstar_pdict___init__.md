@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`pdict`](/docs/pstar_pdict.md).`__init__(self, *a, **kw)`
+# [`pstar`](./pstar.md).[`pdict`](./pstar_pdict.md).`__init__(self, *a, **kw)`
 
-Initialize [`pdict`](/docs/pstar_pdict.md).
+Initialize [`pdict`](./pstar_pdict.md).
 
 **Examples:**
 ```python
@@ -17,7 +17,8 @@ assert (pd1 == pd2)
 
 **Returns:**
 
->    `None`. [`pdict`](/docs/pstar_pdict.md) is initialized.
+>    `None`. [`pdict`](./pstar_pdict.md) is initialized.
 
 
 
+## [Source](../pstar/pstar.py#L116-L135)

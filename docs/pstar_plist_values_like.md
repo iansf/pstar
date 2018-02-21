@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`values_like(self, value=0)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`values_like(self, value=0)`
 
-Returns a [`plist`](/docs/pstar_plist.md) with the structure of `self` filled with `value`.
+Returns a [`plist`](./pstar_plist.md) with the structure of `self` filled with `value`.
 
 **Examples:**
 ```python
@@ -38,7 +38,7 @@ assert (tuples.aslist() ==
 ```
 
 Note in the example above that filling with a mutable object like a `dict` gives
-a [`plist`](/docs/pstar_plist.md) filled that single object, which might be surprising, but is the
+a [`plist`](./pstar_plist.md) filled that single object, which might be surprising, but is the
 same as other common python idioms, such as:
 ```python
 all_the_same_dict = [{}] * 3
@@ -51,11 +51,12 @@ assert (all_the_same_dict ==
 
 **Args:**
 
->    **`value`**: Value to fill the returned [`plist`](/docs/pstar_plist.md) with. Can by any python object.
+>    **`value`**: Value to fill the returned [`plist`](./pstar_plist.md) with. Can by any python object.
 
 **Returns:**
 
->    A [`plist`](/docs/pstar_plist.md) with the structure of `self` filled with `value`.
+>    A [`plist`](./pstar_plist.md) with the structure of `self` filled with `value`.
 
 
 
+## [Source](../pstar/pstar.py#L4799-L4861)

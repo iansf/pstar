@@ -1,11 +1,11 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`uproot(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`uproot(self)`
 
-Sets the root to `self` so future `root()` calls return this [`plist`](/docs/pstar_plist.md).
+Sets the root to `self` so future `root()` calls return this [`plist`](./pstar_plist.md).
 
 **Examples:**
 
 In some cases it is better reset the root. For example, after applying
-a number of operations to a [`plist`](/docs/pstar_plist.md) to get the data into the desired form,
+a number of operations to a [`plist`](./pstar_plist.md) to get the data into the desired form,
 resetting the root to `self` often makes sense, as future filtering
 should not return the original data:
 ```python
@@ -31,3 +31,4 @@ See `plist.root` for more details.
 
 
 
+## [Source](../pstar/pstar.py#L2747-L2778)

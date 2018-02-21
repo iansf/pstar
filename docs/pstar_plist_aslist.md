@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`aslist(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`aslist(self)`
 
-Recursively convert all nested [`plist`](/docs/pstar_plist.md)s from `self` to `list`s, inclusive.
+Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to `list`s, inclusive.
 
 **Examples:**
 ```python
@@ -16,3 +16,4 @@ assert ([type(x) for x in by_bar.aslist()] == [list, list])
 
 
 
+## [Source](../pstar/pstar.py#L2811-L2830)

@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`join(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`join(self)`
 
-Adds and returns an outer [`plist`](/docs/pstar_plist.md) around `self`.
+Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
 
 **Examples:**
 
@@ -46,3 +46,4 @@ can be used in follow-on computations.
 
 
 
+## [Source](../pstar/pstar.py#L3897-L3942)

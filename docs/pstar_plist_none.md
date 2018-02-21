@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`none(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`none(self, *args, **kwargs)`
 
 Returns `self` if `args[0]` evaluates to `False` for all elements of `self`.
 
@@ -16,7 +16,7 @@ assert (foos.none(isinstance, pset).aslist() ==
 assert (foos.foo.none(lambda x: x > 1).aslist() == [])
 ```
 
-`none` does not recurse into grouped [`plist`](/docs/pstar_plist.md)s, so you must specify the
+`none` does not recurse into grouped [`plist`](./pstar_plist.md)s, so you must specify the
 desired level of evaluation:
 ```python
 by_bar = foos.bar.groupby()
@@ -36,7 +36,8 @@ assert (by_bar.foo.none_(lambda x: x > 1).nonempty().root().aslist() ==
 
 **Returns:**
 
->    `self` or an empty [`plist`](/docs/pstar_plist.md) (which evaluates to `False`).
+>    `self` or an empty [`plist`](./pstar_plist.md) (which evaluates to `False`).
 
 
 
+## [Source](../pstar/pstar.py#L3367-L3412)

@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`aspdict(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`aspdict(self)`
 
-Convert `self` to a [`pdict`](/docs/pstar_pdict.md) if there is a natural mapping of keys to values in `self`.
+Convert `self` to a [`pdict`](./pstar_pdict.md) if there is a natural mapping of keys to values in `self`.
 
-Recursively creates a [`pdict`](/docs/pstar_pdict.md) from `self`. Experimental, likely to change.
+Recursively creates a [`pdict`](./pstar_pdict.md) from `self`. Experimental, likely to change.
 
 **Examples:**
 ```python
@@ -22,7 +22,8 @@ assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
 
 **Returns:**
 
->    New [`pdict`](/docs/pstar_pdict.md) based on the contents of `self`.
+>    New [`pdict`](./pstar_pdict.md) based on the contents of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L2874-L2904)

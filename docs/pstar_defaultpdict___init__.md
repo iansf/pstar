@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`defaultpdict`](/docs/pstar_defaultpdict.md).`__init__(self, *a, **kw)`
+# [`pstar`](./pstar.md).[`defaultpdict`](./pstar_defaultpdict.md).`__init__(self, *a, **kw)`
 
-Initialize [`defaultpdict`](/docs/pstar_defaultpdict.md).
+Initialize [`defaultpdict`](./pstar_defaultpdict.md).
 
 **Examples:**
 ```python
@@ -24,7 +24,8 @@ assert (pd.stats.bar == [2])
 
 **Returns:**
 
->    `None`. [`defaultpdict`](/docs/pstar_defaultpdict.md) is initialized.
+>    `None`. [`defaultpdict`](./pstar_defaultpdict.md) is initialized.
 
 
 
+## [Source](../pstar/pstar.py#L480-L505)

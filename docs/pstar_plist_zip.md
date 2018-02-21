@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`zip(self, *others)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`zip(self, *others)`
 
 Zips `self` with `others`, recursively.
 
@@ -22,7 +22,7 @@ assert (by_bar.bar.zip(by_bar.foo).aslist() ==
 
 **Returns:**
 
->    New [`plist`](/docs/pstar_plist.md) with the same structure as `self`.
+>    New [`plist`](./pstar_plist.md) with the same structure as `self`.
 
 **Raises:**
 >    `ValueError` if `self` and each `iterable` in `others` don't all have the same length at
@@ -30,3 +30,4 @@ assert (by_bar.bar.zip(by_bar.foo).aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L4068-L4104)

@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`defaultpdict`](/docs/pstar_defaultpdict.md).`update(self, *a, **kw)`
+# [`pstar`](./pstar.md).[`defaultpdict`](./pstar_defaultpdict.md).`update(self, *a, **kw)`
 
 Update `self`. **Returns `self` to allow chaining.**
 
@@ -22,3 +22,4 @@ assert (pd.update({'baz': 'three'}).baz == 'three')
 
 
 
+## [Source](../pstar/pstar.py#L641-L661)

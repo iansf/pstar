@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__setattr__(self, name, val)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__setattr__(self, name, val)`
 
-Sets an attribute on a [`plist`](/docs/pstar_plist.md) or its elements to `val`.
+Sets an attribute on a [`plist`](./pstar_plist.md) or its elements to `val`.
 
 This delegates almost entirely to the elements of `self`, allowing natural
 assignments of attributes.
@@ -25,7 +25,7 @@ assert (foos.baz.aslist() ==
         [-1, -3, -3])
 ```
 
-All of the same things work naturally on a grouped [`plist`](/docs/pstar_plist.md) as well:
+All of the same things work naturally on a grouped [`plist`](./pstar_plist.md) as well:
 ```python
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 by_bar = foos.bar.groupby()
@@ -50,7 +50,7 @@ assert (by_bar.baz.aslist() ==
 
 >    **`name`**: Name of the attribute to set.
 
->    **`val`**: Value to set the attribute to. If `val` is a [`plist`](/docs/pstar_plist.md) and its length
+>    **`val`**: Value to set the attribute to. If `val` is a [`plist`](./pstar_plist.md) and its length
 >         matches `len(self)`, the elements of `val` are set on the elements of
 >         `self`. Otherwise, the elements of `self` are all set to `val`.
 
@@ -60,3 +60,4 @@ assert (by_bar.baz.aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L1825-L1890)

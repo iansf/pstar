@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`defaultpdict`](/docs/pstar_defaultpdict.md).`__str__(self)`
+# [`pstar`](./pstar.md).[`defaultpdict`](./pstar_defaultpdict.md).`__str__(self)`
 
 Readable string representation of `self`.
 
@@ -17,3 +17,4 @@ assert (str(pd) ==
 
 
 
+## [Source](../pstar/pstar.py#L617-L638)

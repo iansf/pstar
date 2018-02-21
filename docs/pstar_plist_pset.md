@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pset(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pset(self)`
 
 Converts the elements of self into pset objects.
 
-Useful for creating `set`s from grouped [`plist`](/docs/pstar_plist.md)s.
+Useful for creating `set`s from grouped [`plist`](./pstar_plist.md)s.
 
 **Examples:**
 ```python
@@ -17,7 +17,8 @@ assert (by_bar.foo.pset().aslist() ==
 
 **Returns:**
 
->    New [`plist`](/docs/pstar_plist.md) of [`pset`](/docs/pstar_pset.md)s for each value in `self`.
+>    New [`plist`](./pstar_plist.md) of [`pset`](./pstar_pset.md)s for each value in `self`.
 
 
 
+## [Source](../pstar/pstar.py#L3090-L3110)

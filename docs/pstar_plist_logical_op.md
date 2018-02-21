@@ -1,12 +1,12 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`logical_op(self, other)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`logical_op(self, other)`
 
-[`plist`](/docs/pstar_plist.md) logical operation. **Logical operations perform set operations on [`plist`](/docs/pstar_plist.md)s.**
+[`plist`](./pstar_plist.md) logical operation. **Logical operations perform set operations on [`plist`](./pstar_plist.md)s.**
 
-**IMPORTANT:** [`plist`](/docs/pstar_plist.md) logical operations between two [`plist`](/docs/pstar_plist.md)s perform `set` operations
-on the two [`plist`](/docs/pstar_plist.md)s. Logical operations between a [`plist`](/docs/pstar_plist.md) and any other type attempts
-to perform that operation on the values in the [`plist`](/docs/pstar_plist.md) and `other` itself.
+**IMPORTANT:** [`plist`](./pstar_plist.md) logical operations between two [`plist`](./pstar_plist.md)s perform `set` operations
+on the two [`plist`](./pstar_plist.md)s. Logical operations between a [`plist`](./pstar_plist.md) and any other type attempts
+to perform that operation on the values in the [`plist`](./pstar_plist.md) and `other` itself.
 
-`logical_op` is not callable directly from [`plist`](/docs/pstar_plist.md). It implements the various
+`logical_op` is not callable directly from [`plist`](./pstar_plist.md). It implements the various
 python logical operations: `&`, `|`, `^`, etc. The logical operators
 can be called directly with their corresponding 'magic' functions,
 `plist.__and__`, `plist.__or__`, `plist.__xor__`, etc., but are generally just
@@ -45,7 +45,7 @@ assert (((by_bar.baz == 6) ^ (by_bar.bar <= 4)).aslist() ==
         [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
 ```
 
-Logical operations can be applied element-wise if `other` is not a [`plist`](/docs/pstar_plist.md):
+Logical operations can be applied element-wise if `other` is not a [`plist`](./pstar_plist.md):
 ```python
 assert ((foos.baz & 1).aslist() ==
         [1, 0, 1])
@@ -61,8 +61,9 @@ assert ((1 ^ by_bar.baz).aslist() ==
 
 **Returns:**
 
->    New [`plist`](/docs/pstar_plist.md), merging `self` and `other` according to the operation provided
+>    New [`plist`](./pstar_plist.md), merging `self` and `other` according to the operation provided
 >    to `_build_logical_op`.
 
 
 
+## [Source](../pstar/pstar.py#L1034-L1116)

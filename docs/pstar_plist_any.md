@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`any(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`any(self, *args, **kwargs)`
 
 Returns `self` if `args[0]` evaluates to `True` for any elements of `self`.
 
@@ -16,7 +16,7 @@ assert (foos.any(isinstance, pdict).aslist() ==
 assert (foos.foo.any(lambda x: x < 0).aslist() == [])
 ```
 
-`any` does not recurse into grouped [`plist`](/docs/pstar_plist.md)s, so you must specify the
+`any` does not recurse into grouped [`plist`](./pstar_plist.md)s, so you must specify the
 desired level of evaluation:
 ```python
 by_bar = foos.bar.groupby()
@@ -36,7 +36,8 @@ assert (by_bar.foo.any_(lambda x: x > 1).nonempty().root().aslist() ==
 
 **Returns:**
 
->    `self` or an empty [`plist`](/docs/pstar_plist.md) (which evaluates to `False`).
+>    `self` or an empty [`plist`](./pstar_plist.md) (which evaluates to `False`).
 
 
 
+## [Source](../pstar/pstar.py#L3321-L3366)

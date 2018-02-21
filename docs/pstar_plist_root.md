@@ -1,16 +1,16 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`root(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`root(self)`
 
-Returns the root of the [`plist`](/docs/pstar_plist.md).
+Returns the root of the [`plist`](./pstar_plist.md).
 
 **Examples:**
 
-When a [`plist`](/docs/pstar_plist.md) is created, by default its root is `self`:
+When a [`plist`](./pstar_plist.md) is created, by default its root is `self`:
 ```python
 pl = plist([1, 2, 3])
 assert (pl.root() is pl)
 ```
 
-Subsequent calls to the [`plist`](/docs/pstar_plist.md) will return new [`plist`](/docs/pstar_plist.md)s, but most of those
+Subsequent calls to the [`plist`](./pstar_plist.md) will return new [`plist`](./pstar_plist.md)s, but most of those
 calls will retain the original root:
 ```python
 pl2 = pl + 3
@@ -20,7 +20,7 @@ assert (pl2.root() is pl)
 assert (pl2.pstr().root() is pl)
 ```
 
-Some methods create a new root [`plist`](/docs/pstar_plist.md) in order to keep the values and the root
+Some methods create a new root [`plist`](./pstar_plist.md) in order to keep the values and the root
 syncronized:
 ```python
 assert (pl2[0:2].aslist() ==
@@ -33,7 +33,7 @@ assert (pl2.sortby(reverse=True).root().aslist() ==
         [3, 2, 1])
 ```
 
-[`plist`](/docs/pstar_plist.md) filtering also always returns the root, in order to make the filter easily chainable:
+[`plist`](./pstar_plist.md) filtering also always returns the root, in order to make the filter easily chainable:
 ```python
 foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 assert (foo.aslist() ==
@@ -61,7 +61,8 @@ assert (by_bar.aslist() == by_bar.root().aslist())
 
 **Returns:**
 
->    The root [`plist`](/docs/pstar_plist.md) of `self`.
+>    The root [`plist`](./pstar_plist.md) of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L2682-L2746)

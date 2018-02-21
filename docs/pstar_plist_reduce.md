@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`reduce(self, func, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`reduce(self, func, *args, **kwargs)`
 
 Apply a function repeatedly to its own result, returning a plist of length at most 1.
 
@@ -43,7 +43,7 @@ assert (reduced.aslist() ==
         [466])
 ```
 Any additional `args` or `kwargs` values will be passed through to `func` at each call,
-in parallel to values of `self`. Note that [`plist`](/docs/pstar_plist.md) arguments of the same length as `self`
+in parallel to values of `self`. Note that [`plist`](./pstar_plist.md) arguments of the same length as `self`
 get passed through starting at the 0th element, and going until there are no more elements
 of `self`. If no value was passed for `initial_value`, this means that any additional
 arguments will only use `n-1` values. For example, in the code above, `z` ranges from 5 to
@@ -53,7 +53,7 @@ assert ((((((1 + 2) * 5 + 3) * 4 + 4) * 3 + 5) * 2) ==
         466)
 ```
 
-When `self` is a grouped [`plist`](/docs/pstar_plist.md), `pepth` determines which groups are reduced over:
+When `self` is a grouped [`plist`](./pstar_plist.md), `pepth` determines which groups are reduced over:
 ```python
 foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0), pdict(foo=3, bar=1), pdict(foo=4, bar=0)])
 (foo.bar == 0).baz = 3 + (foo.bar == 0).foo
@@ -121,3 +121,4 @@ results, and is not recommended.
 
 
 
+## [Source](../pstar/pstar.py#L3585-L3745)

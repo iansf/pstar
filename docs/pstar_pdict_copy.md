@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`pdict`](/docs/pstar_pdict.md).`copy(self)`
+# [`pstar`](./pstar.md).[`pdict`](./pstar_pdict.md).`copy(self)`
 
-Copy `self` to new [`defaultpdict`](/docs/pstar_defaultpdict.md). Performs a shallow copy.
+Copy `self` to new [`defaultpdict`](./pstar_defaultpdict.md). Performs a shallow copy.
 
 **Examples:**
 ```python
@@ -12,7 +12,8 @@ assert (pd2 is not pd1)
 
 **Returns:**
 
->    A [`pdict`](/docs/pstar_pdict.md) that is a shallow copy of `self`.
+>    A [`pdict`](./pstar_pdict.md) that is a shallow copy of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L248-L263)

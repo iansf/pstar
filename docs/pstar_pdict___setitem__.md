@@ -1,17 +1,17 @@
-# [`pstar`](/docs/pstar.md).[`pdict`](/docs/pstar_pdict.md).`__setitem__(self, key, value)`
+# [`pstar`](./pstar.md).[`pdict`](./pstar_pdict.md).`__setitem__(self, key, value)`
 
 Subscript assignment operation. Keys and values can be scalars or `list`s.
 
 **Examples:**
 
-[`pdict`](/docs/pstar_pdict.md) assignment works normally for any `hash`able `key`:
+[`pdict`](./pstar_pdict.md) assignment works normally for any `hash`able `key`:
 ```python
 pd = pdict()
 pd['foo'] = 1
 assert (pd.foo == pd['foo'] == 1)
 ```
 
-[`pdict`](/docs/pstar_pdict.md) assignment can also work with a `list` of `hash`able `key`s:
+[`pdict`](./pstar_pdict.md) assignment can also work with a `list` of `hash`able `key`s:
 ```python
 pd[['bar', 'baz']] = plist[2.0, 'three']
 assert (pd.bar == pd['bar'] == 2.0)
@@ -22,7 +22,7 @@ assert (pd.baz == pd['baz'] == 'three')
 
 >    **`key`**: Any `hash`able object, or a `list` of `hash`able objects.
 
->    **`value`**: Any value, or a [`plist`](/docs/pstar_plist.md) of values that matches the shape of `key`, if it
+>    **`value`**: Any value, or a [`plist`](./pstar_plist.md) of values that matches the shape of `key`, if it
 >           is a `list`.
 
 **Returns:**
@@ -31,3 +31,4 @@ assert (pd.baz == pd['baz'] == 'three')
 
 
 
+## [Source](../pstar/pstar.py#L168-L202)

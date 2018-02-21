@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__init__(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__init__(self, *args, **kwargs)`
 
 Constructs plist.
 
@@ -30,12 +30,13 @@ pl = plist([1, 2, 3], root=plist(['a', 'b', 'c']))
 >    **`*args`**: Passed directly to `list` constructor.
 
 >    **`**kwargs`**: Keyword arguments passed directly to `list` constructor after
->              exctracting [`root`](/docs/pstar_plist_root.md) if present. [`root`](/docs/pstar_plist_root.md) must be a [`plist`](/docs/pstar_plist.md), and
+>              exctracting [`root`](./pstar_plist_root.md) if present. [`root`](./pstar_plist_root.md) must be a [`plist`](./pstar_plist.md), and
 >              will be used as the root of `self`.
 
 **Returns:**
 
->    `None`. [`plist`](/docs/pstar_plist.md) is initialized.
+>    `None`. [`plist`](./pstar_plist.md) is initialized.
 
 
 
+## [Source](../pstar/pstar.py#L1476-L1514)

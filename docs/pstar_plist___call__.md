@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__call__(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__call__(self, *args, **kwargs)`
 
 Call each element of self, possibly recusively.
 
-Any arguments passed to `__call__` that are [`plist`](/docs/pstar_plist.md)s and have the same
+Any arguments passed to `__call__` that are [`plist`](./pstar_plist.md)s and have the same
 length as `self` will be passed one-at-a-time to the each of the `callable`s
 in `self`. Otherwise, arguments are passed in unmodified.
 
@@ -85,9 +85,9 @@ assert (by.format(foo=by._[:3:1]).aslist() ==
 >    **`**kwargs`**: Keyword arguments to pass to elements of `self`, after extracting:
 
 >    **`pepth`**: Integer (default `0`). If greater than `0`, calls occur at that
->           depth in the [`plist`](/docs/pstar_plist.md). Equivalent to appending '_'s at the end of the
+>           depth in the [`plist`](./pstar_plist.md). Equivalent to appending '_'s at the end of the
 >           name of the attribute (see `plist.__getattribute__`). If less than
->           `0`, calls occur as deep in the [`plist`](/docs/pstar_plist.md) as possible. Equivalent to
+>           `0`, calls occur as deep in the [`plist`](./pstar_plist.md) as possible. Equivalent to
 >           calling `plist._` before calling the attribute.
 
 >    **`psplit`**: Integer (default `0`). If greater than `0`, calls to elements of
@@ -96,13 +96,14 @@ assert (by.format(foo=by._[:3:1]).aslist() ==
 >            Otherwise, `psplit` is the number of parallel executions.
 
 >    **`call_pepth`**: *Private -- do not pass.* Internal state variable for tracking
->                how deep the call stack is in [`plist`](/docs/pstar_plist.md) code, for use with
+>                how deep the call stack is in [`plist`](./pstar_plist.md) code, for use with
 >                internal methods that need access to the original caller's
 >                stack frame.
 
 **Returns:**
 
->    New [`plist`](/docs/pstar_plist.md) resulting from calling element of `self`.
+>    New [`plist`](./pstar_plist.md) resulting from calling element of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L2322-L2453)

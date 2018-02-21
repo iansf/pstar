@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pd(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pd(self, *args, **kwargs)`
 
 Converts `self` into a `pandas.DataFrame`, forwarding passed args.
 
@@ -54,10 +54,10 @@ assert (by_bar.pd_().pstr().aslist() ==
          '1    0    5   -1    2\n'
          '2    0    7   13    4'])
 ```
-Note the use of `pd_()` on the grouped [`plist`](/docs/pstar_plist.md). This allows you to get a separate `pandas.DataFrame` for
-each group in your [`plist`](/docs/pstar_plist.md), and then do normal `DataFrame` manipulations with them individually.
-If you want a `pandas.GroupBy` object, you should convert the [`plist`](/docs/pstar_plist.md) to a `DataFrame` first, and then
-call `DataFrame.groupby`. Also see `plist.remix` for alternative ways of converting [`plist`](/docs/pstar_plist.md)s to
+Note the use of `pd_()` on the grouped [`plist`](./pstar_plist.md). This allows you to get a separate `pandas.DataFrame` for
+each group in your [`plist`](./pstar_plist.md), and then do normal `DataFrame` manipulations with them individually.
+If you want a `pandas.GroupBy` object, you should convert the [`plist`](./pstar_plist.md) to a `DataFrame` first, and then
+call `DataFrame.groupby`. Also see `plist.remix` for alternative ways of converting [`plist`](./pstar_plist.md)s to
 `DataFrame`s.
 
 **Args:**
@@ -72,3 +72,4 @@ call `DataFrame.groupby`. Also see `plist.remix` for alternative ways of convert
 
 
 
+## [Source](../pstar/pstar.py#L2977-L3046)

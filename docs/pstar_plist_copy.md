@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`copy(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`copy(self)`
 
-Copy `self` to new [`plist`](/docs/pstar_plist.md). Performs a shallow copy.
+Copy `self` to new [`plist`](./pstar_plist.md). Performs a shallow copy.
 
 `self.root()` is copied as well and used to root the copy if
 `self.root() is not self`.
@@ -27,3 +27,4 @@ assert (pl4.root() is not pl2)
 
 
 
+## [Source](../pstar/pstar.py#L2782-L2810)

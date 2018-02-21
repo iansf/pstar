@@ -1,11 +1,11 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pdict(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pdict(self, *args, **kwargs)`
 
-Convert `self` to a [`pdict`](/docs/pstar_pdict.md) if there is a natural mapping of keys to values in `self`.
+Convert `self` to a [`pdict`](./pstar_pdict.md) if there is a natural mapping of keys to values in `self`.
 
-Attempts to treat the contents of `self` as key-value pairs in order to create the [`pdict`](/docs/pstar_pdict.md).
-If that fails, checks if `self.root()` is a [`plist`](/docs/pstar_plist.md) of `KeyValue` `namedtuple`s. If so, uses
+Attempts to treat the contents of `self` as key-value pairs in order to create the [`pdict`](./pstar_pdict.md).
+If that fails, checks if `self.root()` is a [`plist`](./pstar_plist.md) of `KeyValue` `namedtuple`s. If so, uses
 `self.root().key` for the keys, and the values in `self` for the values. Otherwise,
-attempts to create a [`pdict`](/docs/pstar_pdict.md) pairing values from `self.root()` with values from `self`.
+attempts to create a [`pdict`](./pstar_pdict.md) pairing values from `self.root()` with values from `self`.
 
 **Examples:**
 ```python
@@ -33,7 +33,8 @@ assert (plist[('foo', 1), ('foo', 2)].pdict() ==
 
 **Returns:**
 
->    New [`pdict`](/docs/pstar_pdict.md) based on the contents of `self`.
+>    New [`pdict`](./pstar_pdict.md) based on the contents of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L3047-L3089)

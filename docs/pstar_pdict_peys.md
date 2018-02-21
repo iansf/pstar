@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`pdict`](/docs/pstar_pdict.md).`peys(self)`
+# [`pstar`](./pstar.md).[`pdict`](./pstar_pdict.md).`peys(self)`
 
-Get `self.keys()` as a sorted [`plist`](/docs/pstar_plist.md).
+Get `self.keys()` as a sorted [`plist`](./pstar_plist.md).
 
-In the common case of a [`pdict`](/docs/pstar_pdict.md) with sortable keys, it is often convenient
+In the common case of a [`pdict`](./pstar_pdict.md) with sortable keys, it is often convenient
 to rely on the sort-order of the keys for a variety of operations that would
 otherwise require explicit looping.
 
@@ -18,7 +18,8 @@ assert (pd_str ==
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) of keys in sorted order.
+>    [`plist`](./pstar_plist.md) of keys in sorted order.
 
 
 
+## [Source](../pstar/pstar.py#L264-L285)

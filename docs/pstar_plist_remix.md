@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`remix(self, *args, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`remix(self, *args, **kwargs)`
 
-Returns a new [`plist`](/docs/pstar_plist.md) of `pdicts` based on selected data from `self`.
+Returns a new [`plist`](./pstar_plist.md) of `pdicts` based on selected data from `self`.
 
 **Examples:**
 
@@ -59,8 +59,9 @@ assert (rmx_by_bam.aslist() ==
 
 **Returns:**
 
->    Flat [`plist`](/docs/pstar_plist.md) of flat `pdicts` based on data from `self` and the passed
+>    Flat [`plist`](./pstar_plist.md) of flat `pdicts` based on data from `self` and the passed
 >    arguments and keyword arguments.
 
 
 
+## [Source](../pstar/pstar.py#L4317-L4391)

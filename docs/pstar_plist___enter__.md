@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__enter__(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__enter__(self)`
 
 Allow the use of plists in `with` statements.
 
@@ -15,7 +15,8 @@ assert (len(texts.all(isinstance, str)) >= 1)
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) of results of calling `__enter__` on each element of `self`.
+>    [`plist`](./pstar_plist.md) of results of calling `__enter__` on each element of `self`.
 
 
 
+## [Source](../pstar/pstar.py#L2607-L2625)

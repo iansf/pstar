@@ -69,12 +69,16 @@ API_DOC_TEMPLATE = """
 symbols = defaultpdict(lambda: defaultpdict(str))
 
 
+def cwd():
+  return os.path.dirname(os.path.realpath(__file__))
+
+
 def url_for(name):
-  return '/docs/%s.md' % name.replace('.', '_')
+  return './%s.md' % name.replace('.', '_')
 
 
-def path_for(name, cwd):
-  return os.path.join(cwd, 'docs', '%s.md' % name.replace('.', '_'))
+def path_for(name):
+  return os.path.join(cwd(), 'docs', '%s.md' % name.replace('.', '_'))
 
 
 def bread_crumbs(symbol):
@@ -117,7 +121,7 @@ def children(symbol):
 
 
 def source(symbol):
-  return ('## Source:\n```python\n%s\n```' % symbol.source) if symbol.source else ''
+  return ('## [Source](%s)' % symbol.source) if symbol.source else ''
 
 
 def build_api_doc(symbol):
@@ -223,10 +227,17 @@ def signature_for(obj):
   return signature
 
 
+def source_for(obj):
+  filename = inspect.getsourcefile(obj).replace(cwd() + '/', '')
+  lines = inspect.getsourcelines(obj)
+  return '../%s#L%d-L%d' % (filename, lines[1], lines[1] + len(lines[0]))
+
+
 def symbol_for(obj, name):
   symbol = symbols[name]
   symbol.name = name
   symbol.signature = signature_for(obj)
+  symbol.source = source_for(obj)
   symbol[['doc', 'short_doc']] = docs_for(obj)
   symbol.tests = tests_for(symbol)
   return symbol
@@ -254,9 +265,11 @@ def collect_docs_and_tests(obj, base_name, full_base_name):
     pass
 
 
-def write_readme_md(cwd):
-  readme_template_path = os.path.join(cwd, 'README.md.template')
-  readme_path = os.path.join(cwd, 'README.md')
+def write_readme_md():
+  plist(glob.glob(os.path.join(cwd(), 'docs', '*'))).apply(os.remove)
+
+  readme_template_path = os.path.join(cwd(), 'README.md.template')
+  readme_path = os.path.join(cwd(), 'docs', 'README.md')
 
   with open(readme_template_path, 'r') as f:
     template = f.read()
@@ -267,15 +280,14 @@ def write_readme_md(cwd):
     f.write(docs_md)
 
 
-def write_api_md(cwd):
-  plist(glob.glob(os.path.join(cwd, 'docs', '*'))).apply(os.remove)
-  with symbols.peys().apply(path_for, cwd).apply(open, 'w') as files:
+def write_api_md():
+  with symbols.peys().apply(path_for).apply(open, 'w') as files:
     files.write(symbols.palues().apply(build_api_doc))
 
 
-def write_tests(cwd):
-  tests_template_path = os.path.join(cwd, 'pstar_test.py.template')
-  tests_path = os.path.join(cwd, 'pstar', 'tests', 'pstar_test.py')
+def write_tests():
+  tests_template_path = os.path.join(cwd(), 'pstar_test.py.template')
+  tests_path = os.path.join(cwd(), 'pstar', 'tests', 'pstar_test.py')
 
   with open(tests_template_path, 'r') as f:
     template = f.read()
@@ -287,13 +299,11 @@ def write_tests(cwd):
 
 
 def build_docs():
-  cwd = os.path.dirname(os.path.realpath(__file__))
-
   collect_docs_and_tests(pstar, pstar.__name__, '')
 
-  write_readme_md(cwd)
-  write_api_md(cwd)
-  write_tests(cwd)
+  write_readme_md()
+  write_api_md()
+  write_tests()
 
 
 if __name__ == '__main__':

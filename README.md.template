@@ -126,7 +126,7 @@ whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj(
 #   qj: module_level_code: whoa! <2>: [{'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}, {'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}]
 ```
 
-See [build_docs.py](/build_docs.py) for a more extensive example of using `pstar`.
+See [build_docs.py](../build_docs.py) for a more extensive example of using `pstar`.
 
 
 ## Philosophy:
@@ -227,7 +227,7 @@ the output list will fail. The `pstar` version of the code is completely robust
 to that kind of bug. The only assumptions about the data are that it is provided
 with two fields, 'foo' and 'bar', and that both of the fields are numeric.
 
-See [build_docs.py](/build_docs.py) for a more extensive example of using `pstar`.
+See [build_docs.py](../build_docs.py) for a more extensive example of using `pstar`.
 
 
 ## Basic Usage:

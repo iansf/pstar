@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`pdict`](/docs/pstar_pdict.md).`pitems(self)`
+# [`pstar`](./pstar.md).[`pdict`](./pstar_pdict.md).`pitems(self)`
 
-Equivalent to `self.items()`, but returns a [`plist`](/docs/pstar_plist.md) with items sorted as in `self.peys()`.
+Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with items sorted as in `self.peys()`.
 
 **Examples:**
 ```python
@@ -17,7 +17,8 @@ so the first element can be accessed with `.key` and the second with `.value`.
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) of items from `self`, in the same order given by `self.peys()`.
+>    [`plist`](./pstar_plist.md) of items from `self`, in the same order given by `self.peys()`.
 
 
 
+## [Source](../pstar/pstar.py#L311-L331)

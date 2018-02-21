@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`lfill(self, v=0, s=None)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`lfill(self, v=0, s=None)`
 
 Returns a **`list`** with the structure of `self` filled in order from `v`.
 
-Identical to `plist.pfill()`, but returns a **`list`** instead of a [`plist`](/docs/pstar_plist.md).
+Identical to `plist.pfill()`, but returns a **`list`** instead of a [`plist`](./pstar_plist.md).
 
 **Examples:**
 ```python
@@ -46,9 +46,10 @@ assert (filtered.lfill(3) ==
 
 **Returns:**
 
->    A **`list`** (not a [`plist`](/docs/pstar_plist.md)) of possibly nested `list`s where each leaf element is
+>    A **`list`** (not a [`plist`](./pstar_plist.md)) of possibly nested `list`s where each leaf element is
 >    an integer, starting with the value of `v` in the 'top left' element of
 >    the structure.
 
 
 
+## [Source](../pstar/pstar.py#L4631-L4684)

@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`nonempty(self, r=0)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`nonempty(self, r=0)`
 
-Returns a new [`plist`](/docs/pstar_plist.md) with empty sublists removed.
+Returns a new [`plist`](./pstar_plist.md) with empty sublists removed.
 
 **Examples:**
 
@@ -60,7 +60,7 @@ and `filtered_nonempty_n1` give the same result -- the deepest empty sublist
 is removed, and then the next deepest empty sublist is removed.
 
 It is also possible to remove empty sublists only at deeper levels, using
-the two ways to call functions on sublists -- passing `pepth` and adding [`_`](/docs/pstar_plist__.md)
+the two ways to call functions on sublists -- passing `pepth` and adding [`_`](./pstar_plist__.md)
 to the method name:
 ```python
 filtered_nonempty_p1 = filtered.nonempty(pepth=1)
@@ -92,3 +92,4 @@ of empty sublists starting from one layer into `filtered`.
 
 
 
+## [Source](../pstar/pstar.py#L4108-L4206)

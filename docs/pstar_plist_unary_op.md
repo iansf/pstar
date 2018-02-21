@@ -1,8 +1,8 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`unary_op(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`unary_op(self)`
 
-[`plist`](/docs/pstar_plist.md) unary operation; applied element-wise to `self`.
+[`plist`](./pstar_plist.md) unary operation; applied element-wise to `self`.
 
-`unary_op` is not callable directly from [`plist`](/docs/pstar_plist.md). It implements the various
+`unary_op` is not callable directly from [`plist`](./pstar_plist.md). It implements the various
 python unary operations: `-`, `~`, `abs`, etc. The unary operators
 can be called directly with their corresponding 'magic' functions,
 `plist.__neg__`, `plist.__invert__`, `plist.__abs__`, etc., but are generally just
@@ -29,8 +29,9 @@ assert ((~by_bar.foo).aslist() ==
 
 **Returns:**
 
->    A new [`plist`](/docs/pstar_plist.md), where each element of `self` had the operation passed to
+>    A new [`plist`](./pstar_plist.md), where each element of `self` had the operation passed to
 >    `_build_unary_op` applied to it.
 
 
 
+## [Source](../pstar/pstar.py#L1232-L1265)

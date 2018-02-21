@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).`pdict(dict)`
+# [`pstar`](./pstar.md).`pdict(dict)`
 
 `dict` subclass where everything is automatically a property.
 
@@ -11,7 +11,7 @@ Use with dot notation or subscript notation:
   assert (p['foo'] == p.foo == 1)
 ```
 
-`list` subscripts also work and return a [`plist`](/docs/pstar_plist.md) of the corresponding keys:
+`list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
   p = pdict(foo=1, bar=2)
   assert (p[['foo', 'bar']].aslist() == [1, 2])
@@ -37,47 +37,48 @@ Setting with a `list` subscript also works, using a single element or a matching
 
 ## Children:
 
-### [`pstar.pdict.__getitem__(self, key)`](/docs/pstar_pdict___getitem__.md)
+### [`pstar.pdict.__getitem__(self, key)`](./pstar_pdict___getitem__.md)
 
 Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
 
-### [`pstar.pdict.__init__(self, *a, **kw)`](/docs/pstar_pdict___init__.md)
+### [`pstar.pdict.__init__(self, *a, **kw)`](./pstar_pdict___init__.md)
 
-Initialize [`pdict`](/docs/pstar_pdict.md).
+Initialize [`pdict`](./pstar_pdict.md).
 
-### [`pstar.pdict.__setitem__(self, key, value)`](/docs/pstar_pdict___setitem__.md)
+### [`pstar.pdict.__setitem__(self, key, value)`](./pstar_pdict___setitem__.md)
 
 Subscript assignment operation. Keys and values can be scalars or `list`s.
 
-### [`pstar.pdict.__str__(self)`](/docs/pstar_pdict___str__.md)
+### [`pstar.pdict.__str__(self)`](./pstar_pdict___str__.md)
 
 Readable string representation of `self`.
 
-### [`pstar.pdict.copy(self)`](/docs/pstar_pdict_copy.md)
+### [`pstar.pdict.copy(self)`](./pstar_pdict_copy.md)
 
-Copy `self` to new [`defaultpdict`](/docs/pstar_defaultpdict.md). Performs a shallow copy.
+Copy `self` to new [`defaultpdict`](./pstar_defaultpdict.md). Performs a shallow copy.
 
-### [`pstar.pdict.palues(self)`](/docs/pstar_pdict_palues.md)
+### [`pstar.pdict.palues(self)`](./pstar_pdict_palues.md)
 
-Equivalent to `self.values()`, but returns a [`plist`](/docs/pstar_plist.md) with values sorted as in `self.peys()`.
+Equivalent to `self.values()`, but returns a [`plist`](./pstar_plist.md) with values sorted as in `self.peys()`.
 
-### [`pstar.pdict.peys(self)`](/docs/pstar_pdict_peys.md)
+### [`pstar.pdict.peys(self)`](./pstar_pdict_peys.md)
 
-Get `self.keys()` as a sorted [`plist`](/docs/pstar_plist.md).
+Get `self.keys()` as a sorted [`plist`](./pstar_plist.md).
 
-### [`pstar.pdict.pitems(self)`](/docs/pstar_pdict_pitems.md)
+### [`pstar.pdict.pitems(self)`](./pstar_pdict_pitems.md)
 
-Equivalent to `self.items()`, but returns a [`plist`](/docs/pstar_plist.md) with items sorted as in `self.peys()`.
+Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with items sorted as in `self.peys()`.
 
-### [`pstar.pdict.qj(self, *a, **kw)`](/docs/pstar_pdict_qj.md)
+### [`pstar.pdict.qj(self, *a, **kw)`](./pstar_pdict_qj.md)
 
-Call the [`qj`](/docs/pstar_defaultpdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](/docs/pstar_defaultpdict_qj.md).
+Call the [`qj`](./pstar_defaultpdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_defaultpdict_qj.md).
 
-### [`pstar.pdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](/docs/pstar_pdict_rekey.md)
+### [`pstar.pdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_pdict_rekey.md)
 
 Change the keys of `self` or a copy while keeping the same values.
 
-### [`pstar.pdict.update(self, *a, **kw)`](/docs/pstar_pdict_update.md)
+### [`pstar.pdict.update(self, *a, **kw)`](./pstar_pdict_update.md)
 
 Update `self`. **Returns `self` to allow chaining.**
 
+## [Source](../pstar/pstar.py#L79-L418)

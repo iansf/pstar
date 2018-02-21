@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__getattribute__(self, name)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__getattribute__(self, name)`
 
 Returns a plist of the attribute for self, or for each element.
 
@@ -16,7 +16,7 @@ return `name` as an index of each element (`[x[name] for x in self]`).
 
 **Examples:**
 
-A [`plist`](/docs/pstar_plist.md) of `list`s has `append` methods at two levels -- the [`plist`](/docs/pstar_plist.md)
+A [`plist`](./pstar_plist.md) of `list`s has `append` methods at two levels -- the [`plist`](./pstar_plist.md)
 and the contained `list`s. To chose `list.append` them, you can add
 an '_' to the method name:
 ```python
@@ -29,8 +29,8 @@ assert (pl.aslist() ==
         [[1, 2, 3, 10], [4, 5, 6, 10], [7, 8, 9, 10]])
 ```
 
-Grouped [`plist`](/docs/pstar_plist.md)s also have methods that you might want to call at different
-depths. Adding an '_' for each layer of the [`plist`](/docs/pstar_plist.md) you want to skip
+Grouped [`plist`](./pstar_plist.md)s also have methods that you might want to call at different
+depths. Adding an '_' for each layer of the [`plist`](./pstar_plist.md) you want to skip
 allows you to control which depth the method is executed at:
 ```python
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
@@ -53,7 +53,7 @@ assert (by_bar.foo.pstr().aslist() ==
 
 **Returns:**
 
->    Bound [`plist`](/docs/pstar_plist.md) attribute, or [`plist`](/docs/pstar_plist.md) of bound attributes of the elements
+>    Bound [`plist`](./pstar_plist.md) attribute, or [`plist`](./pstar_plist.md) of bound attributes of the elements
 >    of `self`.
 
 **Raises:**
@@ -64,3 +64,4 @@ assert (by_bar.foo.pstr().aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L1523-L1612)

@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pleft(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pleft(self)`
 
-Returns a [`plist`](/docs/pstar_plist.md) with the structure of `self` filled `plen(-1)` to 0.
+Returns a [`plist`](./pstar_plist.md) with the structure of `self` filled `plen(-1)` to 0.
 
 Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`.
 
@@ -55,9 +55,10 @@ by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
 
 **Returns:**
 
->    A [`plist`](/docs/pstar_plist.md) of possibly nested [`plist`](/docs/pstar_plist.md)s where each leaf element is an integer,
+>    A [`plist`](./pstar_plist.md) of possibly nested [`plist`](./pstar_plist.md)s where each leaf element is an integer,
 >    starting with `self.plen(-1)` in the 'top left' element of the structure
 >    and counting down to 0.
 
 
 
+## [Source](../pstar/pstar.py#L4738-L4798)

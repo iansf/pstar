@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`__contains__(self, other)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__contains__(self, other)`
 
-Implements the `in` operator to avoid inappropriate use of [`plist`](/docs/pstar_plist.md) comparators.
+Implements the `in` operator to avoid inappropriate use of [`plist`](./pstar_plist.md) comparators.
 
 **Examples:**
 ```python
@@ -19,3 +19,4 @@ assert (dict(foo=0, bar=0) in by_bar)
 
 
 
+## [Source](../pstar/pstar.py#L2457-L2486)

@@ -1,4 +1,4 @@
-# [`pstar`](/docs/pstar.md).[`defaultpdict`](/docs/pstar_defaultpdict.md).`__getattr__(self, name)`
+# [`pstar`](./pstar.md).[`defaultpdict`](./pstar_defaultpdict.md).`__getattr__(self, name)`
 
 Override `getattr`. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`.
 
@@ -19,3 +19,4 @@ assert (pd.__module__.startswith('pstar'))
 
 
 
+## [Source](../pstar/pstar.py#L506-L525)

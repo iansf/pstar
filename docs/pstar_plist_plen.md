@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`plen(self, r=0, s=False)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`plen(self, r=0, s=False)`
 
-Returns a [`plist`](/docs/pstar_plist.md) of the length of a recursively-selected layer of `self`.
+Returns a [`plist`](./pstar_plist.md) of the length of a recursively-selected layer of `self`.
 
 **Examples:**
 
@@ -56,13 +56,14 @@ assert (filtered.plen(-1, s=True) == 2)
 >       possible.
 
 >    **`s`**: Boolean that controls whether a scalar is returned (when `True`) or a
->       [`plist`](/docs/pstar_plist.md) of the same depth as `self` (when `False`, the default).
+>       [`plist`](./pstar_plist.md) of the same depth as `self` (when `False`, the default).
 
 **Returns:**
 
->    [`plist`](/docs/pstar_plist.md) whose depth equals the requested recursion depth (or less, if
+>    [`plist`](./pstar_plist.md) whose depth equals the requested recursion depth (or less, if
 >    `r > self.pdepth()`), containing a single value which is the number of
->    [`plist`](/docs/pstar_plist.md) elements at that depth, or that value as a scalar if `s` is `True`.
+>    [`plist`](./pstar_plist.md) elements at that depth, or that value as a scalar if `s` is `True`.
 
 
 
+## [Source](../pstar/pstar.py#L4458-L4534)

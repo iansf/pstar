@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`pshape(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`pshape(self)`
 
-Returns a [`plist`](/docs/pstar_plist.md) of the same structure as `self`, filled with leaf lengths.
+Returns a [`plist`](./pstar_plist.md) of the same structure as `self`, filled with leaf lengths.
 
 **Examples:**
 
@@ -41,9 +41,10 @@ assert (filtered.pshape().aslist() ==
 
 **Returns:**
 
->    New [`plist`](/docs/pstar_plist.md) of the same structure as `self`, where each leaf [`plist`](/docs/pstar_plist.md) has a
->    single element, which is the length of the corresponding leaf [`plist`](/docs/pstar_plist.md) in
+>    New [`plist`](./pstar_plist.md) of the same structure as `self`, where each leaf [`plist`](./pstar_plist.md) has a
+>    single element, which is the length of the corresponding leaf [`plist`](./pstar_plist.md) in
 >    `self`.
 
 
 
+## [Source](../pstar/pstar.py#L4535-L4584)

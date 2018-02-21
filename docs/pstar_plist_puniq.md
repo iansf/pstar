@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`puniq(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`puniq(self)`
 
-Returns a new [`plist`](/docs/pstar_plist.md) with only a single element of each value in `self`.
+Returns a new [`plist`](./pstar_plist.md) with only a single element of each value in `self`.
 
 **Examples:**
 
@@ -83,9 +83,10 @@ any duplicates in the elements of `foo`, they would have been removed.
 
 **Returns:**
 
->    New [`plist`](/docs/pstar_plist.md) with a new [`root`](/docs/pstar_plist_root.md) where there is only one example of each value
+>    New [`plist`](./pstar_plist.md) with a new [`root`](./pstar_plist_root.md) where there is only one example of each value
 >    in each sublist. The corresponding root element is the first element in
 >    `self.root()` that has that value.
 
 
 
+## [Source](../pstar/pstar.py#L4207-L4316)

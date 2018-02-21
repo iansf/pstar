@@ -1,9 +1,9 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`_(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`_(self)`
 
-Causes the next call to `self` to be performed as deep as possible in the [`plist`](/docs/pstar_plist.md).
+Causes the next call to `self` to be performed as deep as possible in the [`plist`](./pstar_plist.md).
 
 This is a convenience method primarily for easy subscripting of the values of
-a [`plist`](/docs/pstar_plist.md).
+a [`plist`](./pstar_plist.md).
 
 **Examples:**
 ```python
@@ -17,7 +17,7 @@ assert (pl._[2:4:1].apply(op.eq,
         [True, True, True])
 ```
 
-It can be used to call any method on the values of a [`plist`](/docs/pstar_plist.md) as well:
+It can be used to call any method on the values of a [`plist`](./pstar_plist.md) as well:
 ```python
 pl = plist([['foo'], ['bar']])
 pl._.append('baz')
@@ -34,3 +34,4 @@ assert (pl.aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L2644-L2678)

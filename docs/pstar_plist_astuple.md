@@ -1,6 +1,6 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`astuple(self)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`astuple(self)`
 
-Recursively convert all nested [`plist`](/docs/pstar_plist.md)s from `self` to `tuple`s, inclusive.
+Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to `tuple`s, inclusive.
 
 **Examples:**
 ```python
@@ -16,3 +16,4 @@ assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
 
 
 
+## [Source](../pstar/pstar.py#L2831-L2850)

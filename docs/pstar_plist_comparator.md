@@ -1,18 +1,18 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`comparator(self, other, return_inds=False)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`comparator(self, other, return_inds=False)`
 
-[`plist`](/docs/pstar_plist.md) comparison operator. **Comparisons filter plists.**
+[`plist`](./pstar_plist.md) comparison operator. **Comparisons filter plists.**
 
-**IMPORTANT:** [`plist`](/docs/pstar_plist.md) comparisons all filter the [`plist`](/docs/pstar_plist.md) and return a new
-[`plist`](/docs/pstar_plist.md), rather than a truth value.
+**IMPORTANT:** [`plist`](./pstar_plist.md) comparisons all filter the [`plist`](./pstar_plist.md) and return a new
+[`plist`](./pstar_plist.md), rather than a truth value.
 
-`comparator` is not callable directly from [`plist`](/docs/pstar_plist.md). It implements the various
+`comparator` is not callable directly from [`plist`](./pstar_plist.md). It implements the various
 python comparison operations: `==`, `<`, `>`, etc. The comparison operators
 can be called directly with their corresponding 'magic' functions,
 `plist.__eq__`, `plist.__lt__`, `plist.__gt__`, etc., but are generally just
 called implicitly.
 
 **Examples:**
-[`plist`](/docs/pstar_plist.md) comparators can filter on leaf values:
+[`plist`](./pstar_plist.md) comparators can filter on leaf values:
 ```python
 foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 assert (foo.aslist() ==
@@ -100,8 +100,8 @@ assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
          [[]]])
 ```
 
-Note that `plist.nonempty` can be used to remove empty internal [`plist`](/docs/pstar_plist.md)s
-after filtering a grouped [`plist`](/docs/pstar_plist.md):
+Note that `plist.nonempty` can be used to remove empty internal [`plist`](./pstar_plist.md)s
+after filtering a grouped [`plist`](./pstar_plist.md):
 ```python
 assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
         [[[{'foo': 1, 'bar': 1}]]])
@@ -124,3 +124,4 @@ assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
 
 
 
+## [Source](../pstar/pstar.py#L868-L1021)

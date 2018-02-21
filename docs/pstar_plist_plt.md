@@ -1,9 +1,9 @@
-# [`pstar`](/docs/pstar.md).[`plist`](/docs/pstar_plist.md).`plt(self, **kwargs)`
+# [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`plt(self, **kwargs)`
 
-Convenience method for managing `matplotlib.pyplot` state within a [`plist`](/docs/pstar_plist.md) chain.
+Convenience method for managing `matplotlib.pyplot` state within a [`plist`](./pstar_plist.md) chain.
 
 `plt()` serves two purposes:
-1. It returns a delegation object that allows calling `pyplot` functions without having to call [`apply`](/docs/pstar_plist_apply.md) -- e.g.,
+1. It returns a delegation object that allows calling `pyplot` functions without having to call [`apply`](./pstar_plist_apply.md) -- e.g.,
    `plist.plt().plot()` instead of `plist.apply(plt.plot)`.
 1. It allows calling of multiple `pyplot` functions in a single call just by passing `**kwargs`. This
    makes it easier to set up plotting contexts and to control when plots are shown, without adding
@@ -16,7 +16,7 @@ plotting.
 When passing `kwargs` to `plt()`, they are executed in alphabetical order. If that is inappropriate,
 (e.g., when creating a figure and setting other parameters), you can break up the call into two or
 more `plt()` calls to enforce any desired ordering, but you should probably just do that kind of
-complicated setup outside of the [`plist`](/docs/pstar_plist.md) context.
+complicated setup outside of the [`plist`](./pstar_plist.md) context.
 
 **Examples:**
 ```python
@@ -66,3 +66,4 @@ plt.show()
 
 
 
+## [Source](../pstar/pstar.py#L3166-L3270)
