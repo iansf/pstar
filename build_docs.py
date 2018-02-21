@@ -35,13 +35,6 @@ SKIP_SYMBOLS = plist['pstar.pstar',]
 PUBLICIZE_SYMBOLS = plist[
     '__init__',
     '_',
-    '_build_comparator',
-    '_build_logical_op',
-    '_build_binary_op',
-    '_build_unary_op',
-    '_call_attr',
-    '_ensure_len',
-    '_merge_indices',
     '__getattribute__',
     '__getattr__',
     '__getitem__',
@@ -73,7 +66,6 @@ API_DOC_TEMPLATE = """
 <<source>>
 """.strip()
 
-tests_from_docs = plist()
 symbols = defaultpdict(lambda: defaultpdict(str))
 
 
@@ -89,7 +81,7 @@ def bread_crumbs(symbol):
   symbol_parts = symbol[['name']].split('.').apply(plist).ungroup()[:-1]
   final_part = '%s`%s%s`' % ('.' if len(symbol_parts) else '', symbol.name.split('.')[-1], symbol.signature)
   return '.'.join(('[`' + symbol_parts + '`]({})').format(
-      symbol_parts.enum().apply(lambda i, x, sym_parts: url_for('.'.join(sym_parts[:i + 1])), sym_parts=symbol_parts.aslist(), psplat=True)
+      symbol_parts.pfill(1).apply(lambda i, sym_parts: url_for('.'.join(sym_parts[:i])), sym_parts=symbol_parts.aslist())
   )) + final_part
 
 
@@ -134,7 +126,7 @@ def api_overview(symbol):
   return '%s\n\n' % _get_children(symbol, base_depth=2)
 
 
-def extract_tests(name, doc):
+def tests_for(symbol):
   code_start = '```python'
   code_end = '```'
   def line_of_code_or_blank(line):
@@ -148,7 +140,7 @@ def extract_tests(name, doc):
       return line
     return ''
   line_of_code_or_blank.in_code_block = False
-  test_bodies = plist(doc.split('\n')).apply(line_of_code_or_blank) != ''
+  test_bodies = plist(symbol.doc.split('\n')).apply(line_of_code_or_blank) != ''
   test_bodies = inspect.cleandoc('\n'.join(test_bodies))  # Strips minimum number of spaces from all but first line.
   test_bodies = plist(test_bodies.split('\n'))
   if test_bodies.startswith('# Logs:').any():
@@ -170,21 +162,22 @@ def extract_tests(name, doc):
   test_bodies = '\n'.join('    ' + test_bodies).strip().replace('assert (', 'self.assertTrue(')
 
   if test_bodies:
-    test = ("""
+    return ("""
   def test_from_docs_%s(self):
     %s
-    """ % (name.replace('.', '_'), test_bodies)).rstrip()
+    """ % (symbol.name.replace('.', '_'), test_bodies)).rstrip()
 
-    tests_from_docs.append(test)
+  return ''
 
 
-def find_public_symbols(obj):
+def public_symbols_for(obj):
   if obj.__name__ == '__init__' or isinstance(obj, types.MethodType):
     return plist()
   return plist(dir(obj)).filter(lambda s: not s.startswith('_') or s in PUBLICIZE_SYMBOLS).apply(lambda s: getattr(obj, s)).uproot()
 
 
-def process_doc(doc):
+def docs_for(obj):
+  doc = inspect.getdoc(obj)
   blank_line = '\n                          \n'
   doc_lines = plist(doc.replace('Args:', '**Args:**')
                        .replace('Returns:', '**Returns:**\n')
@@ -211,7 +204,7 @@ def process_doc(doc):
   return plist['\n'.join([short] + body.aslist()), short]
 
 
-def get_signature(obj):
+def signature_for(obj):
   signature = ''
   try:
     signature = inspect.formatargspec(*inspect.getargspec(obj))
@@ -223,20 +216,13 @@ def get_signature(obj):
   return signature
 
 
-def collect_docs_and_tests(obj, base_name, full_base_name):
-  try:
-    if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or obj.__name__ in SKIP_SYMBOLS:
-      return
-    full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
-    if full_name in symbols:
-      raise RuntimeError('Found duplicate symbol: %s' % full_name)
-    symbols[full_name][['name', 'signature']] = plist[full_name, get_signature(obj)]
-    symbols[full_name][['doc', 'short_doc']] = process_doc(inspect.getdoc(obj))
-    extract_tests(full_name, symbols[full_name].doc)
-    (find_public_symbols(obj) != obj).apply(collect_docs_and_tests, base_name, full_name)
-  except AttributeError as e:
-    # qj(str(e), 'Error processing %s' % str(obj))
-    pass
+def symbol_for(obj, name):
+  symbol = symbols[name]
+  symbol.name = name
+  symbol.signature = signature_for(obj)
+  symbol[['doc', 'short_doc']] = docs_for(obj)
+  symbol.tests = tests_for(symbol)
+  return symbol
 
 
 def process_template(template, symbol):
@@ -247,35 +233,60 @@ def process_template(template, symbol):
       sections)[0]
 
 
-def build_docs():
-  cwd = os.path.dirname(os.path.realpath(__file__))
+def collect_docs_and_tests(obj, base_name, full_base_name):
+  try:
+    if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or obj.__name__ in SKIP_SYMBOLS:
+      return
+    full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
+    if full_name in symbols:
+      raise RuntimeError('Found duplicate symbol: %s' % full_name)
+    symbol_for(obj, full_name)
+    (public_symbols_for(obj) != obj).apply(collect_docs_and_tests, base_name, full_name)
+  except AttributeError as e:
+    # qj(str(e), 'Error processing %s' % str(obj))
+    pass
+
+
+def write_readme_md(cwd):
   readme_template_path = os.path.join(cwd, 'README.md.template')
   readme_path = os.path.join(cwd, 'README.md')
 
   with open(readme_template_path, 'r') as f:
     template = f.read()
 
-  collect_docs_and_tests(pstar, pstar.__name__, '')
-
   docs_md = process_template(template, symbols[pstar.__name__])
 
   with open(readme_path, 'w') as f:
     f.write(docs_md)
 
+
+def write_api_md(cwd):
+  plist(glob.glob(os.path.join(cwd, 'docs', '*'))).apply(os.remove)
+  with symbols.peys().apply(path_for, cwd).apply(open, 'w') as files:
+    files.write(symbols.palues().apply(build_api_doc))
+
+
+def write_tests(cwd):
   tests_template_path = os.path.join(cwd, 'pstar_test.py.template')
   tests_path = os.path.join(cwd, 'pstar', 'tests', 'pstar_test.py')
 
   with open(tests_template_path, 'r') as f:
     template = f.read()
 
-  template = template.replace('### <<doc_tests>> ###', '\n\n'.join(tests_from_docs))
+  template = template.replace('### <<doc_tests>> ###', '\n\n'.join(symbols.palues().tests.uproot() != ''))
 
   with open(tests_path, 'w') as f:
     f.write(template)
 
-  plist(glob.glob(os.path.join(cwd, 'docs', '*'))).apply(os.remove)
-  with symbols.peys().apply(path_for, cwd).apply(open, 'w') as files:
-    files.write(symbols.palues().apply(build_api_doc))
+
+def build_docs():
+  cwd = os.path.dirname(os.path.realpath(__file__))
+
+  collect_docs_and_tests(pstar, pstar.__name__, '')
+
+  write_readme_md(cwd)
+  write_api_md(cwd)
+  write_tests(cwd)
 
 
 if __name__ == '__main__':

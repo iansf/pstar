@@ -3104,62 +3104,6 @@ class PStarTest(unittest.TestCase):
             [['foo', 'baz'], ['bar', 'baz']])
 
 
-  def test_from_docs_pstar_plist_binary_op(self):
-    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
-    (foos.bar == 1).baz = 6
-    self.assertTrue((foos.foo + foos.baz).aslist() ==
-            [3, 7, 7])
-    self.assertTrue((2 * (foos.foo + 7)).aslist() ==
-            [14, 16, 18])
-    by_bar = foos.bar.groupby()
-    self.assertTrue((by_bar.foo + by_bar.baz).aslist() ==
-            [[3, 7], [7]])
-    self.assertTrue((2 * (by_bar.foo + 7)).aslist() ==
-            [[14, 18], [16]])
-    self.assertTrue(('foo: ' + foos.foo.pstr() + ' bar: ' + foos.bar.pstr()).aslist() ==
-            ['foo: 0 bar: 0', 'foo: 1 bar: 1', 'foo: 2 bar: 0'])
-    self.assertTrue(foos.foo.apply('foo: {} bar: {}'.format, foos.bar).aslist() ==
-            ['foo: 0 bar: 0', 'foo: 1 bar: 1', 'foo: 2 bar: 0'])
-    self.assertTrue(('foo: ' + by_bar.foo.pstr() + ' bar: ' + by_bar.bar.pstr()).aslist() ==
-            [['foo: 0 bar: 0', 'foo: 2 bar: 0'], ['foo: 1 bar: 1']])
-    self.assertTrue(by_bar.foo.apply('foo: {} bar: {}'.format, by_bar.bar).aslist() ==
-            ['foo: [0, 2] bar: [0, 0]', 'foo: [1] bar: [1]'])
-    self.assertTrue(by_bar.foo.apply_('foo: {} bar: {}'.format, by_bar.bar).aslist() ==
-            [['foo: 0 bar: 0', 'foo: 2 bar: 0'], ['foo: 1 bar: 1']])
-
-
-  def test_from_docs_pstar_plist_logical_op(self):
-    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
-    (foos.bar == 1).baz = 6
-    self.assertTrue(((foos.bar == 0) & (foos.baz == 3)).aslist() ==
-            [{'baz': 3, 'foo': 0, 'bar': 0}])
-    self.assertTrue(((foos.bar == 0) | (foos.baz == 3)).aslist() ==
-            [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}])
-    self.assertTrue(((foos.bar == 0) ^ (foos.baz == 3)).aslist() ==
-            [{'bar': 0, 'baz': 5, 'foo': 2}])
-    by_bar = foos.bar.groupby()
-    self.assertTrue(((by_bar.bar == 0) & (by_bar.bar == 1)).aslist() ==
-            [[], []])
-    self.assertTrue(((by_bar.bar == 0) & (by_bar.bar <= 1)).aslist() ==
-            [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
-    self.assertTrue(((by_bar.baz == 3) | (by_bar.baz == 6)).aslist() ==
-            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
-    self.assertTrue(((by_bar.baz == 6) | (by_bar.baz <= 4)).aslist() ==
-            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
-    self.assertTrue(((by_bar.baz == 3) ^ (by_bar.baz == 6)).aslist() ==
-            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
-    self.assertTrue(((by_bar.baz == 6) ^ (by_bar.bar <= 4)).aslist() ==
-            [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
-    self.assertTrue((foos.baz & 1).aslist() ==
-            [1, 0, 1])
-    self.assertTrue((by_bar.baz | 1).aslist() ==
-            [[3, 5], [7]])
-    self.assertTrue((1 ^ by_bar.baz).aslist() ==
-            [[2, 4], [7]])
-
-
   def test_from_docs_pstar_plist___call__(self):
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     # A plist of callables, one for each pdict:
@@ -3208,70 +3152,6 @@ class PStarTest(unittest.TestCase):
     # Passing a plist as a keyword argument:
     self.assertTrue(by.format(foo=by._[:3:1]).aslist() ==
             [['foo foo'], ['bar bar', 'baz baz']])
-
-
-  def test_from_docs_pstar_plist_comparator(self):
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    self.assertTrue(foo.aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1},
-             {'foo': 2, 'bar': 0}])
-    zero_bars = foo.bar == 0
-    self.assertTrue(zero_bars.aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 2, 'bar': 0}])
-    nonzero_bars = foo.bar != 0
-    self.assertTrue(nonzero_bars.aslist() ==
-            [{'foo': 1, 'bar': 1}])
-    self.assertTrue((foo == zero_bars).aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 2, 'bar': 0}])
-    self.assertTrue((foo.foo > foo.bar).aslist() ==
-            [{'foo': 2, 'bar': 0}])
-    self.assertTrue((foo.foo == [0, 1, 3]).aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1}])
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    self.assertTrue(foo_by_bar_foo.aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              [{'foo': 2, 'bar': 0}]],
-             [[{'foo': 1, 'bar': 1}]]])
-    nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
-    self.assertTrue(nonzero_foo_by_bar_foo.aslist() ==
-            [[[],
-              []],
-             [[{'bar': 1, 'foo': 1}]]])
-    zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
-    self.assertTrue(zero_foo_by_bar_foo.aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              [{'foo': 2, 'bar': 0}]],
-             [[]]])
-    self.assertTrue((foo_by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              []],
-             [[{'foo': 1, 'bar': 1}]]])
-    self.assertTrue((foo.foo == [0, 1, 3, 4]).aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1}])
-    self.assertTrue((foo_by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              []],
-             [[{'foo': 1, 'bar': 1}]]])
-    self.assertTrue((foo.foo == []).aslist() == [])
-    self.assertTrue((foo.foo < []).aslist() ==
-            [{'foo': 0, 'bar': 0},
-             {'foo': 1, 'bar': 1},
-             {'foo': 2, 'bar': 0}])
-    self.assertTrue((foo_by_bar_foo == nonzero_foo_by_bar_foo).aslist() ==
-            [[[],
-              []],
-             [[{'foo': 1, 'bar': 1}]]])
-    self.assertTrue((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
-            [[[{'foo': 0, 'bar': 0}],
-              [{'foo': 2, 'bar': 0}]],
-             [[]]])
-    self.assertTrue((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
-            [[[{'foo': 1, 'bar': 1}]]])
 
 
   def test_from_docs_pstar_plist___contains__(self):
@@ -3475,21 +3355,6 @@ class PStarTest(unittest.TestCase):
     pl = plist([1, 2, 3], root=plist(['a', 'b', 'c']))
 
 
-  def test_from_docs_pstar_plist_unary_op(self):
-    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
-    (foos.bar == 1).baz = 6
-    self.assertTrue((-foos.foo).aslist() ==
-            [0, -1, -2])
-    self.assertTrue((~foos.foo).aslist() ==
-            [-1, -2, -3])
-    by_bar = foos.bar.groupby()
-    self.assertTrue((-by_bar.foo).aslist() ==
-            [[0, -2], [-1]])
-    self.assertTrue((~by_bar.foo).aslist() ==
-            [[-1, -3], [-2]])
-
-
   def test_from_docs_pstar_plist___setattr__(self):
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     # Assignment to an existing attribute:
@@ -3685,6 +3550,95 @@ class PStarTest(unittest.TestCase):
     self.assertTrue([type(x) for x in by_bar.astuple()] == [tuple, tuple])
 
 
+  def test_from_docs_pstar_plist_binary_op(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    self.assertTrue((foos.foo + foos.baz).aslist() ==
+            [3, 7, 7])
+    self.assertTrue((2 * (foos.foo + 7)).aslist() ==
+            [14, 16, 18])
+    by_bar = foos.bar.groupby()
+    self.assertTrue((by_bar.foo + by_bar.baz).aslist() ==
+            [[3, 7], [7]])
+    self.assertTrue((2 * (by_bar.foo + 7)).aslist() ==
+            [[14, 18], [16]])
+    self.assertTrue(('foo: ' + foos.foo.pstr() + ' bar: ' + foos.bar.pstr()).aslist() ==
+            ['foo: 0 bar: 0', 'foo: 1 bar: 1', 'foo: 2 bar: 0'])
+    self.assertTrue(foos.foo.apply('foo: {} bar: {}'.format, foos.bar).aslist() ==
+            ['foo: 0 bar: 0', 'foo: 1 bar: 1', 'foo: 2 bar: 0'])
+    self.assertTrue(('foo: ' + by_bar.foo.pstr() + ' bar: ' + by_bar.bar.pstr()).aslist() ==
+            [['foo: 0 bar: 0', 'foo: 2 bar: 0'], ['foo: 1 bar: 1']])
+    self.assertTrue(by_bar.foo.apply('foo: {} bar: {}'.format, by_bar.bar).aslist() ==
+            ['foo: [0, 2] bar: [0, 0]', 'foo: [1] bar: [1]'])
+    self.assertTrue(by_bar.foo.apply_('foo: {} bar: {}'.format, by_bar.bar).aslist() ==
+            [['foo: 0 bar: 0', 'foo: 2 bar: 0'], ['foo: 1 bar: 1']])
+
+
+  def test_from_docs_pstar_plist_comparator(self):
+    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    self.assertTrue(foo.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    zero_bars = foo.bar == 0
+    self.assertTrue(zero_bars.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
+    nonzero_bars = foo.bar != 0
+    self.assertTrue(nonzero_bars.aslist() ==
+            [{'foo': 1, 'bar': 1}])
+    self.assertTrue((foo == zero_bars).aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
+    self.assertTrue((foo.foo > foo.bar).aslist() ==
+            [{'foo': 2, 'bar': 0}])
+    self.assertTrue((foo.foo == [0, 1, 3]).aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
+    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
+    self.assertTrue(foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[{'foo': 1, 'bar': 1}]]])
+    nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
+    self.assertTrue(nonzero_foo_by_bar_foo.aslist() ==
+            [[[],
+              []],
+             [[{'bar': 1, 'foo': 1}]]])
+    zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
+    self.assertTrue(zero_foo_by_bar_foo.aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[]]])
+    self.assertTrue((foo_by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              []],
+             [[{'foo': 1, 'bar': 1}]]])
+    self.assertTrue((foo.foo == [0, 1, 3, 4]).aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1}])
+    self.assertTrue((foo_by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              []],
+             [[{'foo': 1, 'bar': 1}]]])
+    self.assertTrue((foo.foo == []).aslist() == [])
+    self.assertTrue((foo.foo < []).aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 1, 'bar': 1},
+             {'foo': 2, 'bar': 0}])
+    self.assertTrue((foo_by_bar_foo == nonzero_foo_by_bar_foo).aslist() ==
+            [[[],
+              []],
+             [[{'foo': 1, 'bar': 1}]]])
+    self.assertTrue((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
+            [[[{'foo': 0, 'bar': 0}],
+              [{'foo': 2, 'bar': 0}]],
+             [[]]])
+    self.assertTrue((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
+            [[[{'foo': 1, 'bar': 1}]]])
+
+
   def test_from_docs_pstar_plist_copy(self):
     pl1 = plist[1, 2, 3]
     pl2 = pl1.copy()
@@ -3800,6 +3754,37 @@ class PStarTest(unittest.TestCase):
              [[]]])
     self.assertTrue(filtered.lfill(3) ==
             [[[3], [4]], [[]]])
+
+
+  def test_from_docs_pstar_plist_logical_op(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    self.assertTrue(((foos.bar == 0) & (foos.baz == 3)).aslist() ==
+            [{'baz': 3, 'foo': 0, 'bar': 0}])
+    self.assertTrue(((foos.bar == 0) | (foos.baz == 3)).aslist() ==
+            [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}])
+    self.assertTrue(((foos.bar == 0) ^ (foos.baz == 3)).aslist() ==
+            [{'bar': 0, 'baz': 5, 'foo': 2}])
+    by_bar = foos.bar.groupby()
+    self.assertTrue(((by_bar.bar == 0) & (by_bar.bar == 1)).aslist() ==
+            [[], []])
+    self.assertTrue(((by_bar.bar == 0) & (by_bar.bar <= 1)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
+    self.assertTrue(((by_bar.baz == 3) | (by_bar.baz == 6)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
+    self.assertTrue(((by_bar.baz == 6) | (by_bar.baz <= 4)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
+    self.assertTrue(((by_bar.baz == 3) ^ (by_bar.baz == 6)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}], [{'bar': 1, 'baz': 6, 'foo': 1}]])
+    self.assertTrue(((by_bar.baz == 6) ^ (by_bar.bar <= 4)).aslist() ==
+            [[{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 5, 'foo': 2}], []])
+    self.assertTrue((foos.baz & 1).aslist() ==
+            [1, 0, 1])
+    self.assertTrue((by_bar.baz | 1).aslist() ==
+            [[3, 5], [7]])
+    self.assertTrue((1 ^ by_bar.baz).aslist() ==
+            [[2, 4], [7]])
 
 
   def test_from_docs_pstar_plist_me(self):
@@ -4520,6 +4505,21 @@ class PStarTest(unittest.TestCase):
             [[{'foo': 1, 'bar': 1}],
              [{'foo': 0, 'bar': 0},
               {'foo': 2, 'bar': 0}]])
+
+
+  def test_from_docs_pstar_plist_unary_op(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    self.assertTrue((-foos.foo).aslist() ==
+            [0, -1, -2])
+    self.assertTrue((~foos.foo).aslist() ==
+            [-1, -2, -3])
+    by_bar = foos.bar.groupby()
+    self.assertTrue((-by_bar.foo).aslist() ==
+            [[0, -2], [-1]])
+    self.assertTrue((~by_bar.foo).aslist() ==
+            [[-1, -3], [-2]])
 
 
   def test_from_docs_pstar_plist_ungroup(self):
