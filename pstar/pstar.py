@@ -1557,7 +1557,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     if name == '__root__' or name == '__pepth__':
       return list.__getattribute__(self, name)
     if not name.endswith('___') and name.startswith('__') and name.endswith('__'):
-      raise AttributeError('\'%s\' objects cannot call reserved members of their elements: \'%s\'' % (type(self), name))
+      raise AttributeError('plist objects cannot call reserved members of their elements: \'%s\'' % name)
     try:
       return plist.__getattr__(self, name)
     except AttributeError:
@@ -1583,7 +1583,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
         return plist([getattr(x, name) for x in self], root=self.__root__)
       return plist([x[name] for x in self], root=self.__root__)
     except Exception as e:
-      raise AttributeError('\'%s\' object has no attribute \'%s\' (%s)' % (type(self), name, str(e)))
+      raise AttributeError('plist children raised exceptions attempting to get attribute \'%s\' (%s)' % (name, str(e)))
 
   ##############################################################################
   # __get*__
