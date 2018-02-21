@@ -2708,7 +2708,7 @@ class PStarTest(unittest.TestCase):
                      plist)
     self.assertIs(foos.__root__,
                   foos)
-    self.assertIn('List where',
+    self.assertIn('`list` subclass',
                   foos.__doc__)
     self.assertEqual(foos.__module__,
                      'pstar.pstar')
@@ -2717,7 +2717,7 @@ class PStarTest(unittest.TestCase):
                      plist)
     self.assertIs(by_bar_baz.__root__,
                   by_bar_baz)
-    self.assertIn('List where',
+    self.assertIn('`list` subclass',
                   by_bar_baz.__doc__)
     self.assertEqual(by_bar_baz.__module__,
                      'pstar.pstar')
@@ -3085,6 +3085,87 @@ class PStarTest(unittest.TestCase):
     self.assertTrue(pd.update(foo=1, bar=2.0).foo == 1)
     self.assertTrue(pd.bar == 2.0)
     self.assertTrue(pd.update({'baz': 'three'}).baz == 'three')
+
+
+  def test_from_docs_pstar_plist(self):
+    pl = plist['abc', 'def', 'ghi']
+    self.assertTrue((pl + ' -> ' + pl.upper()).aslist() ==
+            ['abc -> ABC', 'def -> DEF', 'ghi -> GHI'])
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    # Basic scalar indexing:
+    self.assertTrue(foos[0] ==
+            dict(foo=0, bar=0))
+    # plist slice indexing:
+    self.assertTrue(foos[:2].aslist() ==
+            [dict(foo=0, bar=0), dict(foo=1, bar=1)])
+    # plist int list indexing:
+    self.assertTrue(foos[[0, 2]].aslist() ==
+            [dict(foo=0, bar=0), dict(foo=2, bar=0)])
+    # Basic scalar indexing:
+    self.assertTrue(foos['foo'].aslist() ==
+            [0, 1, 2])
+    # tuple indexing
+    self.assertTrue(foos[('foo', 'bar')].aslist() ==
+            [(0, 0), (1, 1), (2, 0)])
+    # list indexing
+    self.assertTrue(foos[['foo', 'bar', 'bar']].aslist() ==
+            [0, 1, 0])
+    pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    # Basic scalar indexing:
+    self.assertTrue(pl._[0].aslist() ==
+            [1, 4, 7])
+    # slice indexing (note the use of the 3-argument version of slicing):
+    self.assertTrue(pl._[:2:1].aslist() ==
+            [[1, 2], [4, 5], [7, 8]])
+    # list indexing:
+    pl = pl.np()
+    self.assertTrue(pl._[[True, False, True]].apply(list).aslist() ==
+            [[1, 3], [4, 6], [7, 9]])
+    pl = plist[1, 2, 3]
+    # `plist` operations don't modify the original (except where natural)!
+    self.assertTrue((pl + 5) is not pl)
+    self.assertTrue((pl + 5).root() is pl)
+    pl2 = pl + 5
+    self.assertTrue(pl2.root() is not pl2)
+    self.assertTrue(pl2.uproot().root() is pl2)
+    self.assertTrue(pl2.root() is pl2)
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    # Filtering on a property:
+    zero_bars = foos.bar == 0
+    # The result is a `plist` of the original `pdict`s, correctly filtered:
+    self.assertTrue(zero_bars.aslist() ==
+            [{'foo': 0, 'bar': 0},
+             {'foo': 2, 'bar': 0}])
+    # filter can take any function to filter by, but it defaults to bool():
+    nonzero_bars = foos.bar.filter()
+    self.assertTrue(nonzero_bars.aslist() ==
+            [{'foo': 1, 'bar': 1}])
+    foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
+    # Note that the `bar == 1` group comes before the `bar == 0` group. The ordering
+    # is determined by the sort order of the `plist`.
+    self.assertTrue(foos.bar.groupby().aslist() ==
+            [[{'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}], [{'bar': 0, 'foo': 1}]])
+    # Note that foos is unchanged:
+    self.assertTrue(foos.aslist() ==
+            [{'bar': 1, 'foo': 0}, {'bar': 0, 'foo': 1}, {'bar': 1, 'foo': 2}])
+    self.assertTrue(foos.bar.sortby().aslist() ==
+            [0, 1, 1])
+    self.assertTrue(foos.aslist() ==
+            [{'bar': 0, 'foo': 1}, {'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}])
+    foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
+    self.assertTrue(foos.bar.sortby().groupby().aslist() ==
+            [[{'bar': 0, 'foo': 1}], [{'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}]])
+    pl = plist['abc', 'def', 'ghi']
+    self.assertTrue(pl.apply('foo: {}'.format).aslist() ==
+            ['foo: abc', 'foo: def', 'foo: ghi'])
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos.baz = 'abc' * foos.foo
+    # Do a multi-argument string format with plist.apply:
+    self.assertTrue(foos.foo.apply('foo: {} bar: {} baz: {baz}'.format, foos.bar, baz=foos.baz).aslist() ==
+            ['foo: 0 bar: 0 baz: ', 'foo: 1 bar: 1 baz: abc', 'foo: 2 bar: 0 baz: abcabc'])
+    # Do the same string format directly using the plist as the format string:
+    self.assertTrue(('foo: ' + foos.foo.pstr() + ' bar: {} baz: {baz}').format(foos.bar, baz=foos.baz).aslist() ==
+            ['foo: 0 bar: 0 baz: ', 'foo: 1 bar: 1 baz: abc', 'foo: 2 bar: 0 baz: abcabc'])
 
 
   def test_from_docs_pstar_plist__(self):

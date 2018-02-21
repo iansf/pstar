@@ -121,7 +121,7 @@ ____
 
 ### [`pstar.plist(list)`](./pstar_plist.md)
 
-List where everything is automatically a property that is applied to its elements. Guaranteed to surprise, if not delight.
+`list` subclass for powerful, concise data processing.
 
 #### [`pstar.plist._(self)`](./pstar_plist__.md)
 

@@ -32,4 +32,4 @@ assert (foos.bin.filter(isinstance, str).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L3746-L3774)
+## [Source](../pstar/pstar.py#L3931-L3959)

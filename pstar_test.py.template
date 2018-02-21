@@ -2708,7 +2708,7 @@ class PStarTest(unittest.TestCase):
                      plist)
     self.assertIs(foos.__root__,
                   foos)
-    self.assertIn('List where',
+    self.assertIn('`list` subclass',
                   foos.__doc__)
     self.assertEqual(foos.__module__,
                      'pstar.pstar')
@@ -2717,7 +2717,7 @@ class PStarTest(unittest.TestCase):
                      plist)
     self.assertIs(by_bar_baz.__root__,
                   by_bar_baz)
-    self.assertIn('List where',
+    self.assertIn('`list` subclass',
                   by_bar_baz.__doc__)
     self.assertEqual(by_bar_baz.__module__,
                      'pstar.pstar')
