@@ -126,6 +126,9 @@ whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj(
 #   qj: module_level_code: whoa! <2>: [{'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}, {'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}]
 ```
 
+See [build_docs.py](/build_docs.py) for a more extensive example of using `pstar`.
+
+
 ## Philosophy:
 
 `pstar` makes writing and debugging data-processing code easy and concise.
@@ -176,6 +179,20 @@ pl = pl.qj().replace(pl._[0].qj(d=1), pl._[-1].qj()).qj()
 
 See [`qj`](https://github.com/iansf/qj) for documentation.
 
+### Testing and Examples:
+
+`pstar` is extensively tested. Additionally, almost all of the example code
+found in the documentation is automatically added to the test suite when
+documentation is built. Therefore, every block of code in a page of documentation
+is a self-contained, runnable example that you can copy into a
+python terminal and run immediately.
+
+Note that because many of the tests check the contents of `plist`s, and
+`plist`s do filtering when compared, many of the tests look like:
+`assert (foos.aslist() == [...])` in order to bypass the filtering and just run
+an equality check on two lists. Under normal use, you do not need to call
+`plist.aslist()` very often.
+
 ### Concision:
 
 In the very simple example below, `pstar` does in six lines with no explicit
@@ -183,7 +200,7 @@ control flow, what takes 10 lines and three levels of indentation in regular
 python. The extra lines are from the explicit control flow and the inability
 to chain the output to a print statement.
 ```python
-# Trvial pstar data processing:
+# Trivial pstar data processing:
 pl = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
 pl.baz = (pl.foo + pl.bar) % (len(pl) // 2 + 1)
 by_bar = pl.bar.groupby()
@@ -209,6 +226,9 @@ code has a bug: if the values for `bar` are ever something other than 0 or 1,
 the output list will fail. The `pstar` version of the code is completely robust
 to that kind of bug. The only assumptions about the data are that it is provided
 with two fields, 'foo' and 'bar', and that both of the fields are numeric.
+
+See [build_docs.py](/build_docs.py) for a more extensive example of using `pstar`.
+
 
 ## Basic Usage:
 
