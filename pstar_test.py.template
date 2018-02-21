@@ -274,15 +274,6 @@ class PStarTest(unittest.TestCase):
     self.assertEqual(pl.aslist(),
                      [0, 1, 2, 3])
 
-  def test_plist_init_depth(self):
-    pl = plist([x for x in range(4)], depth=3)
-    self.assertEqual(pl.aslist(),
-                     [[[0, 1, 2, 3]]])
-
-    pl.append__(4)
-    self.assertEqual(pl.aslist(),
-                     [[[0, 1, 2, 3, 4]]])
-
   def test_plist_of_int_to_float(self):
     pl = plist([1, 2, 3])
 

@@ -1475,21 +1475,17 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Constructs plist.
 
     Args:
-      *args: Passed directly to list constructor.
-      **kwargs: Should only contain 'depth' and 'root' as optional keywords. All
-                other keys are passed directly to list constructor.
+      *args: Passed directly to `list` constructor.
+      **kwargs: Keyword arguments passed directly to `list` constructor after
+                exctracting `root` if present. `root` must be a `plist`, and
+                will be used as the root of `self`.
 
     Returns:
-      None. plist is initialized.
+      `None`. `plist` is initialized.
     """
     self.__pepth__ = 0
-    depth = kwargs.pop('depth', 1)
     self.__root__ = kwargs.pop('root', self)
-    if depth == 1:
-      list.__init__(self, *args, **kwargs)
-    else:
-      # Don't pass root through when making nested plists, because that doesn't make any sense.
-      plist.__init__(self, [plist(*args, depth=depth - 1, **kwargs)])  # pylint: disable=non-parent-init-called
+    list.__init__(self, *args, **kwargs)
 
   ##############################################################################
   ##############################################################################
