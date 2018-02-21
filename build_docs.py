@@ -87,14 +87,10 @@ def path_for(name, cwd):
 
 def bread_crumbs(symbol):
   symbol_parts = symbol[['name']].split('.').apply(plist).ungroup()[:-1]
-  final_part = '%s`%s%s`' % ('.' if len(symbol_parts) else '', symbol.name.split('.')[-1], signature(symbol))
+  final_part = '%s`%s%s`' % ('.' if len(symbol_parts) else '', symbol.name.split('.')[-1], symbol.signature)
   return '.'.join(('[`' + symbol_parts + '`]({})').format(
       symbol_parts.enum().apply(lambda i, x, sym_parts: url_for('.'.join(sym_parts[:i + 1])), sym_parts=symbol_parts.aslist(), psplat=True)
   )) + final_part
-
-
-def signature(symbol):
-  return '%s' % symbol.signature if symbol.signature else ''
 
 
 def full_signature(symbol):
@@ -114,7 +110,7 @@ def doc(symbol):
 
 
 def child_item(symbol, parent_name, base_depth):
-  return  ('#' * (base_depth + len(symbol.name.replace(parent_name + '.', '').split('.')))) + ' [`%s%s`](%s)\n\n%s' % (symbol.name, signature(symbol), url_for(symbol.name), short_doc(symbol))
+  return  ('#' * (base_depth + len(symbol.name.replace(parent_name + '.', '').split('.')))) + ' [`%s%s`](%s)\n\n%s' % (symbol.name, symbol.signature, url_for(symbol.name), short_doc(symbol))
 
 
 def _get_children(symbol, base_depth):
