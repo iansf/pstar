@@ -227,22 +227,109 @@ from pstar import *
 from pstar import defaultpdict, pdict, plist, pset
 ```
 
-### Basic `pdict` use:
+### Basic [`defaultpdict`](/docs/pstar_defaultpdict.md) use:
+
+`defaultdict` subclass where everything is automatically a property.
+
+**Examples:**
+
+Use with dot notation or subscript notation:
 ```python
-# Create empty pdict:
-pd = pdict()
-
-# Add and access fields with dot notation:
-pd.foo = 13
-pd.bar = 'abc'
-
-# Log the contents of the pdict with a message:
-pd.qj('Hello, pdict')
-# Logs:
-#   qj: <some_file> some_function: Hello, pdict: {'bar': 'abc', 'foo': 13}
-
-
+  p = defaultpdict()
+  p.foo = 1
+  assert (p['foo'] == p.foo == 1)
 ```
+
+Set the desired default constructor as normal to avoid having to construct
+individual values:
+```python
+  p = defaultpdict(int)
+  assert (p.foo == 0)
+```
+
+`list` subscripts also work and return a `plist` of the corresponding keys:
+```python
+  p = defaultpdict(foo=1, bar=2)
+  assert (p[['foo', 'bar']].aslist() == [1, 2])
+```
+
+Setting with a `list` subscript also works, using a single element or a matching
+`list` for the values:
+```python
+  p = defaultpdict()
+  p[['foo', 'bar']] = 1
+  assert (p[['foo', 'bar']].aslist() == [1, 1])
+  p[['foo', 'bar']] = [1, 2]
+  assert (p[['foo', 'bar']].aslist() == [1, 2])
+```
+
+`defaultpdict.update()` returns `self`, rather than `None`, to support chaining:
+```python
+  p = defaultpdict(foo=1, bar=2)
+  p.update(bar=3).baz = 4
+  assert (p.bar == 3)
+  assert ('baz' in p.keys())
+```
+
+Nested `defaultpdict`s make nice lightweight objects:
+```python
+  p = defaultpdict(lambda: defaultpdict(list))
+  p.foo = 1
+  p.stats.bar.append(2)
+  assert (p['foo'] == 1)
+  assert (p.stats.bar == [2])
+```
+
+### Basic [`pdict`](/docs/pstar_pdict.md) use:
+
+`dict` subclass where everything is automatically a property.
+
+**Examples:**
+
+Use with dot notation or subscript notation:
+```python
+  p = pdict()
+  p.foo = 1
+  assert (p['foo'] == p.foo == 1)
+```
+
+`list` subscripts also work and return a `plist` of the corresponding keys:
+```python
+  p = pdict(foo=1, bar=2)
+  assert (p[['foo', 'bar']].aslist() == [1, 2])
+```
+
+Setting with a `list` subscript also works, using a single element or a matching
+`list` for the values:
+```python
+  p = pdict()
+  p[['foo', 'bar']] = 1
+  assert (p[['foo', 'bar']].aslist() == [1, 1])
+  p[['foo', 'bar']] = [1, 2]
+  assert (p[['foo', 'bar']].aslist() == [1, 2])
+```
+
+`pdict.update()` returns `self`, rather than `None`, to support chaining:
+```python
+  p = pdict(foo=1, bar=2)
+  p.update(bar=3).baz = 4
+  assert (p.bar == 3)
+  assert ('baz' in p.keys())
+```
+
+### Basic [`plist`](/docs/pstar_plist.md) use:
+
+List where everything is automatically a property that is applied to its elements. Guaranteed to surprise, if not delight.
+
+TODO
+
+See README.md for a detailed overview of ways plist can be used.
+See tests/pstar_test.py for usage examples ranging from simple to complex.
+
+### Basic [`pset`](/docs/pstar_pset.md) use:
+
+Placeholder frozenset subclass. Not yet implemented.
+
 
 ## API Overview:
 

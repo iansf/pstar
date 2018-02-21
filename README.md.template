@@ -227,22 +227,8 @@ from pstar import *
 from pstar import defaultpdict, pdict, plist, pset
 ```
 
-### Basic `pdict` use:
-```python
-# Create empty pdict:
-pd = pdict()
+<<basic_class_use>>
 
-# Add and access fields with dot notation:
-pd.foo = 13
-pd.bar = 'abc'
-
-# Log the contents of the pdict with a message:
-pd.qj('Hello, pdict')
-# Logs:
-#   qj: <some_file> some_function: Hello, pdict: {'bar': 'abc', 'foo': 13}
-
-
-```
 
 ## API Overview:
 

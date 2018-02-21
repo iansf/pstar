@@ -122,6 +122,11 @@ def build_api_doc(symbol):
   return process_template(API_DOC_TEMPLATE, symbol)
 
 
+def basic_class_use(symbol):
+  classes = symbols[(symbols.peys().split('.').apply(len) == 1 + plist(symbol.name.split('.')).plen()).startswith(symbol.name).filter()]
+  return '\n\n'.join('### Basic [`' + classes.name.split('.')._[-1] + '`](' + classes.name.apply(url_for) + ') use:\n\n' + classes.doc)
+
+
 def api_overview(symbol):
   return '%s\n\n' % _get_children(symbol, base_depth=2)
 
