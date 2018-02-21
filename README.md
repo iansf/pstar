@@ -353,6 +353,10 @@ Placeholder frozenset subclass. Not yet implemented.
 
 ## API Overview:
 
+Links for detailed documentation are below.
+
+____
+
 ### [`pstar.defaultpdict(defaultdict)`](/docs/pstar_defaultpdict.md)
 
 `defaultdict` subclass where everything is automatically a property.
@@ -409,6 +413,8 @@ Change the keys of `self` or a copy while keeping the same values.
 
 Update `self`. **Returns `self` to allow chaining.**
 
+____
+
 ### [`pstar.pdict(dict)`](/docs/pstar_pdict.md)
 
 `dict` subclass where everything is automatically a property.
@@ -456,6 +462,8 @@ Change the keys of `self` or a copy while keeping the same values.
 #### [`pstar.pdict.update(self, *a, **kw)`](/docs/pstar_pdict_update.md)
 
 Update `self`. **Returns `self` to allow chaining.**
+
+____
 
 ### [`pstar.plist(list)`](/docs/pstar_plist.md)
 
@@ -700,6 +708,8 @@ Returns a [`plist`](/docs/pstar_plist.md) with the structure of `self` filled wi
 #### [`pstar.plist.zip(self, *others)`](/docs/pstar_plist_zip.md)
 
 Zips `self` with `others`, recursively.
+
+____
 
 ### [`pstar.pset(frozenset)`](/docs/pstar_pset.md)
 

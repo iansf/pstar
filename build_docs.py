@@ -102,7 +102,9 @@ def doc(symbol):
 
 
 def child_item(symbol, parent_name, base_depth):
-  return  ('#' * (base_depth + len(symbol.name.replace(parent_name + '.', '').split('.')))) + ' [`%s%s`](%s)\n\n%s' % (symbol.name, symbol.signature, url_for(symbol.name), short_doc(symbol))
+  return (('____\n\n' if symbol.name.count('.') == 1 else '')
+          + ('#' * (base_depth + len(symbol.name.replace(parent_name + '.', '').split('.'))))
+          + ' [`%s%s`](%s)\n\n%s' % (symbol.name, symbol.signature, url_for(symbol.name), short_doc(symbol)))
 
 
 def _get_children(symbol, base_depth):
@@ -128,7 +130,7 @@ def basic_class_use(symbol):
 
 
 def api_overview(symbol):
-  return '%s\n\n' % _get_children(symbol, base_depth=2)
+  return 'Links for detailed documentation are below.\n\n%s\n\n' % _get_children(symbol, base_depth=2)
 
 
 def tests_for(symbol):
