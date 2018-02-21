@@ -20,6 +20,7 @@ Run with:
 python build_docs.py
 ```
 """
+import glob
 import inspect
 import os
 import re
@@ -276,8 +277,10 @@ def build_docs():
   with open(tests_path, 'w') as f:
     f.write(template)
 
+  plist(glob.glob(os.path.join(cwd, 'docs', '*'))).apply(os.remove)
   with symbols.peys().apply(path_for, cwd).apply(open, 'w') as files:
     files.write(symbols.palues().apply(build_api_doc))
+
 
 if __name__ == '__main__':
   build_docs()
