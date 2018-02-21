@@ -15,7 +15,7 @@ assert (foos.aslist() ==
          {'bar': 1, 'baz': 6, 'bin': -1, 'foo': 3},
          {'bar': 0, 'baz': 7, 'bin': -1, 'foo': 4}])
 
-assert (foos.foo.join().np().sum().aslist() ==
+assert (foos.foo.wrap().np().sum().aslist() ==
         [10])
 
 by_bar = foos.bar.sortby(reverse=True).groupby()

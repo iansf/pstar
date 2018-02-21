@@ -125,10 +125,6 @@ Filter `self` by an arbitrary function on elements of `self`, forwarding argumen
 
 Group `self.root()` by the values in `self` and return `self.root()`.
 
-### [`pstar.plist.join(self)`](./pstar_plist_join.md)
-
-Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
-
 ### [`pstar.plist.lfill(self, v=0, s=None)`](./pstar_plist_lfill.md)
 
 Returns a **`list`** with the structure of `self` filled in order from `v`.
@@ -244,6 +240,10 @@ Sets the root to `self` so future `root()` calls return this [`plist`](./pstar_p
 ### [`pstar.plist.values_like(self, value=0)`](./pstar_plist_values_like.md)
 
 Returns a [`plist`](./pstar_plist.md) with the structure of `self` filled with `value`.
+
+### [`pstar.plist.wrap(self)`](./pstar_plist_wrap.md)
+
+Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
 
 ### [`pstar.plist.zip(self, *others)`](./pstar_plist_zip.md)
 

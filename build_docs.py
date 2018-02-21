@@ -198,7 +198,7 @@ def docs_for(obj):
                        .split('\n'))
   short, body = doc_lines[0], doc_lines[1:]
 
-  min_spaces = body.apply(lambda s: re.match('^\s*', s)).group(0).apply(len).append(100).join().np().min()[0]
+  min_spaces = body.apply(lambda s: re.match('^\s*', s)).group(0).apply(len).append(100).wrap().np().min()[0]
   body = body._[min_spaces::1].rstrip()
 
   def maybe_indent_line(line):

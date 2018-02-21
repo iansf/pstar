@@ -2641,7 +2641,7 @@ class PStarTest(unittest.TestCase):
       self.assertEqual(mock_log_fn.call_count, 1)
       mock_log_fn.reset_mock()
 
-      rmx.ungroup(-1).bun.groupby().bam.join().np_().apply(lambda y, x: [qj((x_, np.mean(y_))) for x_, y_ in zip(x, y)], rmx_x)
+      rmx.ungroup(-1).bun.groupby().bam.wrap().np_().apply(lambda y, x: [qj((x_, np.mean(y_))) for x_, y_ in zip(x, y)], rmx_x)
       mock_log_fn.assert_has_calls(
           [
               mock.call(
@@ -2658,23 +2658,23 @@ class PStarTest(unittest.TestCase):
       if sys.version_info[0] < 3:
         (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
          .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
-         .np().mean().qj('means').join().apply(
+         .np().mean().qj('means').wrap().apply(
              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
          )
-         .root()[0].root().apply('__getslice___', 0, 10).qj('bam top 10').join()
-         .root()[0].root().__getslice___(0, 10).qj('bam top 10').join()
-         .root()[0].root().__getslice__(0, 10, pepth=1).qj('bam top 10').join()
+         .root()[0].root().apply('__getslice___', 0, 10).qj('bam top 10').wrap()
+         .root()[0].root().__getslice___(0, 10).qj('bam top 10').wrap()
+         .root()[0].root().__getslice__(0, 10, pepth=1).qj('bam top 10').wrap()
          .root()[0].root().apply(type).qj('bam types')
         )
       else:
         (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
          .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
-         .np().mean().qj('means').join().apply(
+         .np().mean().qj('means').wrap().apply(
              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
          )
-         .root()[0].root().apply('__getitem___', slice(0, 10)).qj('bam top 10').join()
-         .root()[0].root().__getitem___(slice(0, 10)).qj('bam top 10').join()
-         .root()[0].root().__getitem__(slice(0, 10), pepth=1).qj('bam top 10').join()
+         .root()[0].root().apply('__getitem___', slice(0, 10)).qj('bam top 10').wrap()
+         .root()[0].root().__getitem___(slice(0, 10)).qj('bam top 10').wrap()
+         .root()[0].root().__getitem__(slice(0, 10), pepth=1).qj('bam top 10').wrap()
          .root()[0].root().apply(type).qj('bam types')
         )
 
@@ -3705,27 +3705,6 @@ class PStarTest(unittest.TestCase):
              [{'bar': [1, 2, 3]}]])
 
 
-  def test_from_docs_pstar_plist_join(self):
-    foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
-    self.assertTrue(foo.aslist() ==
-            [{'bar': [1, 2, 3]},
-             {'bar': [4, 5, 6]}])
-    arr1 = np.array(foo.bar.pstr().groupby().bar)
-    self.assertTrue(np.all(arr1 ==
-                   np.array([[[1, 2, 3]],
-                             [[4, 5, 6]]])))
-    arr2 = foo.bar.pstr().groupby().bar.np()
-    self.assertTrue(np.all(np.array(arr2.aslist()) ==
-                   np.array([np.array([[1, 2, 3]]),
-                             np.array([[4, 5, 6]])])))
-    arr3 = foo.bar.pstr().groupby().bar.join().np()
-    self.assertTrue(np.all(np.array(arr3.aslist()) ==
-                   np.array([np.array([[[1, 2, 3]],
-                                      [[4, 5, 6]]])])))
-    self.assertTrue(np.any(arr1 != arr2[0]))
-    self.assertTrue(np.all(arr1 == arr3[0]))
-
-
   def test_from_docs_pstar_plist_lfill(self):
     foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     self.assertTrue(foo.aslist() ==
@@ -3892,7 +3871,7 @@ class PStarTest(unittest.TestCase):
              {'bar': 0, 'baz': 5, 'bin': -1, 'foo': 2},
              {'bar': 1, 'baz': 6, 'bin': -1, 'foo': 3},
              {'bar': 0, 'baz': 7, 'bin': -1, 'foo': 4}])
-    self.assertTrue(foos.foo.join().np().sum().aslist() ==
+    self.assertTrue(foos.foo.wrap().np().sum().aslist() ==
             [10])
     by_bar = foos.bar.sortby(reverse=True).groupby()
     baz = by_bar.baz
@@ -4588,6 +4567,27 @@ class PStarTest(unittest.TestCase):
     all_the_same_dict[0].update(foo=1)
     self.assertTrue(all_the_same_dict ==
             [{'foo': 1}, {'foo': 1}, {'foo': 1}])
+
+
+  def test_from_docs_pstar_plist_wrap(self):
+    foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
+    self.assertTrue(foo.aslist() ==
+            [{'bar': [1, 2, 3]},
+             {'bar': [4, 5, 6]}])
+    arr1 = np.array(foo.bar.pstr().groupby().bar)
+    self.assertTrue(np.all(arr1 ==
+                   np.array([[[1, 2, 3]],
+                             [[4, 5, 6]]])))
+    arr2 = foo.bar.pstr().groupby().bar.np()
+    self.assertTrue(np.all(np.array(arr2.aslist()) ==
+                   np.array([np.array([[1, 2, 3]]),
+                             np.array([[4, 5, 6]])])))
+    arr3 = foo.bar.pstr().groupby().bar.wrap().np()
+    self.assertTrue(np.all(np.array(arr3.aslist()) ==
+                   np.array([np.array([[[1, 2, 3]],
+                                      [[4, 5, 6]]])])))
+    self.assertTrue(np.any(arr1 != arr2[0]))
+    self.assertTrue(np.all(arr1 == arr3[0]))
 
 
   def test_from_docs_pstar_plist_zip(self):

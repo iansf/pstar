@@ -2641,7 +2641,7 @@ class PStarTest(unittest.TestCase):
       self.assertEqual(mock_log_fn.call_count, 1)
       mock_log_fn.reset_mock()
 
-      rmx.ungroup(-1).bun.groupby().bam.join().np_().apply(lambda y, x: [qj((x_, np.mean(y_))) for x_, y_ in zip(x, y)], rmx_x)
+      rmx.ungroup(-1).bun.groupby().bam.wrap().np_().apply(lambda y, x: [qj((x_, np.mean(y_))) for x_, y_ in zip(x, y)], rmx_x)
       mock_log_fn.assert_has_calls(
           [
               mock.call(
@@ -2658,23 +2658,23 @@ class PStarTest(unittest.TestCase):
       if sys.version_info[0] < 3:
         (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
          .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
-         .np().mean().qj('means').join().apply(
+         .np().mean().qj('means').wrap().apply(
              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
          )
-         .root()[0].root().apply('__getslice___', 0, 10).qj('bam top 10').join()
-         .root()[0].root().__getslice___(0, 10).qj('bam top 10').join()
-         .root()[0].root().__getslice__(0, 10, pepth=1).qj('bam top 10').join()
+         .root()[0].root().apply('__getslice___', 0, 10).qj('bam top 10').wrap()
+         .root()[0].root().__getslice___(0, 10).qj('bam top 10').wrap()
+         .root()[0].root().__getslice__(0, 10, pepth=1).qj('bam top 10').wrap()
          .root()[0].root().apply(type).qj('bam types')
         )
       else:
         (rmx.ungroup(-1)[fields].sortby().root().bun.groupby()
          .bam.np_().max().sortby_(reverse=True).np().uproot().shape.qj('shape').root()
-         .np().mean().qj('means').join().apply(
+         .np().mean().qj('means').wrap().apply(
              lambda y, x: [qj((x_, y_)) for x_, y_ in zip(x, y)], rmx_x
          )
-         .root()[0].root().apply('__getitem___', slice(0, 10)).qj('bam top 10').join()
-         .root()[0].root().__getitem___(slice(0, 10)).qj('bam top 10').join()
-         .root()[0].root().__getitem__(slice(0, 10), pepth=1).qj('bam top 10').join()
+         .root()[0].root().apply('__getitem___', slice(0, 10)).qj('bam top 10').wrap()
+         .root()[0].root().__getitem___(slice(0, 10)).qj('bam top 10').wrap()
+         .root()[0].root().__getitem__(slice(0, 10), pepth=1).qj('bam top 10').wrap()
          .root()[0].root().apply(type).qj('bam types')
         )
 
