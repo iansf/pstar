@@ -144,7 +144,7 @@ class pdict(dict):
     ```
 
     When indexing with a `list`, the returned `plist` is rooted at a `plist` of
-    `KeyValue` `tuple`s, making it easy to recover the keys that gave the values, and
+    `KeyValue` `namedtuple`s, making it easy to recover the keys that gave the values, and
     allows the `plist` to be turned back into a corresponding `pdict`:
     ```python
     assert (pd[['foo', 'baz']].root().aslist() ==
@@ -1464,6 +1464,8 @@ def _get_thread_chunksize(psplit, obj_len):
 ################################################################################
 class plist(compatible_metaclass(_SyntaxSugar, list)):
   """List where everything is automatically a property that is applied to its elements. Guaranteed to surprise, if not delight.
+
+  TODO
 
   See README.md for a detailed overview of ways plist can be used.
   See tests/pstar_test.py for usage examples ranging from simple to complex.
@@ -3046,7 +3048,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Convert `self` to a `pdict` if there is a natural mapping of keys to values in `self`.
 
     Attempts to treat the contents of `self` as key-value pairs in order to create the `pdict`.
-    If that fails, checks if `self.root()` is a `plist` of `KeyValue` tuples. If so, uses
+    If that fails, checks if `self.root()` is a `plist` of `KeyValue` `namedtuple`s. If so, uses
     `self.root().key` for the keys, and the values in `self` for the values. Otherwise,
     attempts to create a `pdict` pairing values from `self.root()` with values from `self`.
 
