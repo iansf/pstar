@@ -114,7 +114,8 @@ def child_item(symbol, parent_name, base_depth):
 
 
 def _get_children(symbol, base_depth):
-  return '\n\n'.join(symbols[(symbols.peys() != symbol.name).startswith(symbol.name + '.').filter()].apply(child_item, symbol.name, base_depth))
+  key_fn = lambda x: x.replace('__init__', '0__init__')  # Move __init__ functions to the top of the list of children.
+  return '\n\n'.join(symbols[(symbols.peys() != symbol.name).startswith(symbol.name + '.').filter().sortby(key=key_fn)].apply(child_item, symbol.name, base_depth))
 
 
 def children(symbol):

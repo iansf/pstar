@@ -37,13 +37,13 @@ Setting with a `list` subscript also works, using a single element or a matching
 
 ## Children:
 
-### [`pstar.pdict.__getitem__(self, key)`](./pstar_pdict___getitem__.md)
-
-Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
-
 ### [`pstar.pdict.__init__(self, *a, **kw)`](./pstar_pdict___init__.md)
 
 Initialize [`pdict`](./pstar_pdict.md).
+
+### [`pstar.pdict.__getitem__(self, key)`](./pstar_pdict___getitem__.md)
+
+Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
 
 ### [`pstar.pdict.__setitem__(self, key, value)`](./pstar_pdict___setitem__.md)
 

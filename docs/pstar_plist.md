@@ -193,6 +193,10 @@ See [`__call__`](./pstar_plist___call__.md), [`apply`](./pstar_plist_apply.md), 
 
 ## Children:
 
+### [`pstar.plist.__init__(self, *args, **kwargs)`](./pstar_plist___init__.md)
+
+Constructs plist.
+
 ### [`pstar.plist._(self)`](./pstar_plist__.md)
 
 Causes the next call to `self` to be performed as deep as possible in the [`plist`](./pstar_plist.md).
@@ -240,10 +244,6 @@ Returns a new [`plist`](./pstar_plist.md) using a variety of indexing styles.
 ### [`pstar.plist.__getslice__(self, i, j)`](./pstar_plist___getslice__.md)
 
 Delegates to [`__getitem__`](./pstar_plist___getitem__.md) whenever possible. For compatibility with python 2.7.
-
-### [`pstar.plist.__init__(self, *args, **kwargs)`](./pstar_plist___init__.md)
-
-Constructs plist.
 
 ### [`pstar.plist.__setattr__(self, name, val)`](./pstar_plist___setattr__.md)
 

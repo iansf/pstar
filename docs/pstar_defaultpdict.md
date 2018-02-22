@@ -53,6 +53,10 @@ Nested `defaultpdict`s make nice lightweight objects:
 
 ## Children:
 
+### [`pstar.defaultpdict.__init__(self, *a, **kw)`](./pstar_defaultpdict___init__.md)
+
+Initialize [`defaultpdict`](./pstar_defaultpdict.md).
+
 ### [`pstar.defaultpdict.__getattr__(self, name)`](./pstar_defaultpdict___getattr__.md)
 
 Override `getattr`. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`.
@@ -60,10 +64,6 @@ Override `getattr`. If `name` starts with '_', attempts to find that attribute o
 ### [`pstar.defaultpdict.__getitem__(self, key)`](./pstar_defaultpdict___getitem__.md)
 
 Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
-
-### [`pstar.defaultpdict.__init__(self, *a, **kw)`](./pstar_defaultpdict___init__.md)
-
-Initialize [`defaultpdict`](./pstar_defaultpdict.md).
 
 ### [`pstar.defaultpdict.__setattr__(self, name, value)`](./pstar_defaultpdict___setattr__.md)
 

@@ -545,6 +545,10 @@ ____
 
 `defaultdict` subclass where everything is automatically a property.
 
+#### [`pstar.defaultpdict.__init__(self, *a, **kw)`](./pstar_defaultpdict___init__.md)
+
+Initialize [`defaultpdict`](./pstar_defaultpdict.md).
+
 #### [`pstar.defaultpdict.__getattr__(self, name)`](./pstar_defaultpdict___getattr__.md)
 
 Override `getattr`. If `name` starts with '_', attempts to find that attribute on `self`. Otherwise, looks for a field of that name in `self`.
@@ -552,10 +556,6 @@ Override `getattr`. If `name` starts with '_', attempts to find that attribute o
 #### [`pstar.defaultpdict.__getitem__(self, key)`](./pstar_defaultpdict___getitem__.md)
 
 Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
-
-#### [`pstar.defaultpdict.__init__(self, *a, **kw)`](./pstar_defaultpdict___init__.md)
-
-Initialize [`defaultpdict`](./pstar_defaultpdict.md).
 
 #### [`pstar.defaultpdict.__setattr__(self, name, value)`](./pstar_defaultpdict___setattr__.md)
 
@@ -603,13 +603,13 @@ ____
 
 `dict` subclass where everything is automatically a property.
 
-#### [`pstar.pdict.__getitem__(self, key)`](./pstar_pdict___getitem__.md)
-
-Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
-
 #### [`pstar.pdict.__init__(self, *a, **kw)`](./pstar_pdict___init__.md)
 
 Initialize [`pdict`](./pstar_pdict.md).
+
+#### [`pstar.pdict.__getitem__(self, key)`](./pstar_pdict___getitem__.md)
+
+Subscript operation. Keys can be any normal `dict` keys or `list`s of such keys.
 
 #### [`pstar.pdict.__setitem__(self, key, value)`](./pstar_pdict___setitem__.md)
 
@@ -652,6 +652,10 @@ ____
 ### [`pstar.plist(list)`](./pstar_plist.md)
 
 `list` subclass for powerful, concise data processing.
+
+#### [`pstar.plist.__init__(self, *args, **kwargs)`](./pstar_plist___init__.md)
+
+Constructs plist.
 
 #### [`pstar.plist._(self)`](./pstar_plist__.md)
 
@@ -700,10 +704,6 @@ Returns a new [`plist`](./pstar_plist.md) using a variety of indexing styles.
 #### [`pstar.plist.__getslice__(self, i, j)`](./pstar_plist___getslice__.md)
 
 Delegates to [`__getitem__`](./pstar_plist___getitem__.md) whenever possible. For compatibility with python 2.7.
-
-#### [`pstar.plist.__init__(self, *args, **kwargs)`](./pstar_plist___init__.md)
-
-Constructs plist.
 
 #### [`pstar.plist.__setattr__(self, name, val)`](./pstar_plist___setattr__.md)
 
