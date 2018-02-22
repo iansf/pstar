@@ -133,16 +133,16 @@ See [build_docs.py](../build_docs.py) for a more extensive example of using `pst
 
 `pstar` makes writing and debugging data-processing code easy and concise.
 
-### `pdict` and `defaultpdict`:
+### [`pdict`](./pstar_pdict.md) and [`defaultpdict`](./pstar_defaultpdict.md):
 
-`pdict` and `defaultpdict` are drop-in replacements for `dict` and `defaultdict`, but
+[`pdict`](./pstar_pdict.md) and [`defaultpdict`](./pstar_defaultpdict.md) are drop-in replacements for `dict` and `defaultdict`, but
 provide substantial usability improvements, including dot notation for field access,
-chaining from calls to `update`, and easy methods to modify their keys and values.
+chaining from calls to [`update`](./pstar_defaultpdict_update.md), and easy methods to modify their keys and values.
 
-### `plist`:
+### [`plist`](./pstar_plist.md):
 
-`plist` is close to a drop-in replacement for `list`. It is also close to a drop-in
-replacement for whatever values it contains. This is the core trick of `plist`:
+[`plist`](./pstar_plist.md) is close to a drop-in replacement for `list`. It is also close to a drop-in
+replacement for whatever values it contains. This is the core trick of [`plist`](./pstar_plist.md):
 write your data processing code like you are working with one datum. The closer your
 code gets to that ideal, the easier it is to write, debug, and understand.
 
@@ -160,10 +160,10 @@ straightforward transformation of data from one relevant state to another.
 
 During data processing, it is easy to spend a great deal of time debugging while
 getting the data into the desired shape or format. Most debugging starts with
-log statements. `pstar` incorporates in-chain logging with `qj` so that code can
+log statements. `pstar` incorporates in-chain logging with [`qj`](./pstar_defaultpdict_qj.md) so that code can
 be minimally modified to add and remove logging.
 
-`qj` is a logger built for debugging, and has many useful features that are
+[`qj`](./pstar_defaultpdict_qj.md) is a logger built for debugging, and has many useful features that are
 available directly in `pstar`, including dropping into the debugger at any
 point in your code:
 ```python
@@ -187,8 +187,8 @@ documentation is built. Therefore, every block of code in a page of documentatio
 is a self-contained, runnable example that you can copy into a
 python terminal and run immediately.
 
-Note that because many of the tests check the contents of `plist`s, and
-`plist`s do filtering when compared, many of the tests look like:
+Note that because many of the tests check the contents of [`plist`](./pstar_plist.md)s, and
+[`plist`](./pstar_plist.md)s do filtering when compared, many of the tests look like:
 `assert (foos.aslist() == [...])` in order to bypass the filtering and just run
 an equality check on two lists. Under normal use, you do not need to call
 `plist.aslist()` very often.
@@ -221,7 +221,7 @@ for d in l:
 print('output: ', output)
 ```
 
-Worse than the extra length and complexity, the non-`plist`
+Worse than the extra length and complexity, the non-[`plist`](./pstar_plist.md)
 code has a bug: if the values for `bar` are ever something other than 0 or 1,
 the output list will fail. The `pstar` version of the code is completely robust
 to that kind of bug. The only assumptions about the data are that it is provided

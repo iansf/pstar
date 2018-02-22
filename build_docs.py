@@ -96,7 +96,7 @@ def full_signature(symbol):
 def _make_links(text_md, exclude=''):
   prefer = '.'.join(exclude.split('.')[:2])  # Prefer referencing objects from the same class.
   key_fn = lambda x: str(x.count('.')) + ('a' + x if x.startswith(prefer) else x)  # Sort by shortest depth symbols, then by symbols from the same class.
-  return (symbols.peys() != exclude).sortby(key=key_fn).split('.')._[-1].puniq().root().reduce(lambda s, x: s.replace('`%s`' % x.split('.')[-1], '[`%s`](%s)' % (x.split('.')[-1], url_for(x))), text_md)[0]
+  return (symbols.peys() != exclude).sortby(key=key_fn).split('.')._[-1].puniq().root().reduce(lambda s, x: re.sub(r'(^|[^[])`%s`' % x.split('.')[-1], r'\1[`%s`](%s)' % (x.split('.')[-1], url_for(x)), s), text_md)[0]
 
 
 def short_doc(symbol):
@@ -246,6 +246,7 @@ def symbol_for(obj, name):
 
 
 def process_template(template, symbol):
+  template = _make_links(template, symbol.name)
   sections = plist(re.findall('<<([^\s]+)>>', template))
   return ('<<' + sections + '>>').reduce(
       lambda s, l, section: s.replace(l, globals()[section](symbol)),
