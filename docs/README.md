@@ -160,10 +160,10 @@ straightforward transformation of data from one relevant state to another.
 
 During data processing, it is easy to spend a great deal of time debugging while
 getting the data into the desired shape or format. Most debugging starts with
-log statements. `pstar` incorporates in-chain logging with [`qj`](./pstar_defaultpdict_qj.md) so that code can
+log statements. `pstar` incorporates in-chain logging with `qj` so that code can
 be minimally modified to add and remove logging.
 
-[`qj`](./pstar_defaultpdict_qj.md) is a logger built for debugging, and has many useful features that are
+`qj` is a logger built for debugging, and has many useful features that are
 available directly in `pstar`, including dropping into the debugger at any
 point in your code:
 ```python

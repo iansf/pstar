@@ -93,18 +93,18 @@ def full_signature(symbol):
   return '# %s' % bread_crumbs(symbol)
 
 
-def _make_links(text_md, exclude=''):
-  prefer = '.'.join(exclude.split('.')[:2])  # Prefer referencing objects from the same class.
+def _make_links(text_md, exclude):
+  prefer = exclude.split('.')._[:2:1].apply('.'.join)[0]  # Prefer referencing objects from the same class.
   key_fn = lambda x: str(x.count('.')) + ('a' + x if x.startswith(prefer) else x)  # Sort by shortest depth symbols, then by symbols from the same class.
   return (symbols.peys() != exclude).sortby(key=key_fn).split('.')._[-1].puniq().root().reduce(lambda s, x: re.sub(r'(^|[^[])`%s`' % x.split('.')[-1], r'\1[`%s`](%s)' % (x.split('.')[-1], url_for(x)), s), text_md)[0]
 
 
 def short_doc(symbol):
-  return _make_links(symbol.short_doc, symbol.name)
+  return _make_links(symbol.short_doc, plist[symbol.name,])
 
 
 def doc(symbol):
-  return _make_links(symbol.doc, symbol.name)
+  return _make_links(symbol.doc, plist[symbol.name,])
 
 
 def child_item(symbol, parent_name, base_depth):
@@ -252,7 +252,7 @@ def process_template(template, symbol):
   return ('<<' + sections + '>>').reduce(
       lambda s, l, section: s.replace(l, globals()[section](symbol)),
       template,
-      sections).apply(_make_links, symbol.name)[0]
+      sections).apply(_make_links, plist[symbol.name, 'pstar.defaultpdict.qj', 'pstar.pdict.qj', 'pstar.plist.qj', 'pstar.pset.qj'])[0]
 
 
 def collect_docs_and_tests(obj, base_name, full_base_name):
