@@ -239,7 +239,7 @@ Returns a new [`plist`](./pstar_plist.md) using a variety of indexing styles.
 
 ### [`pstar.plist.__getslice__(self, i, j)`](./pstar_plist___getslice__.md)
 
-Delegates to [`__getitem__`](./pstar_defaultpdict___getitem__.md) whenever possible. For compatibility with python 2.7.
+Delegates to [`__getitem__`](./pstar_plist___getitem__.md) whenever possible. For compatibility with python 2.7.
 
 ### [`pstar.plist.__init__(self, *args, **kwargs)`](./pstar_plist___init__.md)
 
@@ -255,7 +255,7 @@ Sets items of `self` using a variety of indexing styles.
 
 ### [`pstar.plist.__setslice__(self, i, j, sequence)`](./pstar_plist___setslice__.md)
 
-Delegates to [`__setitem__`](./pstar_defaultpdict___setitem__.md) whenever possible. For compatibility with python 2.7.
+Delegates to [`__setitem__`](./pstar_plist___setitem__.md) whenever possible. For compatibility with python 2.7.
 
 ### [`pstar.plist.all(self, *args, **kwargs)`](./pstar_plist_all.md)
 
@@ -279,7 +279,7 @@ Convert `self` to a [`pdict`](./pstar_pdict.md) if there is a natural mapping of
 
 ### [`pstar.plist.aspset(self)`](./pstar_plist_aspset.md)
 
-Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to [`pset`](./pstar_plist_pset.md)s, inclusive.
+Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to [`pset`](./pstar_pset.md)s, inclusive.
 
 ### [`pstar.plist.astuple(self)`](./pstar_plist_astuple.md)
 

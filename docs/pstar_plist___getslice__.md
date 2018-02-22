@@ -1,6 +1,6 @@
 # [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__getslice__(self, i, j)`
 
-Delegates to [`__getitem__`](./pstar_defaultpdict___getitem__.md) whenever possible. For compatibility with python 2.7.
+Delegates to [`__getitem__`](./pstar_plist___getitem__.md) whenever possible. For compatibility with python 2.7.
 
 Avoid using `__getslice__` whenever possible in python 2.7, as the bytecode compiler
 assumes that the slice is for the given object on the stack, and modifies negative

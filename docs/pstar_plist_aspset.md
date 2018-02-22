@@ -1,6 +1,6 @@
 # [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`aspset(self)`
 
-Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to [`pset`](./pstar_plist_pset.md)s, inclusive.
+Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to [`pset`](./pstar_pset.md)s, inclusive.
 
 All values must be hashable for the conversion to succeed.
 
@@ -15,7 +15,7 @@ assert ([type(x) for x in by_bar.bar.aspset()] == [pset, pset])
 
 **Returns:**
 
->    [`pset`](./pstar_plist_pset.md) with the same structure and contents as `self`.
+>    [`pset`](./pstar_pset.md) with the same structure and contents as `self`.
 
 
 

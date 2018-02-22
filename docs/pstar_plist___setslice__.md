@@ -1,6 +1,6 @@
 # [`pstar`](./pstar.md).[`plist`](./pstar_plist.md).`__setslice__(self, i, j, sequence)`
 
-Delegates to [`__setitem__`](./pstar_defaultpdict___setitem__.md) whenever possible. For compatibility with python 2.7.
+Delegates to [`__setitem__`](./pstar_plist___setitem__.md) whenever possible. For compatibility with python 2.7.
 
 Avoid using `__setslice__` whenever possible in python 2.7, as the bytecode compiler
 assumes that the slice is for the given object on the stack, and modifies negative
