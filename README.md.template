@@ -126,7 +126,12 @@ whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj(
 #   qj: module_level_code: whoa! <2>: [{'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}, {'bar': 'ii ii', 'baz': 'three three', 'bin': '44 44', 'foo': 'one one'}]
 ```
 
+### Larger Example -- Documentation Generation:
+
 See [build_docs.py](../build_docs.py) for a more extensive example of using `pstar`.
+That code generates all of the documentation markdown files for `pstar` using a simple
+templating system. It also extracts tests from the code doc strings and adds them to
+the test suite.
 
 
 ## Philosophy:
@@ -256,24 +261,24 @@ from pstar import defaultpdict, pdict, plist, pset
 
 ## Testing:
 
-pstar has extensive tests. You can run them with nosetests:
+`pstar` has extensive tests that all pass on python 2.7 and 3.6. You can run them with nosetests:
 ```bash
 $ nosetests
-........................................................................................
+..........................................................................................................................................................................................................................SS
 ----------------------------------------------------------------------
-Ran 88 tests in 1.341s
+Ran 220 tests in 1.453s
 
-OK
+OK (skipped=2)
 ```
 
 Or you can run them directly:
 ```bash
-$ python pstar/tests/pstar_test.py
-........................................................................................
+$ python3 pstar/tests/pstar_test.py
+..........................................................................................................................................................................................................................ss
 ----------------------------------------------------------------------
-Ran 88 tests in 1.037s
+Ran 220 tests in 0.693s
 
-OK
+OK (skipped=2)
 ```
 
 
@@ -286,9 +291,9 @@ merchantability, or fitness for a particular purpose.
 
 ## Contributing:
 
-See how to [contribute](./CONTRIBUTING.md).
+See how to [contribute](../CONTRIBUTING.md).
 
 
 ## License:
 
-[Apache 2.0](./LICENSE).
+[Apache 2.0](../LICENSE).
