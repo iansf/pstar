@@ -246,12 +246,11 @@ def symbol_for(obj, name):
 
 
 def process_template(template, symbol):
-  template = _make_links(template, symbol.name)
   sections = plist(re.findall('<<([^\s]+)>>', template))
   return ('<<' + sections + '>>').reduce(
       lambda s, l, section: s.replace(l, globals()[section](symbol)),
       template,
-      sections)[0]
+      sections).apply(_make_links, symbol.name)[0]
 
 
 def collect_docs_and_tests(obj, base_name, full_base_name):

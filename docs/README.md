@@ -291,7 +291,7 @@ Setting with a `list` subscript also works, using a single element or a matching
   assert ('baz' in p.keys())
 ```
 
-Nested `defaultpdict`s make nice lightweight objects:
+Nested [`defaultpdict`](./pstar_defaultpdict.md)s make nice lightweight objects:
 ```python
   p = defaultpdict(lambda: defaultpdict(list))
   p.foo = 1
@@ -343,8 +343,8 @@ Setting with a `list` subscript also works, using a single element or a matching
 
 **Homogeneous access:**
 
-`plist` is the natural extension of object-orientation to homogeneous lists of
-arbitrary objects. With `plist`, you can treat a list of objects of the same
+[`plist`](./pstar_plist.md) is the natural extension of object-orientation to homogeneous lists of
+arbitrary objects. With [`plist`](./pstar_plist.md), you can treat a list of objects of the same
 type as if they are a single object of that type, in many (but not all)
 circumstances.
 
@@ -356,13 +356,13 @@ assert ((pl + ' -> ' + pl.upper()).aslist() ==
 
 **Indexing:**
 
-Indexing `plist`s is meant to be both powerful and natural, while accounting
-the fact that the elements of the `plist` may need to be indexed as well.
+Indexing [`plist`](./pstar_plist.md)s is meant to be both powerful and natural, while accounting
+the fact that the elements of the [`plist`](./pstar_plist.md) may need to be indexed as well.
 
 See `plist.__getitem__`, `plist.__setitem__`, and `plist.__delitem__` for
 more details.
 
-Indexing into the `plist` itself:
+Indexing into the [`plist`](./pstar_plist.md) itself:
 ```python
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 
@@ -379,7 +379,7 @@ assert (foos[[0, 2]].aslist() ==
         [dict(foo=0, bar=0), dict(foo=2, bar=0)])
 ```
 
-Indexing into the elements of the `plist`:
+Indexing into the elements of the [`plist`](./pstar_plist.md):
 ```python
 # Basic scalar indexing:
 assert (foos['foo'].aslist() ==
@@ -394,8 +394,8 @@ assert (foos[['foo', 'bar', 'bar']].aslist() ==
         [0, 1, 0])
 ```
 
-Indexing into the elementes of the `plist` when the elements are indexed by
-`int`s, `slice`s, or other means that confict with `plist` indexing:
+Indexing into the elementes of the [`plist`](./pstar_plist.md) when the elements are indexed by
+`int`s, `slice`s, or other means that confict with [`plist`](./pstar_plist.md) indexing:
 ```python
 pl = plist[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
@@ -415,12 +415,12 @@ assert (pl._[[True, False, True]].apply(list).aslist() ==
 
 **[`root`](./pstar_plist_root.md) and [`uproot`](./pstar_plist_uproot.md):**
 
-`plist`s all have a root object. For newly created `plist`s, the root is `self`,
-but as computations are performed on the `plist`, the root of the resulting
-`plist`s almost always remain the original `plist`:
+[`plist`](./pstar_plist.md)s all have a root object. For newly created [`plist`](./pstar_plist.md)s, the root is `self`,
+but as computations are performed on the [`plist`](./pstar_plist.md), the root of the resulting
+[`plist`](./pstar_plist.md)s almost always remain the original [`plist`](./pstar_plist.md):
 ```python
 pl = plist[1, 2, 3]
-# `plist` operations don't modify the original (except where natural)!
+# [`plist`](./pstar_plist.md) operations don't modify the original (except where natural)!
 assert ((pl + 5) is not pl)
 assert ((pl + 5).root() is pl)
 ```
@@ -438,12 +438,12 @@ See [`root`](./pstar_plist_root.md) and [`uproot`](./pstar_plist_uproot.md) for 
 
 **Filtering:**
 
-`plist` overrides comparison operations to provide filtering. This is reasonable,
-since an empty `plist` is a `False` value, just like an empty `list`, so a filter
+[`plist`](./pstar_plist.md) overrides comparison operations to provide filtering. This is reasonable,
+since an empty [`plist`](./pstar_plist.md) is a `False` value, just like an empty `list`, so a filter
 that filters everything is equivalent to the comparison failing.
 
-Filtering always returns the root of the `plist`, which allows you to filter a
-`plist` on arbitrary values computed from the root, and then proceed with your
+Filtering always returns the root of the [`plist`](./pstar_plist.md), which allows you to filter a
+[`plist`](./pstar_plist.md) on arbitrary values computed from the root, and then proceed with your
 computation on the (filtered) original data.
 
 See [`comparator`](./pstar_plist_comparator.md) and [`filter`](./pstar_plist_filter.md) for more details.
@@ -452,7 +452,7 @@ See [`comparator`](./pstar_plist_comparator.md) and [`filter`](./pstar_plist_fil
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 # Filtering on a property:
 zero_bars = foos.bar == 0
-# The result is a `plist` of the original [`pdict`](./pstar_pdict.md)s, correctly filtered:
+# The result is a [`plist`](./pstar_plist.md) of the original [`pdict`](./pstar_pdict.md)s, correctly filtered:
 assert (zero_bars.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0}])
@@ -465,15 +465,15 @@ assert (nonzero_bars.aslist() ==
 
 **Grouping and Sorting:**
 
-Just as with filtering, you can group and sort a `plist` on any arbitrary
-value computed from the `plist`.
+Just as with filtering, you can group and sort a [`plist`](./pstar_plist.md) on any arbitrary
+value computed from the [`plist`](./pstar_plist.md).
 
 This shows a basic grouping by a property of the data. Note that [`groupby`](./pstar_plist_groupby.md)
 returns the root, just like filtering:
 ```python
 foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
 # Note that the `bar == 1` group comes before the `bar == 0` group. The ordering
-# is determined by the sort order of the `plist`.
+# is determined by the sort order of the [`plist`](./pstar_plist.md).
 assert (foos.bar.groupby().aslist() ==
         [[{'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}], [{'bar': 0, 'foo': 1}]])
 # Note that foos is unchanged:
@@ -481,8 +481,8 @@ assert (foos.aslist() ==
         [{'bar': 1, 'foo': 0}, {'bar': 0, 'foo': 1}, {'bar': 1, 'foo': 2}])
 ```
 
-In contrast, sorting a `plist` modifies the order of both the current `plist` and
-its root, but returns the current `plist` instead of the root:
+In contrast, sorting a [`plist`](./pstar_plist.md) modifies the order of both the current [`plist`](./pstar_plist.md) and
+its root, but returns the current [`plist`](./pstar_plist.md) instead of the root:
 ```python
 assert (foos.bar.sortby().aslist() ==
         [0, 1, 1])
@@ -492,7 +492,7 @@ assert (foos.aslist() ==
 
 This distinction between the behavios of [`groupby`](./pstar_plist_groupby.md) and [`sortby`](./pstar_plist_sortby.md) permits natural
 chaining of the two when sorted groups are desired. It also ensures that
-`plist`s computed from the same root will be ordered in the same way.
+[`plist`](./pstar_plist.md)s computed from the same root will be ordered in the same way.
 ```python
 foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
 assert (foos.bar.sortby().groupby().aslist() ==
@@ -503,19 +503,19 @@ See [`groupby`](./pstar_plist_groupby.md) and [`sortby`](./pstar_plist_sortby.md
 
 **Function Application and Multiple Arguments:**
 
-The most prominent case where you can't treat a `plist` as a single object is
+The most prominent case where you can't treat a [`plist`](./pstar_plist.md) as a single object is
 when you need to pass a single object to some function that isn't a propert of
-the elements of the `plist`. In this case, just use [`apply`](./pstar_plist_apply.md):
+the elements of the [`plist`](./pstar_plist.md). In this case, just use [`apply`](./pstar_plist_apply.md):
 ```python
 pl = plist['abc', 'def', 'ghi']
 assert (pl.apply('foo: {}'.format).aslist() ==
         ['foo: abc', 'foo: def', 'foo: ghi'])
 ```
 
-Where [`apply`](./pstar_plist_apply.md) shines (and all calls to `plist` element functions) is when dealing
+Where [`apply`](./pstar_plist_apply.md) shines (and all calls to [`plist`](./pstar_plist.md) element functions) is when dealing
 with multi-argument functions. In this case, you will often find that you want to
-call the function with parallel values from parallel `plist`s. That is easy and
-natural to do, just like calling the function with corresponding non-`plist`
+call the function with parallel values from parallel [`plist`](./pstar_plist.md)s. That is easy and
+natural to do, just like calling the function with corresponding non-[`plist`](./pstar_plist.md)
 values:
 ```python
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
