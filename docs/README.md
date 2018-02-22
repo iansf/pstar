@@ -283,7 +283,7 @@ Setting with a `list` subscript also works, using a single element or a matching
   assert (p[['foo', 'bar']].aslist() == [1, 2])
 ```
 
-`defaultpdict.update()` returns `self`, rather than `None`, to support chaining:
+[`update`](./pstar_defaultpdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
   p = defaultpdict(foo=1, bar=2)
   p.update(bar=3).baz = 4
@@ -329,7 +329,7 @@ Setting with a `list` subscript also works, using a single element or a matching
   assert (p[['foo', 'bar']].aslist() == [1, 2])
 ```
 
-`pdict.update()` returns `self`, rather than `None`, to support chaining:
+[`update`](./pstar_pdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
   p = pdict(foo=1, bar=2)
   p.update(bar=3).baz = 4
@@ -359,8 +359,7 @@ assert ((pl + ' -> ' + pl.upper()).aslist() ==
 Indexing [`plist`](./pstar_plist.md)s is meant to be both powerful and natural, while accounting
 the fact that the elements of the [`plist`](./pstar_plist.md) may need to be indexed as well.
 
-See `plist.__getitem__`, `plist.__setitem__`, and `plist.__delitem__` for
-more details.
+See [`__getitem__`](./pstar_plist___getitem__.md), [`__setitem__`](./pstar_plist___setitem__.md), and [`__delitem__`](./pstar_plist___delitem__.md) for more details.
 
 Indexing into the [`plist`](./pstar_plist.md) itself:
 ```python

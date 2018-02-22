@@ -40,4 +40,4 @@ assert (by_bar.foo.all_(lambda x: x > 0).nonempty().root().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L3460-L3505)
+## [Source](../pstar/pstar.py#L3459-L3504)

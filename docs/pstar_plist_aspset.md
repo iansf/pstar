@@ -19,4 +19,4 @@ assert ([type(x) for x in by_bar.bar.aspset()] == [pset, pset])
 
 
 
-## [Source](../pstar/pstar.py#L3036-L3058)
+## [Source](../pstar/pstar.py#L3035-L3057)

@@ -3,7 +3,7 @@
 Recursively attempt to get the attribute `name`.
 
 Handles getting attributes from `self`, rather than from elements of `self`,
-which is handled in `plist.__getattribute__`. The only exception is for
+which is handled in [`__getattribute__`](./pstar_plist___getattribute__.md). The only exception is for
 requests to method names that are present on both [`plist`](./pstar_plist.md) and its leaf
 elements, for example if the leaves are all `list`s, and a sufficiently high
 `_pepth` value, or `_pepth < 0`, in which case the final calls will be
@@ -31,4 +31,4 @@ trailing '_' in the name that were detected by [`__getattribute__`](./pstar_plis
 
 
 
-## [Source](../pstar/pstar.py#L1801-L1844)
+## [Source](../pstar/pstar.py#L1800-L1843)

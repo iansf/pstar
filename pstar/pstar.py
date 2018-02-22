@@ -104,7 +104,7 @@ class pdict(dict):
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  `pdict.update()` returns `self`, rather than `None`, to support chaining:
+  `update` returns `self`, rather than `None`, to support chaining:
   ```python
     p = pdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
@@ -459,7 +459,7 @@ class defaultpdict(defaultdict):
     assert (p[['foo', 'bar']].aslist() == [1, 2])
   ```
 
-  `defaultpdict.update()` returns `self`, rather than `None`, to support chaining:
+  `update` returns `self`, rather than `None`, to support chaining:
   ```python
     p = defaultpdict(foo=1, bar=2)
     p.update(bar=3).baz = 4
@@ -536,13 +536,13 @@ class defaultpdict(defaultdict):
     ```
 
     Args:
-      name: Any `hash`able value or list of `hash`able values, as in `defaultpdict.__setitem__`,
+      name: Any `hash`able value or list of `hash`able values, as in `__setitem__`,
             but generally just a valid identifier string provided by the compiler.
       value: Any value, or `plist` of values of the same length as the corresponding list in
              `name`.
 
     Returns:
-      `self` to allow chaining through direct calls to `defaultpdict.__setattr__`.
+      `self` to allow chaining through direct calls to `defaultpdict.__setattr__(...)`.
     """
     self[name] = value
     return self
@@ -604,7 +604,7 @@ class defaultpdict(defaultdict):
              is a `list`.
 
     Returns:
-      `self`, to allow chaining with direct calls to `defaultpdict.__setitem__`.
+      `self`, to allow chaining with direct calls to `defaultpdict.__setitem__(...)`.
     """
     if isinstance(key, list):
       value = _ensure_len(len(key), value)
@@ -1483,8 +1483,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   Indexing `plist`s is meant to be both powerful and natural, while accounting
   the fact that the elements of the `plist` may need to be indexed as well.
 
-  See `plist.__getitem__`, `plist.__setitem__`, and `plist.__delitem__` for
-  more details.
+  See `__getitem__`, `__setitem__`, and `__delitem__` for more details.
 
   Indexing into the `plist` itself:
   ```python
@@ -1802,7 +1801,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     """Recursively attempt to get the attribute `name`.
 
     Handles getting attributes from `self`, rather than from elements of `self`,
-    which is handled in `plist.__getattribute__`. The only exception is for
+    which is handled in `__getattribute__`. The only exception is for
     requests to method names that are present on both `plist` and its leaf
     elements, for example if the leaves are all `list`s, and a sufficiently high
     `_pepth` value, or `_pepth < 0`, in which case the final calls will be

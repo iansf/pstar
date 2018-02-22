@@ -13,7 +13,7 @@ assert (pd.floo == pd['floo'] == 4.0)
 
 **Args:**
 
->    **`name`**: Any `hash`able value or list of `hash`able values, as in `defaultpdict.__setitem__`,
+>    **`name`**: Any `hash`able value or list of `hash`able values, as in [`__setitem__`](./pstar_defaultpdict___setitem__.md),
 >          but generally just a valid identifier string provided by the compiler.
 
 >    **`value`**: Any value, or [`plist`](./pstar_plist.md) of values of the same length as the corresponding list in
@@ -21,7 +21,7 @@ assert (pd.floo == pd['floo'] == 4.0)
 
 **Returns:**
 
->    `self` to allow chaining through direct calls to `defaultpdict.__setattr__`.
+>    `self` to allow chaining through direct calls to `defaultpdict.__setattr__(...)`.
 
 
 

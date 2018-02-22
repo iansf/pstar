@@ -20,8 +20,7 @@ assert ((pl + ' -> ' + pl.upper()).aslist() ==
 Indexing `plist`s is meant to be both powerful and natural, while accounting
 the fact that the elements of the `plist` may need to be indexed as well.
 
-See `plist.__getitem__`, `plist.__setitem__`, and `plist.__delitem__` for
-more details.
+See [`__getitem__`](./pstar_plist___getitem__.md), [`__setitem__`](./pstar_plist___setitem__.md), and [`__delitem__`](./pstar_plist___delitem__.md) for more details.
 
 Indexing into the `plist` itself:
 ```python
@@ -433,4 +432,4 @@ Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
 
 Zips `self` with `others`, recursively.
 
-## [Source](../pstar/pstar.py#L1465-L5267)
+## [Source](../pstar/pstar.py#L1465-L5266)

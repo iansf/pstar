@@ -64,4 +64,4 @@ assert (by_bar.foo.pstr().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L1708-L1797)
+## [Source](../pstar/pstar.py#L1707-L1796)

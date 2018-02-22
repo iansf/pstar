@@ -60,4 +60,4 @@ assert (by_bar.baz.aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L2010-L2075)
+## [Source](../pstar/pstar.py#L2009-L2074)

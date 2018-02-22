@@ -27,7 +27,7 @@ assert (pd.baz == pd['baz'] == 'three')
 
 **Returns:**
 
->    `self`, to allow chaining with direct calls to `defaultpdict.__setitem__`.
+>    `self`, to allow chaining with direct calls to `defaultpdict.__setitem__(...)`.
 
 
 

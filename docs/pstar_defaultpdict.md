@@ -34,7 +34,7 @@ Setting with a `list` subscript also works, using a single element or a matching
   assert (p[['foo', 'bar']].aslist() == [1, 2])
 ```
 
-`defaultpdict.update()` returns `self`, rather than `None`, to support chaining:
+[`update`](./pstar_defaultpdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
   p = defaultpdict(foo=1, bar=2)
   p.update(bar=3).baz = 4
