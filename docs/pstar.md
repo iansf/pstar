@@ -7,7 +7,7 @@ Import like this:
 from pstar import defaultpdict, pdict, plist, pset
 ```
 
-## Children:
+## Classes:
 
 ____
 

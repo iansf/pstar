@@ -191,7 +191,7 @@ assert (('foo: ' + foos.foo.pstr() + ' bar: {} baz: {baz}').format(foos.bar, baz
 
 See [`__call__`](./pstar_plist___call__.md), [`apply`](./pstar_plist_apply.md), and [`reduce`](./pstar_plist_reduce.md) for more details.
 
-## Children:
+## Methods and Properties:
 
 ### [`pstar.plist.__init__(self, *args, **kwargs)`](./pstar_plist___init__.md)
 

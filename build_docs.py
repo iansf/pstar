@@ -120,7 +120,8 @@ def _get_children(symbol, base_depth):
 
 def children(symbol):
   children = _get_children(symbol, base_depth=2)
-  return '## Children:\n\n%s' % children if children else ''
+  section_title = 'Classes' if symbol.name.count('.') == 0 else 'Methods and Properties'
+  return '## %s:\n\n%s' % (section_title, children) if children else ''
 
 
 def source(symbol):

@@ -35,7 +35,7 @@ Setting with a `list` subscript also works, using a single element or a matching
   assert ('baz' in p.keys())
 ```
 
-## Children:
+## Methods and Properties:
 
 ### [`pstar.pdict.__init__(self, *a, **kw)`](./pstar_pdict___init__.md)
 

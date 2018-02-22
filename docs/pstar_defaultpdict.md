@@ -51,7 +51,7 @@ Nested `defaultpdict`s make nice lightweight objects:
   assert (p.stats.bar == [2])
 ```
 
-## Children:
+## Methods and Properties:
 
 ### [`pstar.defaultpdict.__init__(self, *a, **kw)`](./pstar_defaultpdict___init__.md)
 
