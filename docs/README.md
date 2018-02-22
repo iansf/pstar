@@ -267,7 +267,7 @@ individual values:
   assert (p.foo == 0)
 ```
 
-`list` subscripts also work and return a `plist` of the corresponding keys:
+`list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
   p = defaultpdict(foo=1, bar=2)
   assert (p[['foo', 'bar']].aslist() == [1, 2])
@@ -313,7 +313,7 @@ Use with dot notation or subscript notation:
   assert (p['foo'] == p.foo == 1)
 ```
 
-`list` subscripts also work and return a `plist` of the corresponding keys:
+`list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
   p = pdict(foo=1, bar=2)
   assert (p[['foo', 'bar']].aslist() == [1, 2])
@@ -413,7 +413,7 @@ assert (pl._[[True, False, True]].apply(list).aslist() ==
         [[1, 3], [4, 6], [7, 9]])
 ```
 
-**`root` and `uproot`:**
+**[`root`](./pstar_plist_root.md) and [`uproot`](./pstar_plist_uproot.md):**
 
 `plist`s all have a root object. For newly created `plist`s, the root is `self`,
 but as computations are performed on the `plist`, the root of the resulting
@@ -426,7 +426,7 @@ assert ((pl + 5).root() is pl)
 ```
 
 In some cases, you don't want to maintain the original root. To reset the root
-to `self`, simply call `uproot`:
+to `self`, simply call [`uproot`](./pstar_plist_uproot.md):
 ```python
 pl2 = pl + 5
 assert (pl2.root() is not pl2)
@@ -434,7 +434,7 @@ assert (pl2.uproot().root() is pl2)
 assert (pl2.root() is pl2)
 ```
 
-See `root` and `uproot` for more details.
+See [`root`](./pstar_plist_root.md) and [`uproot`](./pstar_plist_uproot.md) for more details.
 
 **Filtering:**
 
@@ -446,13 +446,13 @@ Filtering always returns the root of the `plist`, which allows you to filter a
 `plist` on arbitrary values computed from the root, and then proceed with your
 computation on the (filtered) original data.
 
-See `comparator` and `filter` for more details.
+See [`comparator`](./pstar_plist_comparator.md) and [`filter`](./pstar_plist_filter.md) for more details.
 
 ```python
 foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
 # Filtering on a property:
 zero_bars = foos.bar == 0
-# The result is a `plist` of the original `pdict`s, correctly filtered:
+# The result is a `plist` of the original [`pdict`](./pstar_pdict.md)s, correctly filtered:
 assert (zero_bars.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0}])
@@ -468,7 +468,7 @@ assert (nonzero_bars.aslist() ==
 Just as with filtering, you can group and sort a `plist` on any arbitrary
 value computed from the `plist`.
 
-This shows a basic grouping by a property of the data. Note that `groupby`
+This shows a basic grouping by a property of the data. Note that [`groupby`](./pstar_plist_groupby.md)
 returns the root, just like filtering:
 ```python
 foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
@@ -490,7 +490,7 @@ assert (foos.aslist() ==
         [{'bar': 0, 'foo': 1}, {'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}])
 ```
 
-This distinction between the behavios of `groupby` and `sortby` permits natural
+This distinction between the behavios of [`groupby`](./pstar_plist_groupby.md) and [`sortby`](./pstar_plist_sortby.md) permits natural
 chaining of the two when sorted groups are desired. It also ensures that
 `plist`s computed from the same root will be ordered in the same way.
 ```python
@@ -499,20 +499,20 @@ assert (foos.bar.sortby().groupby().aslist() ==
         [[{'bar': 0, 'foo': 1}], [{'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}]])
 ```
 
-See `groupby` and `sortby` for more details.
+See [`groupby`](./pstar_plist_groupby.md) and [`sortby`](./pstar_plist_sortby.md) for more details.
 
 **Function Application and Multiple Arguments:**
 
 The most prominent case where you can't treat a `plist` as a single object is
 when you need to pass a single object to some function that isn't a propert of
-the elements of the `plist`. In this case, just use `apply`:
+the elements of the `plist`. In this case, just use [`apply`](./pstar_plist_apply.md):
 ```python
 pl = plist['abc', 'def', 'ghi']
 assert (pl.apply('foo: {}'.format).aslist() ==
         ['foo: abc', 'foo: def', 'foo: ghi'])
 ```
 
-Where `apply` shines (and all calls to `plist` element functions) is when dealing
+Where [`apply`](./pstar_plist_apply.md) shines (and all calls to `plist` element functions) is when dealing
 with multi-argument functions. In this case, you will often find that you want to
 call the function with parallel values from parallel `plist`s. That is easy and
 natural to do, just like calling the function with corresponding non-`plist`
@@ -528,7 +528,7 @@ assert (('foo: ' + foos.foo.pstr() + ' bar: {} baz: {baz}').format(foos.bar, baz
         ['foo: 0 bar: 0 baz: ', 'foo: 1 bar: 1 baz: abc', 'foo: 2 bar: 0 baz: abcabc'])
 ```
 
-See `__call__`, `apply`, and `reduce` for more details.
+See [`__call__`](./pstar_plist___call__.md), [`apply`](./pstar_plist_apply.md), and [`reduce`](./pstar_plist_reduce.md) for more details.
 
 ### Basic [`pset`](./pstar_pset.md) use:
 

@@ -130,7 +130,7 @@ def build_api_doc(symbol):
 
 def basic_class_use(symbol):
   classes = symbols[(symbols.peys().split('.').apply(len) == 1 + plist(symbol.name.split('.')).plen()).startswith(symbol.name).filter()]
-  return '\n\n'.join('### Basic [`' + classes.name.split('.')._[-1] + '`](' + classes.name.apply(url_for) + ') use:\n\n' + classes.doc)
+  return '\n\n'.join('### Basic [`' + classes.name.split('.')._[-1] + '`](' + classes.name.apply(url_for) + ') use:\n\n' + classes.apply(doc))
 
 
 def api_overview(symbol):
