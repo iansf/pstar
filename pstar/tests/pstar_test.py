@@ -806,10 +806,15 @@ class PStarTest(unittest.TestCase):
     (foos.bar == 0).baz = 3 - ((foos.bar == 0).foo % 3)
     (foos.bar == 1).baz = 6
 
+    self.assertEqual((foos.enum().uproot()._[1].baz - foos.enum().uproot()._[1].bar).sortby().root()._[0].aslist(),
+                     [2, 4, 0, 1, 3])
+    self.assertEqual((foos.enum().uproot()._[1].baz - foos.enum().uproot()._[1].bar).sortby(reverse=True).root()._[0].aslist(),
+                     [1, 3, 0, 4, 2])
+
     self.assertEqual(foos.bar.enum().uproot()._[1].sortby().root()._[0].aslist(),
                      [0, 2, 4, 1, 3])
     self.assertEqual(foos.bar.enum().uproot()._[1].sortby(reverse=True).root()._[0].qj().aslist(),
-                     [1, 1, 0, 0, 0])
+                     [1, 3, 0, 2, 4])
 
   def test_plist_of_pdict_sortby_groupby(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
