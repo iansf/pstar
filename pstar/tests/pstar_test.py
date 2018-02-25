@@ -813,7 +813,7 @@ class PStarTest(unittest.TestCase):
 
     self.assertEqual(foos.bar.enum().uproot()._[1].sortby().root()._[0].aslist(),
                      [0, 2, 4, 1, 3])
-    self.assertEqual(foos.bar.enum().uproot()._[1].sortby(reverse=True).root()._[0].qj().aslist(),
+    self.assertEqual(foos.bar.enum().uproot()._[1].sortby(reverse=True).root()._[0].aslist(),
                      [1, 3, 0, 2, 4])
 
   def test_plist_of_pdict_sortby_groupby(self):
