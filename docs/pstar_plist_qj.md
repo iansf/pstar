@@ -2,10 +2,10 @@
 
 Applies logging function qj to self for easy in-chain logging.
 
-[`qj`](./pstar_defaultpdict_qj.md) is a debug logging function. Calling `plist.qj()` is often the fastest way
+`qj` is a debug logging function. Calling `plist.qj()` is often the fastest way
 to begin debugging an issue.
 
-See [qj](https://github.com/iansf/qj) for detailed information on using [`qj`](./pstar_defaultpdict_qj.md).
+See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
 **Examples:**
 ```python
@@ -18,9 +18,9 @@ assert (foos.foo.qj('foo').aslist() ==
 
 **Args:**
 
->    **`*args`**: Arguments to pass to [`qj`](./pstar_defaultpdict_qj.md).
+>    **`*args`**: Arguments to pass to `qj`.
 
->    **`**kwargs`**: Keyword arguments to pass to [`qj`](./pstar_defaultpdict_qj.md).
+>    **`**kwargs`**: Keyword arguments to pass to `qj`.
 
 **Returns:**
 
@@ -28,4 +28,4 @@ assert (foos.foo.qj('foo').aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L3959-L3985)
+## [Source](../pstar/pstar.py#L4225-L4251)

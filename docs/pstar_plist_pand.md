@@ -2,7 +2,7 @@
 
 Stores `self` into a [`plist`](./pstar_plist.md) of `tuple`s that gets extended with each call.
 
-`pand` is meant to facilitate building up tuples of values to be sent as
+`pand` is meant to facilitate building up `tuple`s of values to be sent as
 a single block to a chained call to [`apply`](./pstar_plist_apply.md), or as `*args` when calling
 `plist.apply(psplat=True)`. The name is `pand` to evoke conjunction: the
 caller wants a [`plist`](./pstar_plist.md) with this *and* this *and* this.
@@ -13,15 +13,15 @@ works.
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-foo.baz = 3 * foo.foo + foo.bar
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+foos.baz = 3 * foos.foo + foos.bar
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0, 'baz': 0},
          {'foo': 1, 'bar': 1, 'baz': 4},
          {'foo': 2, 'bar': 0, 'baz': 6}])
 def new_context():
-  assert (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
-             .apply_(qj, '(foo, bar)') ==
+  assert (foos.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
+              .apply_(qj, '(foo, bar)') ==
           [[[(0, 0)],
             [(2, 0)]],
            [[(1, 1)]]])
@@ -33,11 +33,11 @@ new_context()
 ```
 
 The same construction can be used with methods that expect the arguments
-individually, requiring the tuple to be expanded:
+individually, requiring the `tuple` to be expanded:
 ```python
 def new_context():
-  (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
-      .ungroup().apply_(qj, psplat=True, b=0))
+  (foos.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
+       .ungroup().apply_(qj, psplat=True, b=0))
 new_context()
 # Logs:
 #   qj: <pstar> apply: (foo, bar) <2876>: (0, 0)
@@ -48,14 +48,14 @@ new_context()
 #   qj: <pstar> apply: (1, 1) <2876>: (1, 1)
 ```
 
-Building multiple tuples in the same context requires passing `name` to keep
+Building multiple `tuple`s in the same context requires passing `name` to keep
 them separate:
 ```python
 def new_context():
   me = plist()
-  assert (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
-             .apply_(qj,
-                     me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
+  assert (foos.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
+              .apply_(qj,
+                      me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
           [[(0, 0),
             (2, 0)],
            [(1, 1)]])
@@ -91,4 +91,4 @@ shouldn't be used.
 
 
 
-## [Source](../pstar/pstar.py#L5153-L5266)
+## [Source](../pstar/pstar.py#L5419-L5532)

@@ -4,22 +4,22 @@ Returns a [`plist`](./pstar_plist.md) with the structure of `self` filled with `
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.values_like(1).aslist() ==
+assert (foos.values_like(1).aslist() ==
         [1, 1, 1])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.values_like('foo').aslist() ==
+assert (by_bar_foo.values_like('foo').aslist() ==
         [[['foo'], ['foo']], [['foo']]])
-all_the_same_dict = foo_by_bar_foo.values_like({}, pepth=2)
+all_the_same_dict = by_bar_foo.values_like({}, pepth=2)
 assert (all_the_same_dict.aslist() ==
         [[[{}], [{}]], [[{}]]])
 
@@ -27,7 +27,7 @@ all_the_same_dict.ungroup(-1)[0].update(foo=1)
 assert (all_the_same_dict.aslist() ==
         [[[{'foo': 1}], [{'foo': 1}]], [[{'foo': 1}]]])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -59,4 +59,4 @@ assert (all_the_same_dict ==
 
 
 
-## [Source](../pstar/pstar.py#L4983-L5045)
+## [Source](../pstar/pstar.py#L5249-L5311)

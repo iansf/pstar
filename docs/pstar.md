@@ -1,10 +1,24 @@
-# `pstar`
+# [`pstar`](./pstar_pstar.md)
 
-`pstar` module.
+[`pstar`](./pstar_pstar.md) module.
 
 Import like this:
 ```python
-from pstar import defaultpdict, pdict, plist, pset
+from pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar
+```
+
+Of course, `from pstar import *` works as well.
+
+If you have a bunch of data that you want to convert to pstar and manipulate, you can
+also just import like this to get the recursive conversion function:
+```python
+from pstar import pstar
+```
+
+At that point, you can access the core [`pstar`](./pstar_pstar.md) classes as needed with:
+```python
+pd = pstar.pdict(foo=1, bar=2, baz=3)
+pl = pstar.plist([1, 2, 3])
 ```
 
 ## Classes:
@@ -57,7 +71,7 @@ Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with ite
 
 #### [`pstar.defaultpdict.qj(self, *a, **kw)`](./pstar_defaultpdict_qj.md)
 
-Call the [`qj`](./pstar_pdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_pdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 #### [`pstar.defaultpdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_defaultpdict_rekey.md)
 
@@ -66,6 +80,16 @@ Change the keys of `self` or a copy while keeping the same values.
 #### [`pstar.defaultpdict.update(self, *a, **kw)`](./pstar_defaultpdict_update.md)
 
 Update `self`. **Returns `self` to allow chaining.**
+
+____
+
+### [`pstar.frozenpset(frozenset)`](./pstar_frozenpset.md)
+
+Placeholder `frozenset` subclass. Mostly unimplemented.
+
+#### [`pstar.frozenpset.qj(self, *a, **kw)`](./pstar_frozenpset_qj.md)
+
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 ____
 
@@ -107,7 +131,7 @@ Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with ite
 
 #### [`pstar.pdict.qj(self, *a, **kw)`](./pstar_pdict_qj.md)
 
-Call the [`qj`](./pstar_defaultpdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_defaultpdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 #### [`pstar.pdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_pdict_rekey.md)
 
@@ -365,8 +389,28 @@ Zips `self` with `others`, recursively.
 
 ____
 
-### [`pstar.pset(frozenset)`](./pstar_pset.md)
+### [`pstar.pset(set)`](./pstar_pset.md)
 
-Placeholder frozenset subclass. Not yet implemented.
+Placeholder `set` subclass. Mostly unimplemented.
 
-## [Source](../pstar/__init__.py#L0-L25)
+#### [`pstar.pset.qj(self, *a, **kw)`](./pstar_pset_qj.md)
+
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+____
+
+### [`pstar.pstar(object)`](./pstar_pstar.md)
+
+Recursively converts between standard python types and pstar types.
+
+____
+
+### [`pstar.ptuple(tuple)`](./pstar_ptuple.md)
+
+Placeholder `tuple` subclass. Mostly unimplemented.
+
+#### [`pstar.ptuple.qj(self, *a, **kw)`](./pstar_ptuple_qj.md)
+
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+## [Source](../pstar/__init__.py#L0-L39)

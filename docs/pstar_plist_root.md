@@ -35,24 +35,24 @@ assert (pl2.sortby(reverse=True).root().aslist() ==
 
 [`plist`](./pstar_plist.md) filtering also always returns the root, in order to make the filter easily chainable:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-filtered = foo.bar == 0
+filtered = foos.bar == 0
 assert (filtered.aslist() ==
         [dict(foo=0, bar=0), dict(foo=2, bar=0)])
 assert (filtered.root() is filtered)
-(foo.bar == 0).baz = 6
-(foo.bar == 1).baz = foo.foo * 2
-assert (foo.aslist() ==
+(foos.bar == 0).baz = 6
+(foos.bar == 1).baz = foos.foo * 2
+assert (foos.aslist() ==
         [dict(foo=0, bar=0, baz=6), dict(foo=1, bar=1, baz=2), dict(foo=2, bar=0, baz=6)])
 ```
 
 Grouping also always returns the root:
 ```python
-by_bar = foo.bar.groupby()
+by_bar = foos.bar.groupby()
 assert (by_bar.aslist() ==
         [[{'bar': 0, 'baz': 6, 'foo': 0}, {'bar': 0, 'baz': 6, 'foo': 2}],
          [{'bar': 1, 'baz': [0, 2, 4], 'foo': 1}]])
@@ -65,4 +65,4 @@ assert (by_bar.aslist() == by_bar.root().aslist())
 
 
 
-## [Source](../pstar/pstar.py#L2866-L2930)
+## [Source](../pstar/pstar.py#L3127-L3191)

@@ -6,12 +6,12 @@ Returns a new [`plist`](./pstar_plist.md) with only a single element of each val
 
 `puniq` reduces the values of the groups of self using an equality check:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-reduced = foo.bar.puniq()
+reduced = foos.bar.puniq()
 assert (reduced.aslist() ==
         [0, 1])
 assert (reduced.root().aslist() ==
@@ -21,7 +21,7 @@ assert (reduced.root().aslist() ==
 
 Grouped plists
 ```python
-foo_by_bar = foo.bar.groupby()
+foo_by_bar = foos.bar.groupby()
 assert (foo_by_bar.aslist() ==
         [[{'foo': 0, 'bar': 0},
           {'foo': 2, 'bar': 0}],
@@ -36,12 +36,12 @@ assert (reduced.root().aslist() ==
 
 The equality check respects the subgroups of self:
 ```python
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-reduced_no_effect = foo_by_bar_foo.bar.puniq()
+reduced_no_effect = by_bar_foo.bar.puniq()
 assert (reduced_no_effect.aslist() ==
         [[[0], [0]], [[1]]])
 assert (reduced_no_effect.root().aslist() ==
@@ -55,23 +55,23 @@ If, for some reason, you need to reduce by a non-hashable value, you should
 convert it to a hashable representation first, for example using
 `plist.pstr()` or `plist.apply(id)`:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 0, 'bar': 0}])
 try:
-  reduced_crash = foo.puniq()  # CRASHES!
+  reduced_crash = foos.puniq()  # CRASHES!
 except Exception as e:
   assert (isinstance(e, TypeError))
-reduced_pstr = foo.pstr().puniq()
+reduced_pstr = foos.pstr().puniq()
 assert (reduced_pstr.aslist() ==
         ["{'bar': 0, 'foo': 0}",
          "{'bar': 1, 'foo': 1}"])
 assert (reduced_pstr.root().aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1}])
-reduced_id = foo.apply(id).puniq()
+reduced_id = foos.apply(id).puniq()
 assert (reduced_id.root().aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
@@ -89,4 +89,4 @@ any duplicates in the elements of `foo`, they would have been removed.
 
 
 
-## [Source](../pstar/pstar.py#L4391-L4500)
+## [Source](../pstar/pstar.py#L4657-L4766)

@@ -9,23 +9,23 @@ the sum of the lengths of all plists at layer `r`.
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.pstructure().aslist() ==
+assert (foos.pstructure().aslist() ==
         [3])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.pstructure().aslist() ==
+assert (by_bar_foo.pstructure().aslist() ==
         [2, 3, 3])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -42,4 +42,4 @@ assert (filtered.pstructure().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4769-L4813)
+## [Source](../pstar/pstar.py#L5035-L5079)

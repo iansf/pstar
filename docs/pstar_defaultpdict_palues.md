@@ -25,4 +25,4 @@ assert (pd_str ==
 
 
 
-## [Source](../pstar/pstar.py#L700-L724)
+## [Source](../pstar/pstar.py#L782-L806)

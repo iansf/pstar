@@ -27,11 +27,20 @@ import re
 import types
 
 from qj_global import qj
-import pstar
+import pstar as pstar_
 from pstar import *
 
+CLASS_NAMES = plist[
+    'pstar.defaultpdict',
+    'pstar.frozenpset',
+    'pstar.pdict',
+    'pstar.plist',
+    'pstar.pset',
+    'pstar.ptuple',
+]
 
-SKIP_SYMBOLS = plist['pstar.pstar',]
+SKIP_SYMBOLS = 'pstar.' + CLASS_NAMES
+
 PUBLICIZE_SYMBOLS = plist[
     '__init__',
     '_',
@@ -94,7 +103,9 @@ def full_signature(symbol):
 
 
 def _make_links(text_md, exclude):
-  prefer = exclude.split('.')._[:2:1].apply('.'.join)[0]  # Prefer referencing objects from the same class.
+  if exclude[0].count('.') >= 1:
+    exclude.extend(CLASS_NAMES + '.' + exclude[0].split('.')[-1])  # Make sure other classes' methods don't get inadvertently linked.
+  prefer = exclude[:1].split('.')._[:2:1].apply('.'.join)[0]  # Prefer referencing objects from the same class.
   key_fn = lambda x: str(x.count('.')) + ('a' + x if x.startswith(prefer) else x)  # Sort by shortest depth symbols, then by symbols from the same class.
   return (symbols.peys() != exclude).sortby(key=key_fn).split('.')._[-1].puniq().root().reduce(lambda s, x: re.sub(r'(^|[^[])`%s`' % x.split('.')[-1], r'\1[`%s`](%s)' % (x.split('.')[-1], url_for(x)), s), text_md)[0]
 
@@ -252,14 +263,14 @@ def process_template(template, symbol):
   return ('<<' + sections + '>>').reduce(
       lambda s, l, section: s.replace(l, globals()[section](symbol)),
       template,
-      sections).apply(_make_links, plist[symbol.name, 'pstar.defaultpdict.qj', 'pstar.pdict.qj', 'pstar.plist.qj', 'pstar.pset.qj'])[0]
+      sections).apply(_make_links, plist[symbol.name,].extend(CLASS_NAMES + '.qj'))[0]
 
 
 def collect_docs_and_tests(obj, base_name, full_base_name):
   try:
-    if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or obj.__name__ in SKIP_SYMBOLS:
-      return
     full_name = '.'.join(plist[full_base_name, obj.__name__] != '')
+    if (not obj.__name__.startswith(base_name) and not obj.__module__.startswith(base_name)) or full_name in SKIP_SYMBOLS:
+      return
     if full_name in symbols:
       raise RuntimeError('Found duplicate symbol: %s' % full_name)
     symbol_for(obj, full_name)
@@ -278,7 +289,7 @@ def write_readme_md():
   with open(readme_template_path, 'r') as f:
     template = f.read()
 
-  docs_md = process_template(template, symbols[pstar.__name__])
+  docs_md = process_template(template, symbols[pstar_.__name__])
 
   with open(readme_path, 'w') as f:
     f.write(docs_md)
@@ -303,7 +314,7 @@ def write_tests():
 
 
 def build_docs():
-  collect_docs_and_tests(pstar, pstar.__name__, '')
+  collect_docs_and_tests(pstar_, pstar_.__name__, '')
 
   write_readme_md()
   write_api_md()

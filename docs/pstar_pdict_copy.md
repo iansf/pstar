@@ -16,4 +16,4 @@ assert (pd2 is not pd1)
 
 
 
-## [Source](../pstar/pstar.py#L248-L263)
+## [Source](../pstar/pstar.py#L312-L327)

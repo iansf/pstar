@@ -1,15 +1,15 @@
 # [`pstar`](./pstar.md).[`defaultpdict`](./pstar_defaultpdict.md).`qj(self, *a, **kw)`
 
-Call the [`qj`](./pstar_pdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_pdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
-[`qj`](./pstar_pdict_qj.md) is a debug logging function. Calling `defaultpdict.qj()` is often the fastest way
+`qj` is a debug logging function. Calling `defaultpdict.qj()` is often the fastest way
 to begin debugging an issue.
 
-See [qj](https://github.com/iansf/qj) for detailed information on using [`qj`](./pstar_pdict_qj.md).
+See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
 
 **Examples:**
 ```python
-pd = pdict(foo=1, bar=2.0, baz='three')
+pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
 pd.qj('pd').update(baz=3).qj('pd now')
 assert (pd.baz == 3)
 # Logs:
@@ -19,8 +19,8 @@ assert (pd.baz == 3)
 
 **Returns:**
 
->    `self`, as processed by the arguments supplied to [`qj`](./pstar_pdict_qj.md).
+>    `self`, as processed by the arguments supplied to `qj`.
 
 
 
-## [Source](../pstar/pstar.py#L746-L769)
+## [Source](../pstar/pstar.py#L828-L851)

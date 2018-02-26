@@ -14,16 +14,16 @@ called implicitly.
 **Examples:**
 [`plist`](./pstar_plist.md) comparators can filter on leaf values:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-zero_bars = foo.bar == 0
+zero_bars = foos.bar == 0
 assert (zero_bars.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0}])
-nonzero_bars = foo.bar != 0
+nonzero_bars = foos.bar != 0
 assert (nonzero_bars.aslist() ==
         [{'foo': 1, 'bar': 1}])
 ```
@@ -31,38 +31,38 @@ assert (nonzero_bars.aslist() ==
 They can also filter on other plists so long as the structures are
 compatible:
 ```python
-assert ((foo == zero_bars).aslist() ==
+assert ((foos == zero_bars).aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 2, 'bar': 0}])
-assert ((foo.foo > foo.bar).aslist() ==
+assert ((foos.foo > foos.bar).aslist() ==
         [{'foo': 2, 'bar': 0}])
 ```
 
 The same is true when comparing against lists with compatible structure:
 ```python
-assert ((foo.foo == [0, 1, 3]).aslist() ==
+assert ((foos.foo == [0, 1, 3]).aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1}])
 ```
 
 This all generalizes naturally to plists that have been grouped:
 ```python
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
-assert (nonzero_foo_by_bar_foo.aslist() ==
+nonzero_by_bar_foo = by_bar_foo.bar > 0
+assert (nonzero_by_bar_foo.aslist() ==
         [[[],
           []],
          [[{'bar': 1, 'foo': 1}]]])
-zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
-assert (zero_foo_by_bar_foo.aslist() ==
+zero_by_bar_foo = by_bar_foo.foo != nonzero_by_bar_foo.foo
+assert (zero_by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[]]])
-assert ((foo_by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
+assert ((by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           []],
          [[{'foo': 1, 'bar': 1}]]])
@@ -72,11 +72,11 @@ Lists with incompatible structure are compared to `self` one-at-a-time,
 resulting in set-like filtering where the two sets are merged with an 'or':
 ```python
 
-assert ((foo.foo == [0, 1, 3, 4]).aslist() ==
+assert ((foos.foo == [0, 1, 3, 4]).aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1}])
 
-assert ((foo_by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
+assert ((by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           []],
          [[{'foo': 1, 'bar': 1}]]])
@@ -85,16 +85,16 @@ assert ((foo_by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
 When comparing against an empty list, `==` always returns an empty list, but
 all other comparisons return `self`:
 ```python
-assert ((foo.foo == []).aslist() == [])
-assert ((foo.foo < []).aslist() ==
+assert ((foos.foo == []).aslist() == [])
+assert ((foos.foo < []).aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).aslist() ==
+assert ((by_bar_foo == nonzero_by_bar_foo).aslist() ==
         [[[],
           []],
          [[{'foo': 1, 'bar': 1}]]])
-assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
+assert ((by_bar_foo.foo > nonzero_by_bar_foo.foo).aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[]]])
@@ -103,7 +103,7 @@ assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
 Note that `plist.nonempty` can be used to remove empty internal [`plist`](./pstar_plist.md)s
 after filtering a grouped [`plist`](./pstar_plist.md):
 ```python
-assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
+assert ((by_bar_foo == nonzero_by_bar_foo).nonempty(-1).aslist() ==
         [[[{'foo': 1, 'bar': 1}]]])
 ```
 
@@ -124,4 +124,4 @@ assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L868-L1021)
+## [Source](../pstar/pstar.py#L1126-L1279)

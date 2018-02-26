@@ -6,23 +6,23 @@ Returns a [`plist`](./pstar_plist.md) of the recursive depth of each leaf elemen
 
 `pdepth` returns a plist of the same plist structure as self:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.pdepth().aslist() ==
+assert (foos.pdepth().aslist() ==
         [0])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.pdepth().aslist() ==
+assert (by_bar_foo.pdepth().aslist() ==
         [[[2], [2]], [[2]]])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -35,8 +35,8 @@ Since the depth values are always equal or empty in well-formed plists, it
 is sometimes more convenient to get the depth as a scalar value. Pass a True
 value to the first parameter (`s` for 'scalar'):
 ```python
-assert (foo.pdepth(s=1) == 0)
-assert (foo_by_bar_foo.pdepth(1) == 2)
+assert (foos.pdepth(s=1) == 0)
+assert (by_bar_foo.pdepth(1) == 2)
 assert (filtered.pdepth(True) == 2)
 ```
 
@@ -53,4 +53,4 @@ assert (filtered.pdepth(True) == 2)
 
 
 
-## [Source](../pstar/pstar.py#L4581-L4641)
+## [Source](../pstar/pstar.py#L4847-L4907)

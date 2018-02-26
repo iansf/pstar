@@ -2,15 +2,17 @@
 
 Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to [`pset`](./pstar_pset.md)s, inclusive.
 
-All values must be hashable for the conversion to succeed.
+All values must be hashable for the conversion to succeed. Grouped [`plist`](./pstar_plist.md)s
+necessarily return [`frozenpset`](./pstar_frozenpset.md)s at all non-root nodes.
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.bar.aspset() == pset([0, 1]))
-by_bar = foo.bar.groupby()
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.bar.aspset() == pset([0, 1]))
+by_bar = foos.bar.groupby()
 assert (by_bar.bar.apply(type).aslist() == [plist, plist])
-assert ([type(x) for x in by_bar.bar.aspset()] == [pset, pset])
+assert (type(by_bar.bar.aspset()) == pset)
+assert ([type(x) for x in by_bar.bar.aspset()] == [frozenpset, frozenpset])
 ```
 
 **Returns:**
@@ -19,4 +21,4 @@ assert ([type(x) for x in by_bar.bar.aspset()] == [pset, pset])
 
 
 
-## [Source](../pstar/pstar.py#L3035-L3057)
+## [Source](../pstar/pstar.py#L3296-L3323)

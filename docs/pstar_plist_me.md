@@ -14,15 +14,15 @@ useful in jupyter notebooks and colabs during exploration of datasets.
 Using `me` with a local variable requires that the variable already exist in
 the local context, and that it be a [`plist`](./pstar_plist.md):
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-foo.baz = 3 * foo.foo + foo.bar
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+foos.baz = 3 * foos.foo + foos.bar
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0, 'baz': 0},
          {'foo': 1, 'bar': 1, 'baz': 4},
          {'foo': 2, 'bar': 0, 'baz': 6}])
 def new_context():
   me = plist()
-  foo.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.bar)
+  foos.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.bar)
 new_context()
 ```
 
@@ -30,7 +30,7 @@ The same can work with a name of your choice:
 ```python
 def new_context():
   baz = plist()
-  foo.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
+  foos.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
 new_context()
 ```
 
@@ -38,7 +38,7 @@ You can pass the [`plist`](./pstar_plist.md) you want to use instead:
 ```python
 def new_context():
   me2 = plist()
-  foo.bar.groupby().baz.sortby_().groupby().me(me2).foo.plt().plot(me2.foo + 1)
+  foos.bar.groupby().baz.sortby_().groupby().me(me2).foo.plt().plot(me2.foo + 1)
 new_context()
 ```
 
@@ -47,8 +47,8 @@ the caller's `globals()` `dict` under the requested name. The following both
 work if there are no local or global variables named `me` or `baz`:
 ```python
 def new_context():
-  foo.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.baz)
-  foo.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
+  foos.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.baz)
+  foos.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
   del globals()['me']
   del globals()['baz']
 new_context()
@@ -78,4 +78,4 @@ new_context()
 
 
 
-## [Source](../pstar/pstar.py#L5049-L5152)
+## [Source](../pstar/pstar.py#L5315-L5418)

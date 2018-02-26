@@ -4,8 +4,8 @@ Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to `list
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-by_bar = foo.bar.groupby()
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+by_bar = foos.bar.groupby()
 assert (by_bar.apply(type).aslist() == [plist, plist])
 assert ([type(x) for x in by_bar.aslist()] == [list, list])
 ```
@@ -16,4 +16,4 @@ assert ([type(x) for x in by_bar.aslist()] == [list, list])
 
 
 
-## [Source](../pstar/pstar.py#L2995-L3014)
+## [Source](../pstar/pstar.py#L3256-L3275)

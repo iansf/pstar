@@ -21,7 +21,7 @@ from pstar import *
 ```
 or like this:
 ```python
-from pstar import defaultpdict, pdict, plist, pset
+from pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar
 ```
 """
 
@@ -54,7 +54,7 @@ from qj import qj
 # pylint: disable=line-too-long,invalid-name,g-explicit-length-test,broad-except,g-long-lambda
 
 
-def compatible_metaclass(meta, *bases):
+def _compatible_metaclass(meta, *bases):
   class metaclass(meta):
     __call__ = type.__call__
     __init__ = type.__init__
@@ -64,6 +64,51 @@ def compatible_metaclass(meta, *bases):
         return type.__new__(cls, name, (), d)
       return meta(name, bases, d)
   return metaclass('_temporary_class', None, {})
+
+
+class _SyntaxSugar(type):
+  def __getitem__(cls, key):
+    return cls(key)
+
+  def __add__(cls, other):
+    return _SyntaxSugar.__mul__(cls, other, depth=1)
+
+  def __radd__(cls, other):
+    return _SyntaxSugar.__rmul__(cls, other, depth=1)
+
+  def __sub__(cls, other):
+    return _SyntaxSugar.__truediv__(cls, other, depth=1)
+
+  def __rsub__(cls, other):
+    return _SyntaxSugar.__rtruediv__(cls, other, depth=1)
+
+  def __mul__(cls, other, depth=-1):
+    keys = plist(pstar.cls_map().keys())
+    cls_map = (
+        keys.zip(keys).pdict()  # Map all classes to themselves
+    ).update({cls.__mro__[1]: cls})  # Map this pstar class's superclass to this pstar class
+    return pstar(other, cls_map, depth)
+
+  def __rmul__(cls, other, depth=-1):
+    return _SyntaxSugar.__mul__(cls, other, depth)
+
+  def __truediv__(cls, other, depth=-1):
+    cls_map = (
+        (
+            plist(pstar.cls_map().items())._[0] != [defaultpdict, frozenpset, pdict, plist, pset, ptuple]  # Filter out pstar classes
+        )._[::-1].pdict()  # Reverse the normal mapping, so that pstar classes go to their python equivalents
+    ).update({cls: cls})  # Leave this pstar class alone
+    return pstar(other, cls_map, depth)
+
+  def __rtruediv__(cls, other, depth=-1):
+    keys = plist(pstar.cls_map().keys())
+    cls_map = (
+        keys.zip(keys).pdict()  # Map all classes to themselves
+    ).update({cls: cls.__mro__[1]})  # Map this pstar class to its superclass
+    return pstar(other, cls_map, depth)
+
+  if sys.version_info[0] < 3:
+    __div__, __rdiv__ = __truediv__, __rtruediv__
 
 
 KeyValue = collections.namedtuple('KeyValue', 'key value')
@@ -76,41 +121,60 @@ KeyValue = collections.namedtuple('KeyValue', 'key value')
 ################################################################################
 ################################################################################
 ################################################################################
-class pdict(dict):
+class pdict(_compatible_metaclass(_SyntaxSugar, dict)):
   """`dict` subclass where everything is automatically a property.
 
   Examples:
 
   Use with dot notation or subscript notation:
   ```python
-    p = pdict()
-    p.foo = 1
-    assert (p['foo'] == p.foo == 1)
+  pd = pdict()
+  pd.foo = 1
+  assert (pd['foo'] == pd.foo == 1)
   ```
 
   `list` subscripts also work and return a `plist` of the corresponding keys:
   ```python
-    p = pdict(foo=1, bar=2)
-    assert (p[['foo', 'bar']].aslist() == [1, 2])
+  pd = pdict(foo=1, bar=2)
+  assert (pd[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   Setting with a `list` subscript also works, using a single element or a matching
   `list` for the values:
   ```python
-    p = pdict()
-    p[['foo', 'bar']] = 1
-    assert (p[['foo', 'bar']].aslist() == [1, 1])
-    p[['foo', 'bar']] = [1, 2]
-    assert (p[['foo', 'bar']].aslist() == [1, 2])
+  pd = pdict()
+  pd[['foo', 'bar']] = 1
+  assert (pd[['foo', 'bar']].aslist() == [1, 1])
+  pd[['foo', 'bar']] = [1, 2]
+  assert (pd[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   `update` returns `self`, rather than `None`, to support chaining:
   ```python
-    p = pdict(foo=1, bar=2)
-    p.update(bar=3).baz = 4
-    assert (p.bar == 3)
-    assert ('baz' in p.keys())
+  pd = pdict(foo=1, bar=2)
+  pd.update(bar=3).baz = 4
+  assert (pd.bar == 3)
+  assert ('baz' in pd.keys())
+  assert (pd.baz == 4)
   ```
+
+  **Conversion:**
+
+  You can convert from `pdict` to `dict` and back using arithmetic operations on
+  the `pdict` `class` itself, for convenience:
+  ```python
+  d1 = {'foo': 1, 'bar': 2}
+  pd = pdict * d1
+  assert (type(d1) == dict)
+  assert (type(pd) == pdict)
+  assert (pd == d1)
+
+  d2 = pd / pdict
+  assert (type(d2) == dict)
+  assert (d2 == d1)
+  ```
+
+  See `pstar` for more details on conversion.
   """
 
   def __init__(self, *a, **kw):
@@ -220,7 +284,7 @@ class pdict(dict):
       s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
       return '{' + s + '}'
     except Exception:
-      return dict.__str__(self)
+      return dict.__repr__(self)
 
   __repr__ = __str__
 
@@ -424,57 +488,75 @@ class pdict(dict):
 ################################################################################
 ################################################################################
 ################################################################################
-class defaultpdict(defaultdict):
+class defaultpdict(_compatible_metaclass(_SyntaxSugar, defaultdict)):
   """`defaultdict` subclass where everything is automatically a property.
 
   Examples:
 
   Use with dot notation or subscript notation:
   ```python
-    p = defaultpdict()
-    p.foo = 1
-    assert (p['foo'] == p.foo == 1)
+  pd = defaultpdict()
+  pd.foo = 1
+  assert (pd['foo'] == pd.foo == 1)
   ```
 
   Set the desired default constructor as normal to avoid having to construct
   individual values:
   ```python
-    p = defaultpdict(int)
-    assert (p.foo == 0)
+  pd = defaultpdict(int)
+  assert (pd.foo == 0)
   ```
 
   `list` subscripts also work and return a `plist` of the corresponding keys:
   ```python
-    p = defaultpdict(foo=1, bar=2)
-    assert (p[['foo', 'bar']].aslist() == [1, 2])
+  pd = defaultpdict(foo=1, bar=2)
+  assert (pd[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   Setting with a `list` subscript also works, using a single element or a matching
   `list` for the values:
   ```python
-    p = defaultpdict()
-    p[['foo', 'bar']] = 1
-    assert (p[['foo', 'bar']].aslist() == [1, 1])
-    p[['foo', 'bar']] = [1, 2]
-    assert (p[['foo', 'bar']].aslist() == [1, 2])
+  pd = defaultpdict()
+  pd[['foo', 'bar']] = 1
+  assert (pd[['foo', 'bar']].aslist() == [1, 1])
+  pd[['foo', 'bar']] = [1, 2]
+  assert (pd[['foo', 'bar']].aslist() == [1, 2])
   ```
 
   `update` returns `self`, rather than `None`, to support chaining:
   ```python
-    p = defaultpdict(foo=1, bar=2)
-    p.update(bar=3).baz = 4
-    assert (p.bar == 3)
-    assert ('baz' in p.keys())
+  pd = defaultpdict(foo=1, bar=2)
+  pd.update(bar=3).baz = 4
+  assert (pd.bar == 3)
+  assert ('baz' in pd.keys())
   ```
 
   Nested `defaultpdict`s make nice lightweight objects:
   ```python
-    p = defaultpdict(lambda: defaultpdict(list))
-    p.foo = 1
-    p.stats.bar.append(2)
-    assert (p['foo'] == 1)
-    assert (p.stats.bar == [2])
+  pd = defaultpdict(lambda: defaultpdict(list))
+  pd.foo = 1
+  pd.stats.bar.append(2)
+  assert (pd['foo'] == 1)
+  assert (pd.stats.bar == [2])
   ```
+
+  **Conversion:**
+
+  You can convert from `defaultpdict` to `defaultdict` and back using arithmetic operations on
+  the `defaultpdict` `class` itself, for convenience:
+  ```python
+  d1 = defaultdict(int, {'foo': 1, 'bar': 2})
+  pd = defaultpdict * d1
+  assert (type(d1) == defaultdict)
+  assert (type(pd) == defaultpdict)
+  assert (pd == d1)
+
+  d2 = pd / defaultpdict
+  assert (type(d2) == defaultdict)
+  assert (d2 == d1)
+  ```
+
+  See `pstar` for more details on conversion.
   """
 
   def __init__(self, *a, **kw):
@@ -634,7 +716,7 @@ class defaultpdict(defaultdict):
       s = delim.join('%s: %s' % (repr(k), repr(self[k])) for k in self.peys())
       return '{' + s + '}'
     except Exception:
-      return defaultdict.__str__(self)
+      return defaultdict.__repr__(self)
 
   __repr__ = __str__
 
@@ -753,7 +835,7 @@ class defaultpdict(defaultdict):
 
     Examples:
     ```python
-    pd = pdict(foo=1, bar=2.0, baz='three')
+    pd = defaultpdict(int).update(foo=1, bar=2.0, baz='three')
     pd.qj('pd').update(baz=3).qj('pd now')
     assert (pd.baz == 3)
     # Logs:
@@ -834,13 +916,189 @@ class defaultpdict(defaultdict):
 ################################################################################
 ################################################################################
 ################################################################################
+# frozenpset class
+################################################################################
+################################################################################
+################################################################################
+class frozenpset(_compatible_metaclass(_SyntaxSugar, frozenset)):
+  """Placeholder `frozenset` subclass. Mostly unimplemented.
+
+  You can construct `frozenpset`s in the normal manners for `frozenset`s:
+  ```python
+  ps = frozenpset([1, 2.0, 'three'])
+  ps = frozenpset({1, 2.0, 'three'})
+  ```
+
+  `frozenpset` also supports a convenience constructor from a `list` literal:
+  ```python
+  ps = frozenpset[1, 2.0, 'three']
+  ```
+
+  **Conversion:**
+
+  You can convert from `frozenpset` to `frozenset` and back using arithmetic
+  operations on the `frozenpset` `class` itself, for convenience:
+  ```python
+  s1 = frozenset([1, 2.0, 'three'])
+  ps = frozenpset * s1
+  assert (type(s1) == frozenset)
+  assert (type(ps) == frozenpset)
+  assert (ps == s1)
+
+  s2 = ps / frozenpset
+  assert (type(s2) == frozenset)
+  assert (s2 == s1)
+  ```
+
+  See `pstar` for more details on conversion.
+  """
+
+  def qj(self, *a, **kw):
+    """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+    `qj` is a debug logging function. Calling `frozenpset.qj()` is often the fastest way
+    to begin debugging an issue.
+
+    See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
+
+    Examples:
+    ```python
+    ps = frozenpset([1, 2.0, 'three'])
+    ps.qj('ps')
+    # Logs:
+    # qj: <calling_module> calling_function: ps <2910>: frozenpset({1, 2.0, 'three'})
+    ```
+
+    Returns:
+      `self`, as processed by the arguments supplied to `qj`.
+    """
+    depth = kw.pop('_depth', 0) + 2
+    return qj(self, _depth=depth, *a, **kw)
+
+
+################################################################################
+################################################################################
+################################################################################
 # pset class
 ################################################################################
 ################################################################################
 ################################################################################
-class pset(frozenset):
-  """Placeholder frozenset subclass. Not yet implemented."""
-  pass
+class pset(_compatible_metaclass(_SyntaxSugar, set)):
+  """Placeholder `set` subclass. Mostly unimplemented.
+
+  You can construct `pset`s in the normal manners for `set`s:
+  ```python
+  ps = pset([1, 2.0, 'three'])
+  ps = pset({1, 2.0, 'three'})
+  ```
+
+  `pset` also supports a convenience constructor from a `list` literal:
+  ```python
+  ps = pset[1, 2.0, 'three']
+  ```
+
+  **Conversion:**
+
+  You can convert from `pset` to `set` and back using arithmetic
+  operations on the `pset` `class` itself, for convenience:
+  ```python
+  s1 = set([1, 2.0, 'three'])
+  ps = pset * s1
+  assert (type(s1) == set)
+  assert (type(ps) == pset)
+  assert (ps == s1)
+
+  s2 = ps / pset
+  assert (type(s2) == set)
+  assert (s2 == s1)
+  ```
+
+  See `pstar` for more details on conversion.
+  """
+
+  def qj(self, *a, **kw):
+    """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+    `qj` is a debug logging function. Calling `pset.qj()` is often the fastest way
+    to begin debugging an issue.
+
+    See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
+
+    Examples:
+    ```python
+    ps = pset([1, 2.0, 'three'])
+    ps.qj('ps')
+    # Logs:
+    # qj: <calling_module> calling_function: ps <2910>: pset({1, 2.0, 'three'})
+    ```
+
+    Returns:
+      `self`, as processed by the arguments supplied to `qj`.
+    """
+    depth = kw.pop('_depth', 0) + 2
+    return qj(self, _depth=depth, *a, **kw)
+
+
+################################################################################
+################################################################################
+################################################################################
+# ptuple class
+################################################################################
+################################################################################
+################################################################################
+class ptuple(_compatible_metaclass(_SyntaxSugar, tuple)):
+  """Placeholder `tuple` subclass. Mostly unimplemented.
+
+  You can construct `ptuple`s in the normal manner for `tuple`s:
+  ```python
+  pt = ptuple((1, 2.0, 'three'))
+  ```
+
+  `ptuple` also supports a convenience constructor from a `list` literal:
+  ```python
+  pt = ptuple[1, 2.0, 'three']
+  ```
+
+  **Conversion:**
+
+  You can convert from `ptuple` to `tuple` and back using arithmetic
+  operations on the `ptuple` `class` itself, for convenience:
+  ```python
+  t1 = tuple([1, 2.0, 'three'])
+  pt = ptuple * t1
+  assert (type(t1) == tuple)
+  assert (type(pt) == ptuple)
+  assert (pt == t1)
+
+  t2 = pt / ptuple
+  assert (type(t2) == tuple)
+  assert (t2 == t1)
+  ```
+
+  See `pstar` for more details on conversion.
+  """
+
+  def qj(self, *a, **kw):
+    """Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+    `qj` is a debug logging function. Calling `ptuple.qj()` is often the fastest way
+    to begin debugging an issue.
+
+    See [qj](https://github.com/iansf/qj) for detailed information on using `qj`.
+
+    Examples:
+    ```python
+    pt = ptuple([1, 2.0, 'three'])
+    pt.qj('pt')
+    # Logs:
+    # qj: <calling_module> calling_function: pt <2910>: (1, 2.0, 'three')
+    ```
+
+    Returns:
+      `self`, as processed by the arguments supplied to `qj`.
+    """
+    depth = kw.pop('_depth', 0) + 2
+    return qj(self, _depth=depth, *a, **kw)
 
 
 ################################################################################
@@ -880,16 +1138,16 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     Examples:
     `plist` comparators can filter on leaf values:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    zero_bars = foo.bar == 0
+    zero_bars = foos.bar == 0
     assert (zero_bars.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 2, 'bar': 0}])
-    nonzero_bars = foo.bar != 0
+    nonzero_bars = foos.bar != 0
     assert (nonzero_bars.aslist() ==
             [{'foo': 1, 'bar': 1}])
     ```
@@ -897,38 +1155,38 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     They can also filter on other plists so long as the structures are
     compatible:
     ```python
-    assert ((foo == zero_bars).aslist() ==
+    assert ((foos == zero_bars).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 2, 'bar': 0}])
-    assert ((foo.foo > foo.bar).aslist() ==
+    assert ((foos.foo > foos.bar).aslist() ==
             [{'foo': 2, 'bar': 0}])
     ```
 
     The same is true when comparing against lists with compatible structure:
     ```python
-    assert ((foo.foo == [0, 1, 3]).aslist() ==
+    assert ((foos.foo == [0, 1, 3]).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1}])
     ```
 
     This all generalizes naturally to plists that have been grouped:
     ```python
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    nonzero_foo_by_bar_foo = foo_by_bar_foo.bar > 0
-    assert (nonzero_foo_by_bar_foo.aslist() ==
+    nonzero_by_bar_foo = by_bar_foo.bar > 0
+    assert (nonzero_by_bar_foo.aslist() ==
             [[[],
               []],
              [[{'bar': 1, 'foo': 1}]]])
-    zero_foo_by_bar_foo = foo_by_bar_foo.foo != nonzero_foo_by_bar_foo.foo
-    assert (zero_foo_by_bar_foo.aslist() ==
+    zero_by_bar_foo = by_bar_foo.foo != nonzero_by_bar_foo.foo
+    assert (zero_by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[]]])
-    assert ((foo_by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
+    assert ((by_bar_foo.foo == [[[0], [3]], [[1]]]).aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               []],
              [[{'foo': 1, 'bar': 1}]]])
@@ -938,11 +1196,11 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     resulting in set-like filtering where the two sets are merged with an 'or':
     ```python
 
-    assert ((foo.foo == [0, 1, 3, 4]).aslist() ==
+    assert ((foos.foo == [0, 1, 3, 4]).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1}])
 
-    assert ((foo_by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
+    assert ((by_bar_foo.foo == [0, 1, 3, 4]).aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               []],
              [[{'foo': 1, 'bar': 1}]]])
@@ -951,16 +1209,16 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     When comparing against an empty list, `==` always returns an empty list, but
     all other comparisons return `self`:
     ```python
-    assert ((foo.foo == []).aslist() == [])
-    assert ((foo.foo < []).aslist() ==
+    assert ((foos.foo == []).aslist() == [])
+    assert ((foos.foo < []).aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).aslist() ==
+    assert ((by_bar_foo == nonzero_by_bar_foo).aslist() ==
             [[[],
               []],
              [[{'foo': 1, 'bar': 1}]]])
-    assert ((foo_by_bar_foo.foo > nonzero_foo_by_bar_foo.foo).aslist() ==
+    assert ((by_bar_foo.foo > nonzero_by_bar_foo.foo).aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[]]])
@@ -969,7 +1227,7 @@ def _build_comparator(op, merge_op, shortcut, return_root_if_empty_other):
     Note that `plist.nonempty` can be used to remove empty internal `plist`s
     after filtering a grouped `plist`:
     ```python
-    assert ((foo_by_bar_foo == nonzero_foo_by_bar_foo).nonempty(-1).aslist() ==
+    assert ((by_bar_foo == nonzero_by_bar_foo).nonempty(-1).aslist() ==
             [[[{'foo': 1, 'bar': 1}]]])
     ```
 
@@ -1182,6 +1440,10 @@ def _build_binary_op(op):
       `_build_binary_op` applied to it and `other`, or the corresponding element
       of `other`, if the lengths of `self` and `other` match.
     """
+    if other is pstar:
+      if sys.version_info[0] < 3:
+        return getattr(other, op.__name__)(self)
+      return getattr(other, '__%s__' % op.__name__)(self)
     if isinstance(other, plist):
       if len(self) == len(other):
         return plist([op(x, o) for x, o in zip(self, other)], root=self.__root__)
@@ -1202,6 +1464,10 @@ def _build_binary_rop(op):
     binary_rop: The corresponding right-side binary operation function.
   """
   def binary_rop(self, other):
+    if other is pstar:
+      if sys.version_info[0] < 3:
+        return getattr(other, op.__name__)(self)
+      return getattr(other, '__%s__' % op.__name__)(self)
     return plist([op(other, x) for x in self], root=self.__root__)
 
   return binary_rop
@@ -1441,11 +1707,6 @@ def _successor(v):
   return s
 
 
-class _SyntaxSugar(type):
-  def __getitem__(cls, key):
-    return plist(key)
-
-
 MAX_THREADS = 25
 def _get_thread_pool(psplit, obj_len):
   return Pool(psplit if psplit > 1 else min(MAX_THREADS, obj_len))
@@ -1462,7 +1723,7 @@ def _get_thread_chunksize(psplit, obj_len):
 ################################################################################
 ################################################################################
 ################################################################################
-class plist(compatible_metaclass(_SyntaxSugar, list)):
+class plist(_compatible_metaclass(_SyntaxSugar, list)):
   """`list` subclass for powerful, concise data processing.
 
   **Homogeneous access:**
@@ -1774,7 +2035,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     if ((name.startswith('__') and name.endswith('___'))
         or (not name.startswith('__') and name.endswith('_'))):
       # Allows calling one level deeper by adding '_' to the end of a property name.  This is recursive, so '__' on the end goes two levels deep, etc.
-      # Works for both regular properties (foo.bar_) and private properties (foo.__len___).
+      # Works for both regular properties (foos.bar_) and private properties (foos.__len___).
       try:
         starting_unders = 2 if name.startswith('__') else 0  # We don't care about single starting underscores for this count
         ending_unders = 0
@@ -2899,24 +3160,24 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `plist` filtering also always returns the root, in order to make the filter easily chainable:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    filtered = foo.bar == 0
+    filtered = foos.bar == 0
     assert (filtered.aslist() ==
             [dict(foo=0, bar=0), dict(foo=2, bar=0)])
     assert (filtered.root() is filtered)
-    (foo.bar == 0).baz = 6
-    (foo.bar == 1).baz = foo.foo * 2
-    assert (foo.aslist() ==
+    (foos.bar == 0).baz = 6
+    (foos.bar == 1).baz = foos.foo * 2
+    assert (foos.aslist() ==
             [dict(foo=0, bar=0, baz=6), dict(foo=1, bar=1, baz=2), dict(foo=2, bar=0, baz=6)])
     ```
 
     Grouping also always returns the root:
     ```python
-    by_bar = foo.bar.groupby()
+    by_bar = foos.bar.groupby()
     assert (by_bar.aslist() ==
             [[{'bar': 0, 'baz': 6, 'foo': 0}, {'bar': 0, 'baz': 6, 'foo': 2}],
              [{'bar': 1, 'baz': [0, 2, 4], 'foo': 1}]])
@@ -2938,17 +3199,17 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     resetting the root to `self` often makes sense, as future filtering
     should not return the original data:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    (foo.bar == 0).baz = 6
-    (foo.bar == 1).baz = foo.foo * 2
-    floo = foo.rekey(dict(foo='floo'))
-    assert (floo.root() is foo)
-    assert (floo.peys()[0].aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    (foos.bar == 0).baz = 6
+    (foos.bar == 1).baz = foos.foo * 2
+    floos = foos.rekey(dict(foo='floo'))
+    assert (floos.root() is foos)
+    assert (floos.peys()[0].aslist() ==
             ['bar', 'baz', 'floo'])
-    assert ((floo.floo < 2).aslist() ==
+    assert ((floos.floo < 2).aslist() ==
             [dict(foo=0, bar=0, baz=6), dict(foo=1, bar=1, baz=2)])
-    floo = floo.uproot()
-    assert ((floo.floo < 2).aslist() ==
+    floos = floos.uproot()
+    assert ((floos.floo < 2).aslist() ==
             [dict(floo=0, bar=0, baz=6), dict(floo=1, bar=1, baz=2)])
     ```
 
@@ -2997,8 +3258,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    by_bar = foo.bar.groupby()
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
     assert (by_bar.apply(type).aslist() == [plist, plist])
     assert ([type(x) for x in by_bar.aslist()] == [list, list])
     ```
@@ -3017,8 +3278,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    by_bar = foo.bar.groupby()
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
     assert (by_bar.apply(type).aslist() == [plist, plist])
     assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
     ```
@@ -3035,15 +3296,17 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def aspset(self):
     """Recursively convert all nested `plist`s from `self` to `pset`s, inclusive.
 
-    All values must be hashable for the conversion to succeed.
+    All values must be hashable for the conversion to succeed. Grouped `plist`s
+    necessarily return `frozenpset`s at all non-root nodes.
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.bar.aspset() == pset([0, 1]))
-    by_bar = foo.bar.groupby()
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.bar.aspset() == pset([0, 1]))
+    by_bar = foos.bar.groupby()
     assert (by_bar.bar.apply(type).aslist() == [plist, plist])
-    assert ([type(x) for x in by_bar.bar.aspset()] == [pset, pset])
+    assert (type(by_bar.bar.aspset()) == pset)
+    assert ([type(x) for x in by_bar.bar.aspset()] == [frozenpset, frozenpset])
     ```
 
     Returns:
@@ -3052,8 +3315,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     try:
       return pset([x.aspset() for x in self])
     except Exception:
-      pass
-    return pset([x for x in self])
+      try:
+        return frozenpset([x.aspset() for x in self])
+      except Exception:
+        pass
+    return frozenpset([x for x in self])
 
   def aspdict(self):
     """Convert `self` to a `pdict` if there is a natural mapping of keys to values in `self`.
@@ -3822,11 +4088,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     When `self` is a grouped `plist`, `pepth` determines which groups are reduced over:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0), pdict(foo=3, bar=1), pdict(foo=4, bar=0)])
-    (foo.bar == 0).baz = 3 + (foo.bar == 0).foo
-    (foo.bar == 1).baz = 6
-    foo.bin = (foo.baz + foo.bar) * foo.foo
-    by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0), pdict(foo=3, bar=1), pdict(foo=4, bar=0)])
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    foos.bin = (foos.baz + foos.bar) * foos.foo
+    by_bar_baz_bin = foos.bar.groupby().baz.groupby().bin.groupby()
     assert (by_bar_baz_bin.aslist() ==
             [[[[{'bar': 0, 'baz': 3, 'bin': 0, 'foo': 0}]],
               [[{'bar': 0, 'baz': 5, 'bin': 10, 'foo': 2}]],
@@ -3993,12 +4259,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Given a plist:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    foo_by_bar = foo.bar.groupby()
+    foo_by_bar = foos.bar.groupby()
     assert (foo_by_bar.aslist() ==
             [[{'foo': 0, 'bar': 0},
               {'foo': 2, 'bar': 0}],
@@ -4010,13 +4276,13 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Calling groupby again:
     ```python
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
     ```
-    Now foo_by_bar_foo has two nested layers of inner plists. The outer nest
+    Now by_bar_foo has two nested layers of inner plists. The outer nest
     groups the values by `bar`, and the inner nest groups them by `foo`.
 
     groupby always operates with leaf children of the plist, and it always adds
@@ -4026,17 +4292,17 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     to group by a non-hashable value, you should convert it to a hashable
     representation first, for example using `plist.pstr()` or `plist.apply(id)`:
     ```python
-    foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
+    foos = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
     try:
-      foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
+      by_bar_crash = foos.bar.groupby()  # CRASHES!
     except Exception as e:
       assert (isinstance(e, TypeError))
-    foo_by_bar_pstr = foo.bar.pstr().groupby()
-    assert (foo_by_bar_pstr.aslist() ==
+    by_bar_pstr = foos.bar.pstr().groupby()
+    assert (by_bar_pstr.aslist() ==
             [[{'bar': [1, 2, 3]},
               {'bar': [1, 2, 3]}]])
-    foo_by_bar_id = foo.bar.apply(id).groupby()
-    assert (foo_by_bar_id.aslist() ==
+    by_bar_id = foos.bar.apply(id).groupby()
+    assert (by_bar_id.aslist() ==
             [[{'bar': [1, 2, 3]}],
              [{'bar': [1, 2, 3]}]])
     ```
@@ -4086,19 +4352,19 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     `wrap` is useful when you wish to call a function on the top-level plist,
     but you don't want to stop your call chain:
     ```python
-    foo = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
-    assert (foo.aslist() ==
+    foos = plist([{'bar': [1, 2, 3]}, {'bar': [4, 5, 6]}])
+    assert (foos.aslist() ==
             [{'bar': [1, 2, 3]},
              {'bar': [4, 5, 6]}])
-    arr1 = np.array(foo.bar.pstr().groupby().bar)
+    arr1 = np.array(foos.bar.pstr().groupby().bar)
     assert (np.all(arr1 ==
                    np.array([[[1, 2, 3]],
                              [[4, 5, 6]]])))
-    arr2 = foo.bar.pstr().groupby().bar.np()
+    arr2 = foos.bar.pstr().groupby().bar.np()
     assert (np.all(np.array(arr2.aslist()) ==
                    np.array([np.array([[1, 2, 3]]),
                              np.array([[4, 5, 6]])])))
-    arr3 = foo.bar.pstr().groupby().bar.wrap().np()
+    arr3 = foos.bar.pstr().groupby().bar.wrap().np()
     assert (np.all(np.array(arr3.aslist()) ==
                    np.array([np.array([[[1, 2, 3]],
                                       [[4, 5, 6]]])])))
@@ -4106,21 +4372,21 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     assert (np.all(arr1 == arr3[0]))
     ```
     In the example above, calling `np.array` on the grouped plist gives a
-    particular array structure, but it does not return a plist, so you can't as
+    particular array structure, but it does not return a `plist`, so you can't as
     naturally use that array in ongoing computations while keeping track of
-    the correspondence of the array with the original data in `foo`.
+    the correspondence of the array with the original data in `foos`.
 
-    Calling plist.np() directly on the grouped plist gives a different result,
+    Calling `plist.np()` directly on the grouped `plist` gives a different result,
     however, as shown in `arr2`. The array is missing one dimension relative to
     the call that generated `arr1`.
 
     Instead, it is easy to call `plist.wrap()` before calling `plist.np()` in
     this case in order to get the same result of passing `self` to `np.array()`,
-    but the advantage is that the numpy array is still wrapped in a plist, so it
+    but the advantage is that the `numpy.array` is still wrapped in a `plist`, so it
     can be used in follow-on computations.
 
     Returns:
-      plist with one additional level of nesting.
+      `plist` with one additional level of nesting.
     """
     return plist([self])
 
@@ -4296,12 +4562,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `nonempty` is useful in combination with grouping and filtering:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    foo_by_bar = foo.bar.groupby()
+    foo_by_bar = foos.bar.groupby()
     assert (foo_by_bar.aslist() ==
             [[{'foo': 0, 'bar': 0},
               {'foo': 2, 'bar': 0}],
@@ -4320,12 +4586,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     If the plist is deep, multiple levels of empty sublists can be removed at
     the same time:
     ```python
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    filtered = foo_by_bar_foo.foo != 1
+    filtered = by_bar_foo.foo != 1
     assert (filtered.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
@@ -4395,12 +4661,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `puniq` reduces the values of the groups of self using an equality check:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    reduced = foo.bar.puniq()
+    reduced = foos.bar.puniq()
     assert (reduced.aslist() ==
             [0, 1])
     assert (reduced.root().aslist() ==
@@ -4410,7 +4676,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Grouped plists
     ```python
-    foo_by_bar = foo.bar.groupby()
+    foo_by_bar = foos.bar.groupby()
     assert (foo_by_bar.aslist() ==
             [[{'foo': 0, 'bar': 0},
               {'foo': 2, 'bar': 0}],
@@ -4425,12 +4691,12 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     The equality check respects the subgroups of self:
     ```python
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    reduced_no_effect = foo_by_bar_foo.bar.puniq()
+    reduced_no_effect = by_bar_foo.bar.puniq()
     assert (reduced_no_effect.aslist() ==
             [[[0], [0]], [[1]]])
     assert (reduced_no_effect.root().aslist() ==
@@ -4444,23 +4710,23 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     convert it to a hashable representation first, for example using
     `plist.pstr()` or `plist.apply(id)`:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=0, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 0, 'bar': 0}])
     try:
-      reduced_crash = foo.puniq()  # CRASHES!
+      reduced_crash = foos.puniq()  # CRASHES!
     except Exception as e:
       assert (isinstance(e, TypeError))
-    reduced_pstr = foo.pstr().puniq()
+    reduced_pstr = foos.pstr().puniq()
     assert (reduced_pstr.aslist() ==
             ["{'bar': 0, 'foo': 0}",
              "{'bar': 1, 'foo': 1}"])
     assert (reduced_pstr.root().aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1}])
-    reduced_id = foo.apply(id).puniq()
+    reduced_id = foos.apply(id).puniq()
     assert (reduced_id.root().aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
@@ -4505,10 +4771,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `remix` allows you to easily restructure your data into a manageable form:
     ```python
-    foo = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
-                 {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
-                 {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
-    rmx = foo.remix('foo', baz=foo.bar.baz)
+    foos = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
+                  {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
+                  {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
+    rmx = foos.remix('foo', baz=foos.bar.baz)
     assert (rmx.aslist() ==
             [{'foo': 0, 'baz': 13},
              {'foo': 1, 'baz': 42},
@@ -4519,7 +4785,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     If `remix` is called on a grouped plist, the result is still a flat plist
     of flat pdicts, but the values in the pdicts are themselves pdicts:
     ```python
-    foo_by_bam = foo.bar.bam.groupby()
+    foo_by_bam = foos.bar.bam.groupby()
     assert (foo_by_bam.aslist() ==
             [[{'foo': 0, 'bar': {'bam': 0, 'baz': 13, 'bin': 'not'}},
               {'foo': 2, 'bar': {'bam': 0, 'baz': -9, 'bin': 'data'}}],
@@ -4585,23 +4851,23 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `pdepth` returns a plist of the same plist structure as self:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.pdepth().aslist() ==
+    assert (foos.pdepth().aslist() ==
             [0])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.pdepth().aslist() ==
+    assert (by_bar_foo.pdepth().aslist() ==
             [[[2], [2]], [[2]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4614,8 +4880,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     is sometimes more convenient to get the depth as a scalar value. Pass a True
     value to the first parameter (`s` for 'scalar'):
     ```python
-    assert (foo.pdepth(s=1) == 0)
-    assert (foo_by_bar_foo.pdepth(1) == 2)
+    assert (foos.pdepth(s=1) == 0)
+    assert (by_bar_foo.pdepth(1) == 2)
     assert (filtered.pdepth(True) == 2)
     ```
 
@@ -4646,31 +4912,31 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `plen` returns a plist of the same depth as self, up to `r`:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.plen().aslist() ==
+    assert (foos.plen().aslist() ==
             [3])
-    assert (foo.plen(1).aslist() ==
+    assert (foos.plen(1).aslist() ==
             [3])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.plen().aslist() ==
+    assert (by_bar_foo.plen().aslist() ==
             [2])
-    assert (foo_by_bar_foo.plen(r=1).aslist() ==
+    assert (by_bar_foo.plen(r=1).aslist() ==
             [[3]])
-    assert (foo_by_bar_foo.plen(2).aslist() ==
+    assert (by_bar_foo.plen(2).aslist() ==
             [[[3]]])
-    assert (foo_by_bar_foo.plen(-1).aslist() ==
+    assert (by_bar_foo.plen(-1).aslist() ==
             [[[3]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4685,8 +4951,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     is sometimes more convenient to get the depth as a scalar value. Pass a True
     value to the first parameter (`s` for 'scalar'):
     ```python
-    assert (foo.plen(s=1) == 3)
-    assert (foo_by_bar_foo.plen(r=2, s=1) == 3)
+    assert (foos.plen(s=1) == 3)
+    assert (by_bar_foo.plen(r=2, s=1) == 3)
     assert (filtered.plen(-1, s=True) == 2)
     ```
 
@@ -4723,15 +4989,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     `pshape` returns a plist of the same structure as `self`:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.pshape().aslist() ==
+    assert (foos.pshape().aslist() ==
             [3])
 
-    foo_by_bar = foo.bar.groupby()
+    foo_by_bar = foos.bar.groupby()
     assert (foo_by_bar.aslist() ==
             [[{'bar': 0, 'foo': 0},
               {'bar': 0, 'foo': 2}],
@@ -4739,15 +5005,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     assert (foo_by_bar.pshape().aslist() ==
             [[2], [1]])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.pshape().aslist() ==
+    assert (by_bar_foo.pshape().aslist() ==
             [[[1], [1]], [[1]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4776,23 +5042,23 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.pstructure().aslist() ==
+    assert (foos.pstructure().aslist() ==
             [3])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.pstructure().aslist() ==
+    assert (by_bar_foo.pstructure().aslist() ==
             [2, 3, 3])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4819,29 +5085,29 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.lfill() ==
+    assert (foos.lfill() ==
             [0, 1, 2])
-    assert (foo.lfill(-7) ==
+    assert (foos.lfill(-7) ==
             [-7, -6, -5])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.lfill() ==
+    assert (by_bar_foo.lfill() ==
             [[[0], [1]], [[2]]])
-    assert (foo_by_bar_foo.lfill_() ==
+    assert (by_bar_foo.lfill_() ==
             [[[0], [1]], [[0]]])
-    assert (foo_by_bar_foo.lfill(pepth=2) ==
+    assert (by_bar_foo.lfill(pepth=2) ==
             [[[0], [0]], [[0]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4873,29 +5139,29 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.pfill().aslist() ==
+    assert (foos.pfill().aslist() ==
             [0, 1, 2])
-    assert (foo.pfill(-7).aslist() ==
+    assert (foos.pfill(-7).aslist() ==
             [-7, -6, -5])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.pfill().aslist() ==
+    assert (by_bar_foo.pfill().aslist() ==
             [[[0], [1]], [[2]]])
-    assert (foo_by_bar_foo.pfill_().aslist() ==
+    assert (by_bar_foo.pfill_().aslist() ==
             [[[0], [1]], [[0]]])
-    assert (foo_by_bar_foo.pfill(pepth=2).aslist() ==
+    assert (by_bar_foo.pfill(pepth=2).aslist() ==
             [[[0], [0]], [[0]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4926,27 +5192,27 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.pleft().aslist() ==
+    assert (foos.pleft().aslist() ==
             [2, 1, 0])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.pleft().aslist() ==
+    assert (by_bar_foo.pleft().aslist() ==
             [[[2], [1]], [[0]]])
-    assert (foo_by_bar_foo.pleft_().aslist() ==
+    assert (by_bar_foo.pleft_().aslist() ==
             [[[1], [0]], [[0]]])
-    assert (foo_by_bar_foo.pleft(pepth=2).aslist() ==
+    assert (by_bar_foo.pleft(pepth=2).aslist() ==
             [[[0], [0]], [[0]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -4966,10 +5232,10 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       if remaining == 0:
         plt.show()
 
-    (foo.bar == 0).baz = 3 + (foo.bar == 0).foo
-    (foo.bar == 1).baz = 6
-    foo.bin = (foo.baz + foo.bar) * foo.foo
-    by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
+    (foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+    (foos.bar == 1).baz = 6
+    foos.bin = (foos.baz + foos.bar) * foos.foo
+    by_bar_baz_bin = foos.bar.groupby().baz.groupby().bin.groupby()
     by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
     ```
 
@@ -4985,22 +5251,22 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 1, 'bar': 1},
              {'foo': 2, 'bar': 0}])
-    assert (foo.values_like(1).aslist() ==
+    assert (foos.values_like(1).aslist() ==
             [1, 1, 1])
 
-    foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-    assert (foo_by_bar_foo.aslist() ==
+    by_bar_foo = foos.bar.groupby().foo.groupby()
+    assert (by_bar_foo.aslist() ==
             [[[{'foo': 0, 'bar': 0}],
               [{'foo': 2, 'bar': 0}]],
              [[{'foo': 1, 'bar': 1}]]])
-    assert (foo_by_bar_foo.values_like('foo').aslist() ==
+    assert (by_bar_foo.values_like('foo').aslist() ==
             [[['foo'], ['foo']], [['foo']]])
-    all_the_same_dict = foo_by_bar_foo.values_like({}, pepth=2)
+    all_the_same_dict = by_bar_foo.values_like({}, pepth=2)
     assert (all_the_same_dict.aslist() ==
             [[[{}], [{}]], [[{}]]])
 
@@ -5008,7 +5274,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     assert (all_the_same_dict.aslist() ==
             [[[{'foo': 1}], [{'foo': 1}]], [[{'foo': 1}]]])
 
-    filtered = foo_by_bar_foo.bar == 0
+    filtered = by_bar_foo.bar == 0
     assert (filtered.aslist() ==
             [[[{'bar': 0, 'foo': 0}],
               [{'bar': 0, 'foo': 2}]],
@@ -5061,15 +5327,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     Using `me` with a local variable requires that the variable already exist in
     the local context, and that it be a `plist`:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    foo.baz = 3 * foo.foo + foo.bar
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos.baz = 3 * foos.foo + foos.bar
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0, 'baz': 0},
              {'foo': 1, 'bar': 1, 'baz': 4},
              {'foo': 2, 'bar': 0, 'baz': 6}])
     def new_context():
       me = plist()
-      foo.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.bar)
+      foos.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.bar)
     new_context()
     ```
 
@@ -5077,7 +5343,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```python
     def new_context():
       baz = plist()
-      foo.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
+      foos.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
     new_context()
     ```
 
@@ -5085,7 +5351,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```python
     def new_context():
       me2 = plist()
-      foo.bar.groupby().baz.sortby_().groupby().me(me2).foo.plt().plot(me2.foo + 1)
+      foos.bar.groupby().baz.sortby_().groupby().me(me2).foo.plt().plot(me2.foo + 1)
     new_context()
     ```
 
@@ -5094,8 +5360,8 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     work if there are no local or global variables named `me` or `baz`:
     ```python
     def new_context():
-      foo.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.baz)
-      foo.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
+      foos.bar.groupby().baz.sortby_().groupby().me().foo.plt().plot(me.baz)
+      foos.bar.groupby().baz.sortby_().groupby().me('baz').foo.plt().plot(baz.baz)
       del globals()['me']
       del globals()['baz']
     new_context()
@@ -5153,7 +5419,7 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
   def pand(self, name='__plist_and_var__', call_pepth=0):
     """Stores `self` into a `plist` of `tuple`s that gets extended with each call.
 
-    `pand` is meant to facilitate building up tuples of values to be sent as
+    `pand` is meant to facilitate building up `tuple`s of values to be sent as
     a single block to a chained call to `apply`, or as `*args` when calling
     `plist.apply(psplat=True)`. The name is `pand` to evoke conjunction: the
     caller wants a `plist` with this *and* this *and* this.
@@ -5164,15 +5430,15 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
 
     Examples:
     ```python
-    foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-    foo.baz = 3 * foo.foo + foo.bar
-    assert (foo.aslist() ==
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    foos.baz = 3 * foos.foo + foos.bar
+    assert (foos.aslist() ==
             [{'foo': 0, 'bar': 0, 'baz': 0},
              {'foo': 1, 'bar': 1, 'baz': 4},
              {'foo': 2, 'bar': 0, 'baz': 6}])
     def new_context():
-      assert (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
-                 .apply_(qj, '(foo, bar)') ==
+      assert (foos.bar.groupby().baz.groupby().foo.pand().root().bar.pand().ungroup()
+                  .apply_(qj, '(foo, bar)') ==
               [[[(0, 0)],
                 [(2, 0)]],
                [[(1, 1)]]])
@@ -5184,11 +5450,11 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     ```
 
     The same construction can be used with methods that expect the arguments
-    individually, requiring the tuple to be expanded:
+    individually, requiring the `tuple` to be expanded:
     ```python
     def new_context():
-      (foo.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
-          .ungroup().apply_(qj, psplat=True, b=0))
+      (foos.bar.groupby().baz.groupby().foo.pand().root().bar.pstr().pand()
+           .ungroup().apply_(qj, psplat=True, b=0))
     new_context()
     # Logs:
     #   qj: <pstar> apply: (foo, bar) <2876>: (0, 0)
@@ -5199,14 +5465,14 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
     #   qj: <pstar> apply: (1, 1) <2876>: (1, 1)
     ```
 
-    Building multiple tuples in the same context requires passing `name` to keep
+    Building multiple `tuple`s in the same context requires passing `name` to keep
     them separate:
     ```python
     def new_context():
       me = plist()
-      assert (foo.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
-                 .apply_(qj,
-                         me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
+      assert (foos.bar.groupby().baz.groupby().me().foo.pand().root().bar.pand().ungroup()
+                  .apply_(qj,
+                          me.foo.pand('strs').root().bar.pand('strs').ungroup().pstr()) ==
               [[(0, 0),
                 (2, 0)],
                [(1, 1)]])
@@ -5263,6 +5529,335 @@ class plist(compatible_metaclass(_SyntaxSugar, list)):
       # Delete the stack frame to ensure there are no memory leaks, as suggested
       # by https://docs.python.org/2/library/inspect.html#the-interpreter-stack
       del f
+
+
+################################################################################
+################################################################################
+################################################################################
+# Conversion
+################################################################################
+################################################################################
+################################################################################
+class _Converter(type):
+  _cls_map = pdict({
+      defaultpdict.__mro__[1]: defaultpdict,
+      frozenpset.__mro__[1]: frozenpset,
+      pdict.__mro__[1]: pdict,
+      plist.__mro__[1]: plist,
+      pset.__mro__[1]: pset,
+      ptuple.__mro__[1]: ptuple,
+      defaultpdict: defaultpdict,
+      frozenpset: frozenpset,
+      pdict: pdict,
+      plist: plist,
+      pset: pset,
+      ptuple: ptuple,
+  })
+
+  def __call__(self, obj, cls_map=None, depth=-1, dbg=0):
+    if depth == 0:
+      return obj
+    if cls_map is None:
+      cls_map = self._cls_map
+
+    if isinstance(obj, (pstar, _SyntaxSugar)):
+      raise ValueError('pstar conversion functions cannot operate on each other. '
+                       'I.e., you can\'t do things like:\n`plist * pdict * data`.\n'
+                       'Use grouping or ordering to avoid this:\n'
+                       '`plist * (pdict * data)` or `plist * data * pdict`.')
+
+    target_type = cls_map.get(type(obj), None)
+    if target_type:
+      if hasattr(target_type, '__mro__') and defaultdict in target_type.__mro__:
+        try:
+          return target_type(obj.default_factory, **{k: self(obj[k], cls_map, depth - 1) for k in obj})
+        except Exception as e:
+          qj(str(e), 'First defaultdict conversion failed for %s' % str(obj), b=dbg)
+          try:
+            return target_type(obj.default_factory, {k: self(obj[k], cls_map, depth - 1) for k in obj})
+          except Exception as e:
+            qj(str(e), 'Second defaultdict conversion failed for %s' % str(obj), b=dbg)
+      try:
+        return target_type(**{k: self(obj[k], cls_map, depth - 1) for k in obj})
+      except Exception as e:
+        qj(str(e), 'First dict-style conversion failed for %s' % str(obj), b=dbg)
+        try:
+          return target_type([self(x, cls_map, depth - 1) for x in obj])
+        except Exception as e:
+          qj(str(e), 'List-style conversion failed for %s' % str(obj), b=dbg)
+          try:
+            return target_type({k: self(obj[k], cls_map, depth - 1) for k in obj})
+          except Exception as e:
+            qj(str(e), 'Second dict-style conversion failed for %s' % str(obj), b=dbg)
+    return obj
+
+  def __mul__(self, other):
+    return self(other)
+
+  def __rmul__(self, other):
+    return self(other)
+
+  def __truediv__(self, other):
+    return self.__rtruediv__(other)  # Right division is the principled one.
+
+  def __rtruediv__(self, other, depth=-1):
+    cls_map = (
+        plist(self._cls_map.items())._[0] != [defaultpdict, frozenpset, pdict, plist, pset, ptuple]
+    )._[::-1].pdict()
+    return self(other, cls_map, depth)
+
+  def __add__(self, other):
+    return self(other, depth=1)
+
+  def __radd__(self, other):
+    return self(other, depth=1)
+
+  def __sub__(self, other):
+    return self.__rsub__(other)  # Right subtraction is the principled one.
+
+  def __rsub__(self, other):
+    return self.__rtruediv__(other, depth=1)
+
+  if sys.version_info[0] < 3:
+    __div__, __rdiv__ = __truediv__, __rtruediv__
+
+  def cls_map(self):
+    return self._cls_map.copy()
+
+
+class pstar(_compatible_metaclass(_Converter, object)):
+  """Recursively converts between standard python types and pstar types.
+
+  Examples:
+
+  Converting python types to `pstar` types:
+  ```python
+  data = [dict(foo=[0, 1, 2], bar=dict(bin=0), baz=defaultdict(int, a=1, b=2, c=3)),
+          dict(foo=[1, 2, 3], bar=dict(bin=1), baz=frozenset([3, 4, 5])),
+          dict(foo=[2, 3, 4], bar=dict(bin=0), baz=set([7, 8, 9]))]
+
+  # Recursively convert all pstar-compatible types:
+  pl = pstar(data)
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+  assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, pset])
+
+  # An alternative way to do the same conversion:
+  pl = pstar * data
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+  assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, pset])
+
+  # Only convert the outermost object:
+  pl = pstar + data
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.foo.apply(type).aslist() == [list, list, list])
+  assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+  # The same outer conversion, as a function call:
+  pl = pstar(data, depth=1)
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.foo.apply(type).aslist() == [list, list, list])
+  assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+  # Convert two layers:
+  pl = pstar(data, depth=2)
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [list, list, list])
+  assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+  pl = pstar * data
+
+  # Convert from pstar types back to python types:
+  data2 = pl / pstar
+  assert (data2 == data)
+  assert (type(data2) == list)
+  assert ([type(x) for x in data2] == [dict, dict, dict])
+  assert ([type(x['foo']) for x in data2] == [list, list, list])
+  assert ([type(x['bar']) for x in data2] == [dict, dict, dict])
+  assert ([type(x['baz']) for x in data2] == [defaultdict, frozenset, set])
+
+  # Only convert the outermost object:
+  data2 = pl - pstar
+  assert (data2 == data)
+  assert (type(data2) == list)
+  assert ([type(x) for x in data2] == [pdict, pdict, pdict])
+  assert ([type(x['foo']) for x in data2] == [plist, plist, plist])
+  assert ([type(x['bar']) for x in data2] == [pdict, pdict, pdict])
+  assert ([type(x['baz']) for x in data2] == [defaultpdict, frozenpset, pset])
+  ```
+
+  You can also convert from each `pstar` class to its python equivalent and back using
+  arithmetic operations on the `class` itself, for convenience:
+  ```python
+  d1 = {'foo': 1, 'bar': 2}
+  pd = pdict * d1
+  assert (type(d1) == dict)
+  assert (type(pd) == pdict)
+  assert (pd == d1)
+
+  d2 = pd / pdict
+  assert (type(d2) == dict)
+  assert (d2 == d1)
+
+  pl = plist * data
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+  assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+  assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+  data2 = data * pdict
+  assert (type(data2) == list)
+  assert (plist(data2).apply(type).aslist() == [pdict, pdict, pdict])
+  assert (plist(data2).foo.apply(type).aslist() == [list, list, list])
+  assert (plist(data2).bar.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (plist(data2).baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+  pl = plist + data * pdict
+  assert (type(pl) == plist)
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [list, list, list])
+  assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+  ```
+
+  You can't do arbitrary arithmetic with the conversion methods, though.
+  One conversion method can't directly operate on another:
+  ```python
+  try:
+    plist * pdict * data
+  except Exception as e:
+    assert (isinstance(e, ValueError))
+  ```
+
+  If you want to combine multiple conversions, order of operations matters:
+  ```python
+  pl = plist + pdict * data
+  assert (type(pl) == plist)
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [list, list, list])
+  assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+
+  pl = plist * (pdict * data)
+  assert (type(pl) == plist)
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+  assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+  ```
+
+  You can comine `pstar` and the `pstar` classes together to do partial conversion:
+  ```python
+  pl = pstar * data / pset
+  assert (isinstance(pl, plist))
+  assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+  assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+  assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, set])
+  ```
+
+  The semantics of the operators are:
+   - `+` and `-`: Non-recursive conversions (only the operand itself is converted).
+   - `*` and `/`: Recursive conversions (the operand and any children are converted).
+   - `+` and `*` on the left or right: Convert python classes to `pstar` classes; e.g., `dict` to `pdict`.
+   - `-` and `/` on the right: Convert `pstar` classes to python classes; e.g., `plist` to `list`.
+   - `-` and `/` on the left: Convert non-`pdict` `pstar` types to their python equivalents.
+
+  Below are examples focused on `pdict`s, but the same is true for all of the operators:
+  ```python
+
+  # Starting from a nested pstar object, you may want to convert pdicts to dicts.
+  pd = pdict(foo=plist[1, 2, 3], bar=pset[4, 5, 6], baz=pdict(a=7, b=8, d=9))
+
+  # Subtracting by pdict will convert a top-level pdict to dict, but will leave other objects alone.
+  d = pd - pdict
+  assert (type(d) == dict)
+  assert (type(d['foo']) == plist)
+  assert (type(d['bar']) == pset)
+  assert (type(d['baz']) == pdict)  # Note that the child is still a pdict!
+
+  pl = pd.foo - pdict
+  assert (type(pl) == plist)  # The type is unchanged, since pd.foo is not a pdict
+  assert (pl is not pd.foo)  # Conversion still creates a new copy, though!
+  assert (pl == pd.foo)  # But the contents are identical, of course.
+
+  # Dividing by pdict will convert any pdict values to dicts, but leave others unchanged.
+  d = pd / pdict
+  assert (type(d) == dict)
+  assert (type(d['foo']) == plist)
+  assert (type(d['bar']) == pset)
+  assert (type(d['baz']) == dict)  # Note that the child is a dict!
+
+  # You probably shouldn't left-subtract by pdict, but you can. It converts any other pstar classes
+  # to their python equivalents, but leaves pdicts alone.
+  pd2 = pdict - pd
+  assert (type(pd2) == pdict)
+
+  l = pdict - pd.foo
+  assert (type(l) == list)
+  assert (type(pd.foo) == plist)
+  assert (l == pd.foo)
+
+  # Left division is also not recommended, but it works. It converts all other pstar classes
+  # to their python equivalents, but leaves pdicts alone.
+  pd2 = pdict / pd
+  assert (type(pd2) == pdict)
+  assert (type(pd2.foo) == list)
+  assert (type(pd2.bar) == set)
+  assert (type(pd2.baz) == pdict)
+  ```
+
+  The only exceptions are for the `pstar` left subtraction and left division, which are identical
+  to right subtraction and right division:
+  ```python
+  d = pd - pstar
+  assert (type(d) == dict)
+  assert (type(d['foo']) == plist)
+  assert (type(d['bar']) == pset)
+  assert (type(d['baz']) == pdict)
+
+  d = pstar - pd
+  assert (type(d) == dict)
+  assert (type(d['foo']) == plist)
+  assert (type(d['bar']) == pset)
+  assert (type(d['baz']) == pdict)
+
+  d = pd / pstar
+  assert (type(d) == dict)
+  assert (type(d['foo']) == list)
+  assert (type(d['bar']) == set)
+  assert (type(d['baz']) == dict)
+
+  d = pstar / pd
+  assert (type(d) == dict)
+  assert (type(d['foo']) == list)
+  assert (type(d['bar']) == set)
+  assert (type(d['baz']) == dict)
+  ```
+
+  You can also access the core `pstar` classes from the `pstar` conversion object:
+  ```python
+  foos = pstar.plist([pstar.pdict(foo=0, bar=0), pstar.pdict(foo=1, bar=1), pstar.pdict(foo=2, bar=0)])
+  ```
+
+  This is convenient if you only imported as `from pstar import pstar`.
+  """
+  defaultpdict = defaultpdict
+  frozenpset = frozenpset
+  pdict = pdict
+  plist = plist
+  pset = pset
+  ptuple = ptuple
 
 
 # pylint: enable=line-too-long,invalid-name,g-explicit-length-test

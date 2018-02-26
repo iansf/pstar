@@ -55,11 +55,11 @@ assert ((((((1 + 2) * 5 + 3) * 4 + 4) * 3 + 5) * 2) ==
 
 When `self` is a grouped [`plist`](./pstar_plist.md), `pepth` determines which groups are reduced over:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0), pdict(foo=3, bar=1), pdict(foo=4, bar=0)])
-(foo.bar == 0).baz = 3 + (foo.bar == 0).foo
-(foo.bar == 1).baz = 6
-foo.bin = (foo.baz + foo.bar) * foo.foo
-by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0), pdict(foo=3, bar=1), pdict(foo=4, bar=0)])
+(foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+(foos.bar == 1).baz = 6
+foos.bin = (foos.baz + foos.bar) * foos.foo
+by_bar_baz_bin = foos.bar.groupby().baz.groupby().bin.groupby()
 assert (by_bar_baz_bin.aslist() ==
         [[[[{'bar': 0, 'baz': 3, 'bin': 0, 'foo': 0}]],
           [[{'bar': 0, 'baz': 5, 'bin': 10, 'foo': 2}]],
@@ -121,4 +121,4 @@ results, and is not recommended.
 
 
 
-## [Source](../pstar/pstar.py#L3769-L3929)
+## [Source](../pstar/pstar.py#L4035-L4195)

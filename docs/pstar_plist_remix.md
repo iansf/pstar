@@ -6,10 +6,10 @@ Returns a new [`plist`](./pstar_plist.md) of `pdicts` based on selected data fro
 
 `remix` allows you to easily restructure your data into a manageable form:
 ```python
-foo = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
-             {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
-             {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
-rmx = foo.remix('foo', baz=foo.bar.baz)
+foos = plist([{'foo': 0, 'bar': {'baz': 13, 'bam': 0, 'bin': 'not'}},
+              {'foo': 1, 'bar': {'baz': 42, 'bam': 1, 'bin': 'good'}},
+              {'foo': 2, 'bar': {'baz': -9, 'bam': 0, 'bin': 'data'}}])
+rmx = foos.remix('foo', baz=foos.bar.baz)
 assert (rmx.aslist() ==
         [{'foo': 0, 'baz': 13},
          {'foo': 1, 'baz': 42},
@@ -20,7 +20,7 @@ Note that `rmx.baz` gets its values from `foo.bar.baz` in a natural manner.
 If `remix` is called on a grouped plist, the result is still a flat plist
 of flat pdicts, but the values in the pdicts are themselves pdicts:
 ```python
-foo_by_bam = foo.bar.bam.groupby()
+foo_by_bam = foos.bar.bam.groupby()
 assert (foo_by_bam.aslist() ==
         [[{'foo': 0, 'bar': {'bam': 0, 'baz': 13, 'bin': 'not'}},
           {'foo': 2, 'bar': {'bam': 0, 'baz': -9, 'bin': 'data'}}],
@@ -64,4 +64,4 @@ assert (rmx_by_bam.aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4501-L4575)
+## [Source](../pstar/pstar.py#L4767-L4841)

@@ -16,10 +16,24 @@
 
 Import like this:
 ```python
-from pstar import defaultpdict, pdict, plist, pset
+from pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar
+```
+
+Of course, `from pstar import *` works as well.
+
+If you have a bunch of data that you want to convert to pstar and manipulate, you can
+also just import like this to get the recursive conversion function:
+```python
+from pstar import pstar
+```
+
+At that point, you can access the core `pstar` classes as needed with:
+```python
+pd = pstar.pdict(foo=1, bar=2, baz=3)
+pl = pstar.plist([1, 2, 3])
 ```
 """
 
-from .pstar import pdict, defaultpdict, pset, plist
+from .pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar
 
-__all__ = ['pdict', 'defaultpdict', 'pset', 'plist']
+__all__ = ['defaultpdict', 'frozenpset', 'pdict', 'plist', 'pset', 'ptuple', 'pstar']

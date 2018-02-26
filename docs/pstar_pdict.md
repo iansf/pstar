@@ -6,34 +6,53 @@
 
 Use with dot notation or subscript notation:
 ```python
-  p = pdict()
-  p.foo = 1
-  assert (p['foo'] == p.foo == 1)
+pd = pdict()
+pd.foo = 1
+assert (pd['foo'] == pd.foo == 1)
 ```
 
 `list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
-  p = pdict(foo=1, bar=2)
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = pdict(foo=1, bar=2)
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 Setting with a `list` subscript also works, using a single element or a matching
 `list` for the values:
 ```python
-  p = pdict()
-  p[['foo', 'bar']] = 1
-  assert (p[['foo', 'bar']].aslist() == [1, 1])
-  p[['foo', 'bar']] = [1, 2]
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = pdict()
+pd[['foo', 'bar']] = 1
+assert (pd[['foo', 'bar']].aslist() == [1, 1])
+pd[['foo', 'bar']] = [1, 2]
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 [`update`](./pstar_pdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
-  p = pdict(foo=1, bar=2)
-  p.update(bar=3).baz = 4
-  assert (p.bar == 3)
-  assert ('baz' in p.keys())
+pd = pdict(foo=1, bar=2)
+pd.update(bar=3).baz = 4
+assert (pd.bar == 3)
+assert ('baz' in pd.keys())
+assert (pd.baz == 4)
 ```
+
+**Conversion:**
+
+You can convert from `pdict` to `dict` and back using arithmetic operations on
+the `pdict` `class` itself, for convenience:
+```python
+d1 = {'foo': 1, 'bar': 2}
+pd = pdict * d1
+assert (type(d1) == dict)
+assert (type(pd) == pdict)
+assert (pd == d1)
+
+d2 = pd / pdict
+assert (type(d2) == dict)
+assert (d2 == d1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
 
 ## Methods and Properties:
 
@@ -71,7 +90,7 @@ Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with ite
 
 ### [`pstar.pdict.qj(self, *a, **kw)`](./pstar_pdict_qj.md)
 
-Call the [`qj`](./pstar_defaultpdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_defaultpdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 ### [`pstar.pdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_pdict_rekey.md)
 
@@ -81,4 +100,4 @@ Change the keys of `self` or a copy while keeping the same values.
 
 Update `self`. **Returns `self` to allow chaining.**
 
-## [Source](../pstar/pstar.py#L79-L418)
+## [Source](../pstar/pstar.py#L124-L482)

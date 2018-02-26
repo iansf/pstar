@@ -57,4 +57,4 @@ assert (by_bar_sorted.aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4127-L4186)
+## [Source](../pstar/pstar.py#L4393-L4452)

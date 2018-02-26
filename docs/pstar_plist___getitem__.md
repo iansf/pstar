@@ -87,4 +87,4 @@ assert (pl._[[True, False, True]].apply(list).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L1844-L1951)
+## [Source](../pstar/pstar.py#L2105-L2212)

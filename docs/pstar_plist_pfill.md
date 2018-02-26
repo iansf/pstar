@@ -6,29 +6,29 @@ Identical to `plist.lfill()`, but returns a **[`plist`](./pstar_plist.md)** inst
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.pfill().aslist() ==
+assert (foos.pfill().aslist() ==
         [0, 1, 2])
-assert (foo.pfill(-7).aslist() ==
+assert (foos.pfill(-7).aslist() ==
         [-7, -6, -5])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.pfill().aslist() ==
+assert (by_bar_foo.pfill().aslist() ==
         [[[0], [1]], [[2]]])
-assert (foo_by_bar_foo.pfill_().aslist() ==
+assert (by_bar_foo.pfill_().aslist() ==
         [[[0], [1]], [[0]]])
-assert (foo_by_bar_foo.pfill(pepth=2).aslist() ==
+assert (by_bar_foo.pfill(pepth=2).aslist() ==
         [[[0], [0]], [[0]]])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -51,4 +51,4 @@ assert (filtered.pfill(3).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4869-L4921)
+## [Source](../pstar/pstar.py#L5135-L5187)

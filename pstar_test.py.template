@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from collections import defaultdict
 import os
 import re
 import shutil
@@ -30,7 +31,7 @@ import mock
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pstar import defaultpdict, pdict, plist, pset  # pylint: disable=g-multiple-import
+from pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar  # pylint: disable=g-multiple-import
 from qj import qj
 
 DEBUG_TESTS = False

@@ -72,4 +72,4 @@ call `DataFrame.groupby`. Also see `plist.remix` for alternative ways of convert
 
 
 
-## [Source](../pstar/pstar.py#L3161-L3230)
+## [Source](../pstar/pstar.py#L3427-L3496)

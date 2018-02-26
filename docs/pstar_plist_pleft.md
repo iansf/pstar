@@ -6,27 +6,27 @@ Convenience method identical to `-self.pfill(1) + self.plen(-1, s=True)`.
 
 **Examples:**
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.pleft().aslist() ==
+assert (foos.pleft().aslist() ==
         [2, 1, 0])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.pleft().aslist() ==
+assert (by_bar_foo.pleft().aslist() ==
         [[[2], [1]], [[0]]])
-assert (foo_by_bar_foo.pleft_().aslist() ==
+assert (by_bar_foo.pleft_().aslist() ==
         [[[1], [0]], [[0]]])
-assert (foo_by_bar_foo.pleft(pepth=2).aslist() ==
+assert (by_bar_foo.pleft(pepth=2).aslist() ==
         [[[0], [0]], [[0]]])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -46,10 +46,10 @@ def plot(x, remaining):
   if remaining == 0:
     plt.show()
 
-(foo.bar == 0).baz = 3 + (foo.bar == 0).foo
-(foo.bar == 1).baz = 6
-foo.bin = (foo.baz + foo.bar) * foo.foo
-by_bar_baz_bin = foo.bar.groupby().baz.groupby().bin.groupby()
+(foos.bar == 0).baz = 3 + (foos.bar == 0).foo
+(foos.bar == 1).baz = 6
+foos.bin = (foos.baz + foos.bar) * foos.foo
+by_bar_baz_bin = foos.bar.groupby().baz.groupby().bin.groupby()
 by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
 ```
 
@@ -61,4 +61,4 @@ by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
 
 
 
-## [Source](../pstar/pstar.py#L4922-L4982)
+## [Source](../pstar/pstar.py#L5188-L5248)

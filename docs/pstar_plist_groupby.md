@@ -6,12 +6,12 @@ Group `self.root()` by the values in `self` and return `self.root()`.
 
 Given a plist:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-foo_by_bar = foo.bar.groupby()
+foo_by_bar = foos.bar.groupby()
 assert (foo_by_bar.aslist() ==
         [[{'foo': 0, 'bar': 0},
           {'foo': 2, 'bar': 0}],
@@ -23,13 +23,13 @@ remaining pdict where `foo.bar == 1`.
 
 Calling groupby again:
 ```python
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
 ```
-Now foo_by_bar_foo has two nested layers of inner plists. The outer nest
+Now by_bar_foo has two nested layers of inner plists. The outer nest
 groups the values by `bar`, and the inner nest groups them by `foo`.
 
 groupby always operates with leaf children of the plist, and it always adds
@@ -39,17 +39,17 @@ Grouping relies on the values being hashable. If, for some reason, you need
 to group by a non-hashable value, you should convert it to a hashable
 representation first, for example using `plist.pstr()` or `plist.apply(id)`:
 ```python
-foo = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
+foos = plist([{'bar': [1, 2, 3]}, {'bar': [1, 2, 3]}])
 try:
-  foo_by_bar_crash = foo.bar.groupby()  # CRASHES!
+  by_bar_crash = foos.bar.groupby()  # CRASHES!
 except Exception as e:
   assert (isinstance(e, TypeError))
-foo_by_bar_pstr = foo.bar.pstr().groupby()
-assert (foo_by_bar_pstr.aslist() ==
+by_bar_pstr = foos.bar.pstr().groupby()
+assert (by_bar_pstr.aslist() ==
         [[{'bar': [1, 2, 3]},
           {'bar': [1, 2, 3]}]])
-foo_by_bar_id = foo.bar.apply(id).groupby()
-assert (foo_by_bar_id.aslist() ==
+by_bar_id = foos.bar.apply(id).groupby()
+assert (by_bar_id.aslist() ==
         [[{'bar': [1, 2, 3]}],
          [{'bar': [1, 2, 3]}]])
 ```
@@ -64,4 +64,4 @@ unsurprising result of putting each element into its own group.
 
 
 
-## [Source](../pstar/pstar.py#L3989-L4060)
+## [Source](../pstar/pstar.py#L4255-L4326)

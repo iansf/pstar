@@ -6,12 +6,12 @@ Returns a new [`plist`](./pstar_plist.md) with empty sublists removed.
 
 `nonempty` is useful in combination with grouping and filtering:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-foo_by_bar = foo.bar.groupby()
+foo_by_bar = foos.bar.groupby()
 assert (foo_by_bar.aslist() ==
         [[{'foo': 0, 'bar': 0},
           {'foo': 2, 'bar': 0}],
@@ -30,12 +30,12 @@ assert (filtered_nonempty.aslist() ==
 If the plist is deep, multiple levels of empty sublists can be removed at
 the same time:
 ```python
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-filtered = foo_by_bar_foo.foo != 1
+filtered = by_bar_foo.foo != 1
 assert (filtered.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
@@ -92,4 +92,4 @@ of empty sublists starting from one layer into `filtered`.
 
 
 
-## [Source](../pstar/pstar.py#L4292-L4390)
+## [Source](../pstar/pstar.py#L4558-L4656)

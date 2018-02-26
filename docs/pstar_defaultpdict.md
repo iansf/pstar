@@ -6,50 +6,68 @@
 
 Use with dot notation or subscript notation:
 ```python
-  p = defaultpdict()
-  p.foo = 1
-  assert (p['foo'] == p.foo == 1)
+pd = defaultpdict()
+pd.foo = 1
+assert (pd['foo'] == pd.foo == 1)
 ```
 
 Set the desired default constructor as normal to avoid having to construct
 individual values:
 ```python
-  p = defaultpdict(int)
-  assert (p.foo == 0)
+pd = defaultpdict(int)
+assert (pd.foo == 0)
 ```
 
 `list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
-  p = defaultpdict(foo=1, bar=2)
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = defaultpdict(foo=1, bar=2)
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 Setting with a `list` subscript also works, using a single element or a matching
 `list` for the values:
 ```python
-  p = defaultpdict()
-  p[['foo', 'bar']] = 1
-  assert (p[['foo', 'bar']].aslist() == [1, 1])
-  p[['foo', 'bar']] = [1, 2]
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = defaultpdict()
+pd[['foo', 'bar']] = 1
+assert (pd[['foo', 'bar']].aslist() == [1, 1])
+pd[['foo', 'bar']] = [1, 2]
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 [`update`](./pstar_defaultpdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
-  p = defaultpdict(foo=1, bar=2)
-  p.update(bar=3).baz = 4
-  assert (p.bar == 3)
-  assert ('baz' in p.keys())
+pd = defaultpdict(foo=1, bar=2)
+pd.update(bar=3).baz = 4
+assert (pd.bar == 3)
+assert ('baz' in pd.keys())
 ```
 
 Nested `defaultpdict`s make nice lightweight objects:
 ```python
-  p = defaultpdict(lambda: defaultpdict(list))
-  p.foo = 1
-  p.stats.bar.append(2)
-  assert (p['foo'] == 1)
-  assert (p.stats.bar == [2])
+pd = defaultpdict(lambda: defaultpdict(list))
+pd.foo = 1
+pd.stats.bar.append(2)
+assert (pd['foo'] == 1)
+assert (pd.stats.bar == [2])
 ```
+
+**Conversion:**
+
+You can convert from `defaultpdict` to `defaultdict` and back using arithmetic operations on
+the `defaultpdict` `class` itself, for convenience:
+```python
+d1 = defaultdict(int, {'foo': 1, 'bar': 2})
+pd = defaultpdict * d1
+assert (type(d1) == defaultdict)
+assert (type(pd) == defaultpdict)
+assert (pd == d1)
+
+d2 = pd / defaultpdict
+assert (type(d2) == defaultdict)
+assert (d2 == d1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
 
 ## Methods and Properties:
 
@@ -95,7 +113,7 @@ Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with ite
 
 ### [`pstar.defaultpdict.qj(self, *a, **kw)`](./pstar_defaultpdict_qj.md)
 
-Call the [`qj`](./pstar_pdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_pdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 ### [`pstar.defaultpdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_defaultpdict_rekey.md)
 
@@ -105,4 +123,4 @@ Change the keys of `self` or a copy while keeping the same values.
 
 Update `self`. **Returns `self` to allow chaining.**
 
-## [Source](../pstar/pstar.py#L427-L832)
+## [Source](../pstar/pstar.py#L491-L914)

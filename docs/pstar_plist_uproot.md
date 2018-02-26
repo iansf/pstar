@@ -9,17 +9,17 @@ a number of operations to a [`plist`](./pstar_plist.md) to get the data into the
 resetting the root to `self` often makes sense, as future filtering
 should not return the original data:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-(foo.bar == 0).baz = 6
-(foo.bar == 1).baz = foo.foo * 2
-floo = foo.rekey(dict(foo='floo'))
-assert (floo.root() is foo)
-assert (floo.peys()[0].aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+(foos.bar == 0).baz = 6
+(foos.bar == 1).baz = foos.foo * 2
+floos = foos.rekey(dict(foo='floo'))
+assert (floos.root() is foos)
+assert (floos.peys()[0].aslist() ==
         ['bar', 'baz', 'floo'])
-assert ((floo.floo < 2).aslist() ==
+assert ((floos.floo < 2).aslist() ==
         [dict(foo=0, bar=0, baz=6), dict(foo=1, bar=1, baz=2)])
-floo = floo.uproot()
-assert ((floo.floo < 2).aslist() ==
+floos = floos.uproot()
+assert ((floos.floo < 2).aslist() ==
         [dict(floo=0, bar=0, baz=6), dict(floo=1, bar=1, baz=2)])
 ```
 
@@ -31,4 +31,4 @@ See `plist.root` for more details.
 
 
 
-## [Source](../pstar/pstar.py#L2931-L2962)
+## [Source](../pstar/pstar.py#L3192-L3223)

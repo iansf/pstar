@@ -6,15 +6,15 @@ Returns a [`plist`](./pstar_plist.md) of the same structure as `self`, filled wi
 
 `pshape` returns a plist of the same structure as `self`:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.pshape().aslist() ==
+assert (foos.pshape().aslist() ==
         [3])
 
-foo_by_bar = foo.bar.groupby()
+foo_by_bar = foos.bar.groupby()
 assert (foo_by_bar.aslist() ==
         [[{'bar': 0, 'foo': 0},
           {'bar': 0, 'foo': 2}],
@@ -22,15 +22,15 @@ assert (foo_by_bar.aslist() ==
 assert (foo_by_bar.pshape().aslist() ==
         [[2], [1]])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.pshape().aslist() ==
+assert (by_bar_foo.pshape().aslist() ==
         [[[1], [1]], [[1]]])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -47,4 +47,4 @@ assert (filtered.pshape().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4719-L4768)
+## [Source](../pstar/pstar.py#L4985-L5034)

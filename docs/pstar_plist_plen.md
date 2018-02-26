@@ -6,31 +6,31 @@ Returns a [`plist`](./pstar_plist.md) of the length of a recursively-selected la
 
 `plen` returns a plist of the same depth as self, up to `r`:
 ```python
-foo = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
-assert (foo.aslist() ==
+foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+assert (foos.aslist() ==
         [{'foo': 0, 'bar': 0},
          {'foo': 1, 'bar': 1},
          {'foo': 2, 'bar': 0}])
-assert (foo.plen().aslist() ==
+assert (foos.plen().aslist() ==
         [3])
-assert (foo.plen(1).aslist() ==
+assert (foos.plen(1).aslist() ==
         [3])
 
-foo_by_bar_foo = foo.bar.groupby().foo.groupby()
-assert (foo_by_bar_foo.aslist() ==
+by_bar_foo = foos.bar.groupby().foo.groupby()
+assert (by_bar_foo.aslist() ==
         [[[{'foo': 0, 'bar': 0}],
           [{'foo': 2, 'bar': 0}]],
          [[{'foo': 1, 'bar': 1}]]])
-assert (foo_by_bar_foo.plen().aslist() ==
+assert (by_bar_foo.plen().aslist() ==
         [2])
-assert (foo_by_bar_foo.plen(r=1).aslist() ==
+assert (by_bar_foo.plen(r=1).aslist() ==
         [[3]])
-assert (foo_by_bar_foo.plen(2).aslist() ==
+assert (by_bar_foo.plen(2).aslist() ==
         [[[3]]])
-assert (foo_by_bar_foo.plen(-1).aslist() ==
+assert (by_bar_foo.plen(-1).aslist() ==
         [[[3]]])
 
-filtered = foo_by_bar_foo.bar == 0
+filtered = by_bar_foo.bar == 0
 assert (filtered.aslist() ==
         [[[{'bar': 0, 'foo': 0}],
           [{'bar': 0, 'foo': 2}]],
@@ -45,8 +45,8 @@ Since the depth values are always equal or empty in well-formed plists, it
 is sometimes more convenient to get the depth as a scalar value. Pass a True
 value to the first parameter (`s` for 'scalar'):
 ```python
-assert (foo.plen(s=1) == 3)
-assert (foo_by_bar_foo.plen(r=2, s=1) == 3)
+assert (foos.plen(s=1) == 3)
+assert (by_bar_foo.plen(r=2, s=1) == 3)
 assert (filtered.plen(-1, s=True) == 2)
 ```
 
@@ -66,4 +66,4 @@ assert (filtered.plen(-1, s=True) == 2)
 
 
 
-## [Source](../pstar/pstar.py#L4642-L4718)
+## [Source](../pstar/pstar.py#L4908-L4984)

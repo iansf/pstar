@@ -1,7 +1,7 @@
-# `pstar`
+# [`pstar`](./pstar_pstar.md)
 ## `numpy` for arbitrary data.
 
-`pstar` provides easy, expressive, and concise manipulation of arbitrary data.
+[`pstar`](./pstar_pstar.md) provides easy, expressive, and concise manipulation of arbitrary data.
 
 ## Examples:
 
@@ -128,15 +128,15 @@ whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj(
 
 ### Larger Example -- Documentation Generation:
 
-See [build_docs.py](../build_docs.py) for a more extensive example of using `pstar`.
-That code generates all of the documentation markdown files for `pstar` using a simple
+See [build_docs.py](../build_docs.py) for a more extensive example of using [`pstar`](./pstar_pstar.md).
+That code generates all of the documentation markdown files for [`pstar`](./pstar_pstar.md) using a simple
 templating system. It also extracts tests from the code doc strings and adds them to
 the test suite.
 
 
 ## Philosophy:
 
-`pstar` makes writing and debugging data-processing code easy and concise.
+[`pstar`](./pstar_pstar.md) makes writing and debugging data-processing code easy and concise.
 
 ### [`pdict`](./pstar_pdict.md) and [`defaultpdict`](./pstar_defaultpdict.md):
 
@@ -153,11 +153,11 @@ code gets to that ideal, the easier it is to write, debug, and understand.
 
 ### Chaining:
 
-`pstar` attempts to always maintain the possibility of chaining. Chaining allows you
+[`pstar`](./pstar_pstar.md) attempts to always maintain the possibility of chaining. Chaining allows you
 to write code like a sentence, without needing to break up your thoughts to define
 intermediate variables or to introduce obvious control flow, such as `for` loops.
 
-The consequence of this perspective is that code written using `pstar` can often
+The consequence of this perspective is that code written using [`pstar`](./pstar_pstar.md) can often
 be written with no explicit looping, and each line of code can be read as a
 straightforward transformation of data from one relevant state to another.
 
@@ -165,11 +165,11 @@ straightforward transformation of data from one relevant state to another.
 
 During data processing, it is easy to spend a great deal of time debugging while
 getting the data into the desired shape or format. Most debugging starts with
-log statements. `pstar` incorporates in-chain logging with `qj` so that code can
+log statements. [`pstar`](./pstar_pstar.md) incorporates in-chain logging with `qj` so that code can
 be minimally modified to add and remove logging.
 
 `qj` is a logger built for debugging, and has many useful features that are
-available directly in `pstar`, including dropping into the debugger at any
+available directly in [`pstar`](./pstar_pstar.md), including dropping into the debugger at any
 point in your code:
 ```python
 pl = plist['abc', 'def', '123']
@@ -186,7 +186,7 @@ See [`qj`](https://github.com/iansf/qj) for documentation.
 
 ### Testing and Examples:
 
-`pstar` is extensively tested. Additionally, almost all of the example code
+[`pstar`](./pstar_pstar.md) is extensively tested. Additionally, almost all of the example code
 found in the documentation is automatically added to the test suite when
 documentation is built. Therefore, every block of code in a page of documentation
 is a self-contained, runnable example that you can copy into a
@@ -200,7 +200,7 @@ an equality check on two lists. Under normal use, you do not need to call
 
 ### Concision:
 
-In the very simple example below, `pstar` does in six lines with no explicit
+In the very simple example below, [`pstar`](./pstar_pstar.md) does in six lines with no explicit
 control flow, what takes 10 lines and three levels of indentation in regular
 python. The extra lines are from the explicit control flow and the inability
 to chain the output to a print statement.
@@ -228,11 +228,11 @@ print('output: ', output)
 
 Worse than the extra length and complexity, the non-[`plist`](./pstar_plist.md)
 code has a bug: if the values for `bar` are ever something other than 0 or 1,
-the output list will fail. The `pstar` version of the code is completely robust
+the output list will fail. The [`pstar`](./pstar_pstar.md) version of the code is completely robust
 to that kind of bug. The only assumptions about the data are that it is provided
 with two fields, 'foo' and 'bar', and that both of the fields are numeric.
 
-See [build_docs.py](../build_docs.py) for a more extensive example of using `pstar`.
+See [build_docs.py](../build_docs.py) for a more extensive example of using [`pstar`](./pstar_pstar.md).
 
 
 ## Basic Usage:
@@ -260,50 +260,101 @@ from pstar import defaultpdict, pdict, plist, pset
 
 Use with dot notation or subscript notation:
 ```python
-  p = defaultpdict()
-  p.foo = 1
-  assert (p['foo'] == p.foo == 1)
+pd = defaultpdict()
+pd.foo = 1
+assert (pd['foo'] == pd.foo == 1)
 ```
 
 Set the desired default constructor as normal to avoid having to construct
 individual values:
 ```python
-  p = defaultpdict(int)
-  assert (p.foo == 0)
+pd = defaultpdict(int)
+assert (pd.foo == 0)
 ```
 
 `list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
-  p = defaultpdict(foo=1, bar=2)
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = defaultpdict(foo=1, bar=2)
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 Setting with a `list` subscript also works, using a single element or a matching
 `list` for the values:
 ```python
-  p = defaultpdict()
-  p[['foo', 'bar']] = 1
-  assert (p[['foo', 'bar']].aslist() == [1, 1])
-  p[['foo', 'bar']] = [1, 2]
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = defaultpdict()
+pd[['foo', 'bar']] = 1
+assert (pd[['foo', 'bar']].aslist() == [1, 1])
+pd[['foo', 'bar']] = [1, 2]
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 [`update`](./pstar_defaultpdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
-  p = defaultpdict(foo=1, bar=2)
-  p.update(bar=3).baz = 4
-  assert (p.bar == 3)
-  assert ('baz' in p.keys())
+pd = defaultpdict(foo=1, bar=2)
+pd.update(bar=3).baz = 4
+assert (pd.bar == 3)
+assert ('baz' in pd.keys())
 ```
 
 Nested [`defaultpdict`](./pstar_defaultpdict.md)s make nice lightweight objects:
 ```python
-  p = defaultpdict(lambda: defaultpdict(list))
-  p.foo = 1
-  p.stats.bar.append(2)
-  assert (p['foo'] == 1)
-  assert (p.stats.bar == [2])
+pd = defaultpdict(lambda: defaultpdict(list))
+pd.foo = 1
+pd.stats.bar.append(2)
+assert (pd['foo'] == 1)
+assert (pd.stats.bar == [2])
 ```
+
+**Conversion:**
+
+You can convert from [`defaultpdict`](./pstar_defaultpdict.md) to `defaultdict` and back using arithmetic operations on
+the [`defaultpdict`](./pstar_defaultpdict.md) `class` itself, for convenience:
+```python
+d1 = defaultdict(int, {'foo': 1, 'bar': 2})
+pd = defaultpdict * d1
+assert (type(d1) == defaultdict)
+assert (type(pd) == defaultpdict)
+assert (pd == d1)
+
+d2 = pd / defaultpdict
+assert (type(d2) == defaultdict)
+assert (d2 == d1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
+
+### Basic [`frozenpset`](./pstar_frozenpset.md) use:
+
+Placeholder `frozenset` subclass. Mostly unimplemented.
+
+You can construct [`frozenpset`](./pstar_frozenpset.md)s in the normal manners for `frozenset`s:
+```python
+ps = frozenpset([1, 2.0, 'three'])
+ps = frozenpset({1, 2.0, 'three'})
+```
+
+[`frozenpset`](./pstar_frozenpset.md) also supports a convenience constructor from a `list` literal:
+```python
+ps = frozenpset[1, 2.0, 'three']
+```
+
+**Conversion:**
+
+You can convert from [`frozenpset`](./pstar_frozenpset.md) to `frozenset` and back using arithmetic
+operations on the [`frozenpset`](./pstar_frozenpset.md) `class` itself, for convenience:
+```python
+s1 = frozenset([1, 2.0, 'three'])
+ps = frozenpset * s1
+assert (type(s1) == frozenset)
+assert (type(ps) == frozenpset)
+assert (ps == s1)
+
+s2 = ps / frozenpset
+assert (type(s2) == frozenset)
+assert (s2 == s1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
 
 ### Basic [`pdict`](./pstar_pdict.md) use:
 
@@ -313,34 +364,53 @@ Nested [`defaultpdict`](./pstar_defaultpdict.md)s make nice lightweight objects:
 
 Use with dot notation or subscript notation:
 ```python
-  p = pdict()
-  p.foo = 1
-  assert (p['foo'] == p.foo == 1)
+pd = pdict()
+pd.foo = 1
+assert (pd['foo'] == pd.foo == 1)
 ```
 
 `list` subscripts also work and return a [`plist`](./pstar_plist.md) of the corresponding keys:
 ```python
-  p = pdict(foo=1, bar=2)
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = pdict(foo=1, bar=2)
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 Setting with a `list` subscript also works, using a single element or a matching
 `list` for the values:
 ```python
-  p = pdict()
-  p[['foo', 'bar']] = 1
-  assert (p[['foo', 'bar']].aslist() == [1, 1])
-  p[['foo', 'bar']] = [1, 2]
-  assert (p[['foo', 'bar']].aslist() == [1, 2])
+pd = pdict()
+pd[['foo', 'bar']] = 1
+assert (pd[['foo', 'bar']].aslist() == [1, 1])
+pd[['foo', 'bar']] = [1, 2]
+assert (pd[['foo', 'bar']].aslist() == [1, 2])
 ```
 
 [`update`](./pstar_pdict_update.md) returns `self`, rather than `None`, to support chaining:
 ```python
-  p = pdict(foo=1, bar=2)
-  p.update(bar=3).baz = 4
-  assert (p.bar == 3)
-  assert ('baz' in p.keys())
+pd = pdict(foo=1, bar=2)
+pd.update(bar=3).baz = 4
+assert (pd.bar == 3)
+assert ('baz' in pd.keys())
+assert (pd.baz == 4)
 ```
+
+**Conversion:**
+
+You can convert from [`pdict`](./pstar_pdict.md) to `dict` and back using arithmetic operations on
+the [`pdict`](./pstar_pdict.md) `class` itself, for convenience:
+```python
+d1 = {'foo': 1, 'bar': 2}
+pd = pdict * d1
+assert (type(d1) == dict)
+assert (type(pd) == pdict)
+assert (pd == d1)
+
+d2 = pd / pdict
+assert (type(d2) == dict)
+assert (d2 == d1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
 
 ### Basic [`plist`](./pstar_plist.md) use:
 
@@ -536,7 +606,296 @@ See [`__call__`](./pstar_plist___call__.md), [`apply`](./pstar_plist_apply.md), 
 
 ### Basic [`pset`](./pstar_pset.md) use:
 
-Placeholder frozenset subclass. Not yet implemented.
+Placeholder `set` subclass. Mostly unimplemented.
+
+You can construct [`pset`](./pstar_pset.md)s in the normal manners for `set`s:
+```python
+ps = pset([1, 2.0, 'three'])
+ps = pset({1, 2.0, 'three'})
+```
+
+[`pset`](./pstar_pset.md) also supports a convenience constructor from a `list` literal:
+```python
+ps = pset[1, 2.0, 'three']
+```
+
+**Conversion:**
+
+You can convert from [`pset`](./pstar_pset.md) to `set` and back using arithmetic
+operations on the [`pset`](./pstar_pset.md) `class` itself, for convenience:
+```python
+s1 = set([1, 2.0, 'three'])
+ps = pset * s1
+assert (type(s1) == set)
+assert (type(ps) == pset)
+assert (ps == s1)
+
+s2 = ps / pset
+assert (type(s2) == set)
+assert (s2 == s1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
+
+### Basic [`pstar`](./pstar_pstar.md) use:
+
+Recursively converts between standard python types and pstar types.
+
+**Examples:**
+
+Converting python types to [`pstar`](./pstar.md) types:
+```python
+data = [dict(foo=[0, 1, 2], bar=dict(bin=0), baz=defaultdict(int, a=1, b=2, c=3)),
+        dict(foo=[1, 2, 3], bar=dict(bin=1), baz=frozenset([3, 4, 5])),
+        dict(foo=[2, 3, 4], bar=dict(bin=0), baz=set([7, 8, 9]))]
+
+# Recursively convert all pstar-compatible types:
+pl = pstar(data)
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, pset])
+
+# An alternative way to do the same conversion:
+pl = pstar * data
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, pset])
+
+# Only convert the outermost object:
+pl = pstar + data
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [dict, dict, dict])
+assert (pl.foo.apply(type).aslist() == [list, list, list])
+assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+# The same outer conversion, as a function call:
+pl = pstar(data, depth=1)
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [dict, dict, dict])
+assert (pl.foo.apply(type).aslist() == [list, list, list])
+assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+# Convert two layers:
+pl = pstar(data, depth=2)
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [list, list, list])
+assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+pl = pstar * data
+
+# Convert from pstar types back to python types:
+data2 = pl / pstar
+assert (data2 == data)
+assert (type(data2) == list)
+assert ([type(x) for x in data2] == [dict, dict, dict])
+assert ([type(x['foo']) for x in data2] == [list, list, list])
+assert ([type(x['bar']) for x in data2] == [dict, dict, dict])
+assert ([type(x['baz']) for x in data2] == [defaultdict, frozenset, set])
+
+# Only convert the outermost object:
+data2 = pl - pstar
+assert (data2 == data)
+assert (type(data2) == list)
+assert ([type(x) for x in data2] == [pdict, pdict, pdict])
+assert ([type(x['foo']) for x in data2] == [plist, plist, plist])
+assert ([type(x['bar']) for x in data2] == [pdict, pdict, pdict])
+assert ([type(x['baz']) for x in data2] == [defaultpdict, frozenpset, pset])
+```
+
+You can also convert from each [`pstar`](./pstar.md) class to its python equivalent and back using
+arithmetic operations on the `class` itself, for convenience:
+```python
+d1 = {'foo': 1, 'bar': 2}
+pd = pdict * d1
+assert (type(d1) == dict)
+assert (type(pd) == pdict)
+assert (pd == d1)
+
+d2 = pd / pdict
+assert (type(d2) == dict)
+assert (d2 == d1)
+
+pl = plist * data
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [dict, dict, dict])
+assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+assert (pl.bar.apply(type).aslist() == [dict, dict, dict])
+assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+data2 = data * pdict
+assert (type(data2) == list)
+assert (plist(data2).apply(type).aslist() == [pdict, pdict, pdict])
+assert (plist(data2).foo.apply(type).aslist() == [list, list, list])
+assert (plist(data2).bar.apply(type).aslist() == [pdict, pdict, pdict])
+assert (plist(data2).baz.apply(type).aslist() == [defaultdict, frozenset, set])
+
+pl = plist + data * pdict
+assert (type(pl) == plist)
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [list, list, list])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.baz.apply(type).aslist() == [defaultdict, frozenset, set])
+```
+
+You can't do arbitrary arithmetic with the conversion methods, though.
+One conversion method can't directly operate on another:
+```python
+try:
+  plist * pdict * data
+except Exception as e:
+  assert (isinstance(e, ValueError))
+```
+
+If you want to combine multiple conversions, order of operations matters:
+```python
+pl = plist + pdict * data
+assert (type(pl) == plist)
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [list, list, list])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+
+pl = plist * (pdict * data)
+assert (type(pl) == plist)
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+```
+
+You can comine [`pstar`](./pstar.md) and the [`pstar`](./pstar.md) classes together to do partial conversion:
+```python
+pl = pstar * data / pset
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, set])
+```
+
+The semantics of the operators are:
+ - `+` and `-`: Non-recursive conversions (only the operand itself is converted).
+ - `*` and `/`: Recursive conversions (the operand and any children are converted).
+ - `+` and `*` on the left or right: Convert python classes to [`pstar`](./pstar.md) classes; e.g., `dict` to [`pdict`](./pstar_pdict.md).
+ - `-` and `/` on the right: Convert [`pstar`](./pstar.md) classes to python classes; e.g., [`plist`](./pstar_plist.md) to `list`.
+ - `-` and `/` on the left: Convert non-[`pdict`](./pstar_pdict.md) [`pstar`](./pstar.md) types to their python equivalents.
+
+Below are examples focused on [`pdict`](./pstar_pdict.md)s, but the same is true for all of the operators:
+```python
+
+# Starting from a nested pstar object, you may want to convert pdicts to dicts.
+pd = pdict(foo=plist[1, 2, 3], bar=pset[4, 5, 6], baz=pdict(a=7, b=8, d=9))
+
+# Subtracting by pdict will convert a top-level pdict to dict, but will leave other objects alone.
+d = pd - pdict
+assert (type(d) == dict)
+assert (type(d['foo']) == plist)
+assert (type(d['bar']) == pset)
+assert (type(d['baz']) == pdict)  # Note that the child is still a pdict!
+
+pl = pd.foo - pdict
+assert (type(pl) == plist)  # The type is unchanged, since pd.foo is not a pdict
+assert (pl is not pd.foo)  # Conversion still creates a new copy, though!
+assert (pl == pd.foo)  # But the contents are identical, of course.
+
+# Dividing by pdict will convert any pdict values to dicts, but leave others unchanged.
+d = pd / pdict
+assert (type(d) == dict)
+assert (type(d['foo']) == plist)
+assert (type(d['bar']) == pset)
+assert (type(d['baz']) == dict)  # Note that the child is a dict!
+
+# You probably shouldn't left-subtract by pdict, but you can. It converts any other pstar classes
+# to their python equivalents, but leaves pdicts alone.
+pd2 = pdict - pd
+assert (type(pd2) == pdict)
+
+l = pdict - pd.foo
+assert (type(l) == list)
+assert (type(pd.foo) == plist)
+assert (l == pd.foo)
+
+# Left division is also not recommended, but it works. It converts all other pstar classes
+# to their python equivalents, but leaves pdicts alone.
+pd2 = pdict / pd
+assert (type(pd2) == pdict)
+assert (type(pd2.foo) == list)
+assert (type(pd2.bar) == set)
+assert (type(pd2.baz) == pdict)
+```
+
+The only exceptions are for the [`pstar`](./pstar.md) left subtraction and left division, which are identical
+to right subtraction and right division:
+```python
+d = pd - pstar
+assert (type(d) == dict)
+assert (type(d['foo']) == plist)
+assert (type(d['bar']) == pset)
+assert (type(d['baz']) == pdict)
+
+d = pstar - pd
+assert (type(d) == dict)
+assert (type(d['foo']) == plist)
+assert (type(d['bar']) == pset)
+assert (type(d['baz']) == pdict)
+
+d = pd / pstar
+assert (type(d) == dict)
+assert (type(d['foo']) == list)
+assert (type(d['bar']) == set)
+assert (type(d['baz']) == dict)
+
+d = pstar / pd
+assert (type(d) == dict)
+assert (type(d['foo']) == list)
+assert (type(d['bar']) == set)
+assert (type(d['baz']) == dict)
+```
+
+You can also access the core [`pstar`](./pstar.md) classes from the [`pstar`](./pstar.md) conversion object:
+```python
+foos = pstar.plist([pstar.pdict(foo=0, bar=0), pstar.pdict(foo=1, bar=1), pstar.pdict(foo=2, bar=0)])
+```
+
+This is convenient if you only imported as `from pstar import pstar`.
+
+### Basic [`ptuple`](./pstar_ptuple.md) use:
+
+Placeholder `tuple` subclass. Mostly unimplemented.
+
+You can construct [`ptuple`](./pstar_ptuple.md)s in the normal manner for `tuple`s:
+```python
+pt = ptuple((1, 2.0, 'three'))
+```
+
+[`ptuple`](./pstar_ptuple.md) also supports a convenience constructor from a `list` literal:
+```python
+pt = ptuple[1, 2.0, 'three']
+```
+
+**Conversion:**
+
+You can convert from [`ptuple`](./pstar_ptuple.md) to `tuple` and back using arithmetic
+operations on the [`ptuple`](./pstar_ptuple.md) `class` itself, for convenience:
+```python
+t1 = tuple([1, 2.0, 'three'])
+pt = ptuple * t1
+assert (type(t1) == tuple)
+assert (type(pt) == ptuple)
+assert (pt == t1)
+
+t2 = pt / ptuple
+assert (type(t2) == tuple)
+assert (t2 == t1)
+```
+
+See [`pstar`](./pstar.md) for more details on conversion.
 
 
 ## API Overview:
@@ -591,7 +950,7 @@ Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with ite
 
 #### [`pstar.defaultpdict.qj(self, *a, **kw)`](./pstar_defaultpdict_qj.md)
 
-Call the [`qj`](./pstar_pdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_pdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 #### [`pstar.defaultpdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_defaultpdict_rekey.md)
 
@@ -600,6 +959,16 @@ Change the keys of `self` or a copy while keeping the same values.
 #### [`pstar.defaultpdict.update(self, *a, **kw)`](./pstar_defaultpdict_update.md)
 
 Update `self`. **Returns `self` to allow chaining.**
+
+____
+
+### [`pstar.frozenpset(frozenset)`](./pstar_frozenpset.md)
+
+Placeholder `frozenset` subclass. Mostly unimplemented.
+
+#### [`pstar.frozenpset.qj(self, *a, **kw)`](./pstar_frozenpset_qj.md)
+
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 ____
 
@@ -641,7 +1010,7 @@ Equivalent to `self.items()`, but returns a [`plist`](./pstar_plist.md) with ite
 
 #### [`pstar.pdict.qj(self, *a, **kw)`](./pstar_pdict_qj.md)
 
-Call the [`qj`](./pstar_defaultpdict_qj.md) logging function with `self` as the value to be logged. All other arguments are passed through to [`qj`](./pstar_defaultpdict_qj.md).
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 #### [`pstar.pdict.rekey(self, map_or_fn=None, inplace=False, **kw)`](./pstar_pdict_rekey.md)
 
@@ -899,15 +1268,35 @@ Zips `self` with `others`, recursively.
 
 ____
 
-### [`pstar.pset(frozenset)`](./pstar_pset.md)
+### [`pstar.pset(set)`](./pstar_pset.md)
 
-Placeholder frozenset subclass. Not yet implemented.
+Placeholder `set` subclass. Mostly unimplemented.
+
+#### [`pstar.pset.qj(self, *a, **kw)`](./pstar_pset_qj.md)
+
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
+
+____
+
+### [`pstar.pstar(object)`](./pstar_pstar.md)
+
+Recursively converts between standard python types and pstar types.
+
+____
+
+### [`pstar.ptuple(tuple)`](./pstar_ptuple.md)
+
+Placeholder `tuple` subclass. Mostly unimplemented.
+
+#### [`pstar.ptuple.qj(self, *a, **kw)`](./pstar_ptuple_qj.md)
+
+Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
 
 
 ## Testing:
 
-`pstar` has extensive tests that all pass on python 2.7 and 3.6. You can run them with nosetests:
+[`pstar`](./pstar_pstar.md) has extensive tests that all pass on python 2.7 and 3.6. You can run them with nosetests:
 ```bash
 $ nosetests
 ..........................................................................................................................................................................................................................SS
