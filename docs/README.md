@@ -249,7 +249,7 @@ from pstar import *
 
 ### Equivalently:
 ```python
-from pstar import defaultpdict, pdict, plist, pset
+from pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar
 ```
 
 ### Basic [`defaultpdict`](./pstar_defaultpdict.md) use:
@@ -668,6 +668,30 @@ assert (t2 == t1)
 ```
 
 See [`pstar`](./pstar_pstar.md) for more details on conversion.
+
+
+## Converting to and from [`pstar`](./pstar_pstar.md):
+
+[`pstar`](./pstar_pstar.md) makes it easy to convert between python and [`pstar`](./pstar_pstar.md) types:
+```python
+data = [dict(foo=[0, 1, 2], bar=dict(bin=0), baz=defaultdict(int, a=1, b=2, c=3)),
+        dict(foo=[1, 2, 3], bar=dict(bin=1), baz=frozenset([3, 4, 5])),
+        dict(foo=[2, 3, 4], bar=dict(bin=0), baz=set([7, 8, 9]))]
+
+# Recursively convert to pstar types:
+pl = pstar(data)
+assert (isinstance(pl, plist))
+assert (pl.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
+assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
+assert (pl.baz.apply(type).aslist() == [defaultpdict, frozenpset, pset])
+
+# Recursively convert back from pstar types:
+data2 = pl / pstar
+assert (data2 == data)
+```
+
+See [`pstar`](./pstar_pstar.md) for more details and fine-grained control over the conversion process.
 
 
 ## API Overview:
