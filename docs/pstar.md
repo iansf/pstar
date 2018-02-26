@@ -1,4 +1,4 @@
-# [`pstar`](./pstar_pstar.md)
+# [`pstar`](./pstar.md)
 
 [`pstar`](./pstar_pstar.md) module.
 

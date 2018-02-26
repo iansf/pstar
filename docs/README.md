@@ -1,7 +1,7 @@
-# [`pstar`](./pstar_pstar.md)
+# [`pstar`](./pstar.md)
 ## `numpy` for arbitrary data.
 
-[`pstar`](./pstar_pstar.md) provides easy, expressive, and concise manipulation of arbitrary data.
+[`pstar`](./pstar.md) provides easy, expressive, and concise manipulation of arbitrary data.
 
 ## Examples:
 
@@ -128,15 +128,15 @@ whoa.palues().replace(whoa.palues()._[:6:1], whoa.palues()._[7::1]).pdict_().qj(
 
 ### Larger Example -- Documentation Generation:
 
-See [build_docs.py](../build_docs.py) for a more extensive example of using [`pstar`](./pstar_pstar.md).
-That code generates all of the documentation markdown files for [`pstar`](./pstar_pstar.md) using a simple
+See [build_docs.py](../build_docs.py) for a more extensive example of using [`pstar`](./pstar.md).
+That code generates all of the documentation markdown files for [`pstar`](./pstar.md) using a simple
 templating system. It also extracts tests from the code doc strings and adds them to
 the test suite.
 
 
 ## Philosophy:
 
-[`pstar`](./pstar_pstar.md) makes writing and debugging data-processing code easy and concise.
+[`pstar`](./pstar.md) makes writing and debugging data-processing code easy and concise.
 
 ### [`pdict`](./pstar_pdict.md) and [`defaultpdict`](./pstar_defaultpdict.md):
 
@@ -153,11 +153,11 @@ code gets to that ideal, the easier it is to write, debug, and understand.
 
 ### Chaining:
 
-[`pstar`](./pstar_pstar.md) attempts to always maintain the possibility of chaining. Chaining allows you
+[`pstar`](./pstar.md) attempts to always maintain the possibility of chaining. Chaining allows you
 to write code like a sentence, without needing to break up your thoughts to define
 intermediate variables or to introduce obvious control flow, such as `for` loops.
 
-The consequence of this perspective is that code written using [`pstar`](./pstar_pstar.md) can often
+The consequence of this perspective is that code written using [`pstar`](./pstar.md) can often
 be written with no explicit looping, and each line of code can be read as a
 straightforward transformation of data from one relevant state to another.
 
@@ -165,11 +165,11 @@ straightforward transformation of data from one relevant state to another.
 
 During data processing, it is easy to spend a great deal of time debugging while
 getting the data into the desired shape or format. Most debugging starts with
-log statements. [`pstar`](./pstar_pstar.md) incorporates in-chain logging with `qj` so that code can
+log statements. [`pstar`](./pstar.md) incorporates in-chain logging with `qj` so that code can
 be minimally modified to add and remove logging.
 
 `qj` is a logger built for debugging, and has many useful features that are
-available directly in [`pstar`](./pstar_pstar.md), including dropping into the debugger at any
+available directly in [`pstar`](./pstar.md), including dropping into the debugger at any
 point in your code:
 ```python
 pl = plist['abc', 'def', '123']
@@ -186,7 +186,7 @@ See [`qj`](https://github.com/iansf/qj) for documentation.
 
 ### Testing and Examples:
 
-[`pstar`](./pstar_pstar.md) is extensively tested. Additionally, almost all of the example code
+[`pstar`](./pstar.md) is extensively tested. Additionally, almost all of the example code
 found in the documentation is automatically added to the test suite when
 documentation is built. Therefore, every block of code in a page of documentation
 is a self-contained, runnable example that you can copy into a
@@ -200,7 +200,7 @@ an equality check on two lists. Under normal use, you do not need to call
 
 ### Concision:
 
-In the very simple example below, [`pstar`](./pstar_pstar.md) does in six lines with no explicit
+In the very simple example below, [`pstar`](./pstar.md) does in six lines with no explicit
 control flow, what takes 10 lines and three levels of indentation in regular
 python. The extra lines are from the explicit control flow and the inability
 to chain the output to a print statement.
@@ -228,11 +228,11 @@ print('output: ', output)
 
 Worse than the extra length and complexity, the non-[`plist`](./pstar_plist.md)
 code has a bug: if the values for `bar` are ever something other than 0 or 1,
-the output list will fail. The [`pstar`](./pstar_pstar.md) version of the code is completely robust
+the output list will fail. The [`pstar`](./pstar.md) version of the code is completely robust
 to that kind of bug. The only assumptions about the data are that it is provided
 with two fields, 'foo' and 'bar', and that both of the fields are numeric.
 
-See [build_docs.py](../build_docs.py) for a more extensive example of using [`pstar`](./pstar_pstar.md).
+See [build_docs.py](../build_docs.py) for a more extensive example of using [`pstar`](./pstar.md).
 
 
 ## Basic Usage:
@@ -670,9 +670,9 @@ assert (t2 == t1)
 See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 
-## Converting to and from [`pstar`](./pstar_pstar.md):
+## Converting to and from [`pstar`](./pstar.md):
 
-[`pstar`](./pstar_pstar.md) makes it easy to convert between python and [`pstar`](./pstar_pstar.md) types:
+[`pstar`](./pstar_pstar.md) makes it easy to convert between python and [`pstar`](./pstar.md) types:
 ```python
 data = [dict(foo=[0, 1, 2], bar=dict(bin=0), baz=defaultdict(int, a=1, b=2, c=3)),
         dict(foo=[1, 2, 3], bar=dict(bin=1), baz=frozenset([3, 4, 5])),
@@ -1092,7 +1092,7 @@ Call the `qj` logging function with `self` as the value to be logged. All other 
 
 ## Testing:
 
-[`pstar`](./pstar_pstar.md) has extensive tests that all pass on python 2.7 and 3.6. You can run them with nosetests:
+[`pstar`](./pstar.md) has extensive tests that all pass on python 2.7 and 3.6. You can run them with nosetests:
 ```bash
 $ nosetests
 ..........................................................................................................................................................................................................................SS
