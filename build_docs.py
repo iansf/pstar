@@ -107,7 +107,11 @@ def _make_links(text_md, exclude):
     exclude.extend(CLASS_NAMES + '.' + exclude[0].split('.')[-1])  # Make sure other classes' methods don't get inadvertently linked.
   prefer = exclude[:1].split('.')._[:2:1].apply('.'.join)[0]  # Prefer referencing objects from the same class.
   key_fn = lambda x: str(x.count('.')) + ('a' + x if x.startswith(prefer) else x)  # Sort by shortest depth symbols, then by symbols from the same class.
-  return (symbols.peys() != exclude).sortby(key=key_fn).split('.')._[-1].puniq().root().reduce(lambda s, x: re.sub(r'(^|[^[])`%s`' % x.split('.')[-1], r'\1[`%s`](%s)' % (x.split('.')[-1], url_for(x)), s), text_md)[0]
+  filtered_symbols = symbols.peys() != exclude
+  present_symbols = plist(re.findall(r'^|[^[]`([A-Za-z_]+)`', text_md)).strip() != ''
+  first_pass = (filtered_symbols.sortby(key=key_fn).split('.')._[-1].puniq() == present_symbols).reduce(lambda s, x: re.sub(r'(^|[^[])`%s`' % x.split('.')[-1], r'\1[`%s`](%s)' % (x.split('.')[-1], url_for(x)), s), text_md)[0]
+  present_symbols = plist(re.findall(r'^|[^[]`([A-Za-z_]+\.[A-Za-z_]+)`', first_pass)).strip() != ''
+  return (filtered_symbols == present_symbols).reduce(lambda s, x: re.sub(r'(^|[^[])`%s`' % x, r'\1[`%s`](%s)' % (x.split('.')[-1], url_for(x)), s), first_pass)[0]
 
 
 def short_doc(symbol):

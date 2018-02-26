@@ -174,7 +174,7 @@ class pdict(_compatible_metaclass(_SyntaxSugar, dict)):
   assert (d2 == d1)
   ```
 
-  See `pstar` for more details on conversion.
+  See `pstar.pstar` for more details on conversion.
   """
 
   def __init__(self, *a, **kw):
@@ -556,7 +556,7 @@ class defaultpdict(_compatible_metaclass(_SyntaxSugar, defaultdict)):
   assert (d2 == d1)
   ```
 
-  See `pstar` for more details on conversion.
+  See `pstar.pstar` for more details on conversion.
   """
 
   def __init__(self, *a, **kw):
@@ -950,7 +950,7 @@ class frozenpset(_compatible_metaclass(_SyntaxSugar, frozenset)):
   assert (s2 == s1)
   ```
 
-  See `pstar` for more details on conversion.
+  See `pstar.pstar` for more details on conversion.
   """
 
   def qj(self, *a, **kw):
@@ -1013,7 +1013,7 @@ class pset(_compatible_metaclass(_SyntaxSugar, set)):
   assert (s2 == s1)
   ```
 
-  See `pstar` for more details on conversion.
+  See `pstar.pstar` for more details on conversion.
   """
 
   def qj(self, *a, **kw):
@@ -1075,7 +1075,7 @@ class ptuple(_compatible_metaclass(_SyntaxSugar, tuple)):
   assert (t2 == t1)
   ```
 
-  See `pstar` for more details on conversion.
+  See `pstar.pstar` for more details on conversion.
   """
 
   def qj(self, *a, **kw):
@@ -5756,7 +5756,7 @@ class pstar(_compatible_metaclass(_Converter, object)):
   assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
   ```
 
-  You can comine `pstar` and the `pstar` classes together to do partial conversion:
+  You can combine `pstar.pstar` and the `pstar` classes together to do partial conversion:
   ```python
   pl = pstar * data / pset
   assert (isinstance(pl, plist))

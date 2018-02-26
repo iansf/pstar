@@ -29,7 +29,7 @@ assert (type(s2) == set)
 assert (s2 == s1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 ## Methods and Properties:
 

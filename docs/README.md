@@ -321,7 +321,7 @@ assert (type(d2) == defaultdict)
 assert (d2 == d1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 ### Basic [`frozenpset`](./pstar_frozenpset.md) use:
 
@@ -354,7 +354,7 @@ assert (type(s2) == frozenset)
 assert (s2 == s1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 ### Basic [`pdict`](./pstar_pdict.md) use:
 
@@ -410,7 +410,7 @@ assert (type(d2) == dict)
 assert (d2 == d1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 ### Basic [`plist`](./pstar_plist.md) use:
 
@@ -635,7 +635,7 @@ assert (type(s2) == set)
 assert (s2 == s1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 ### Basic [`pstar`](./pstar_pstar.md) use:
 
@@ -769,7 +769,7 @@ assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
 assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
 ```
 
-You can comine [`pstar`](./pstar.md) and the [`pstar`](./pstar.md) classes together to do partial conversion:
+You can combine [`pstar`](./pstar_pstar.md) and the [`pstar`](./pstar.md) classes together to do partial conversion:
 ```python
 pl = pstar * data / pset
 assert (isinstance(pl, plist))
@@ -895,7 +895,7 @@ assert (type(t2) == tuple)
 assert (t2 == t1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 
 ## API Overview:

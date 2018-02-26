@@ -67,7 +67,7 @@ assert (type(d2) == defaultdict)
 assert (d2 == d1)
 ```
 
-See [`pstar`](./pstar.md) for more details on conversion.
+See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 ## Methods and Properties:
 

@@ -130,7 +130,7 @@ assert (pl.foo.apply(type).aslist() == [plist, plist, plist])
 assert (pl.bar.apply(type).aslist() == [pdict, pdict, pdict])
 ```
 
-You can comine [`pstar`](./pstar.md) and the [`pstar`](./pstar.md) classes together to do partial conversion:
+You can combine `pstar.pstar` and the [`pstar`](./pstar.md) classes together to do partial conversion:
 ```python
 pl = pstar * data / pset
 assert (isinstance(pl, plist))

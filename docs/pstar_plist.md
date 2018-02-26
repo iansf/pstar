@@ -286,11 +286,11 @@ Recursively convert all nested [`plist`](./pstar_plist.md)s from `self` to `tupl
 
 ### [`pstar.plist.binary_op(self, other)`](./pstar_plist_binary_op.md)
 
-[`plist`](./pstar_plist.md) binary operation; applied element-wise to `self`.
+`plist` binary operation; applied element-wise to `self`.
 
 ### [`pstar.plist.comparator(self, other, return_inds=False)`](./pstar_plist_comparator.md)
 
-[`plist`](./pstar_plist.md) comparison operator. **Comparisons filter plists.**
+`plist` comparison operator. **Comparisons filter plists.**
 
 ### [`pstar.plist.copy(self)`](./pstar_plist_copy.md)
 
@@ -410,7 +410,7 @@ Sorts `self` and `self.root()` in-place and returns `self`.
 
 ### [`pstar.plist.unary_op(self)`](./pstar_plist_unary_op.md)
 
-[`plist`](./pstar_plist.md) unary operation; applied element-wise to `self`.
+`plist` unary operation; applied element-wise to `self`.
 
 ### [`pstar.plist.ungroup(self, r=1, s=None)`](./pstar_plist_ungroup.md)
 
