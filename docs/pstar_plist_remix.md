@@ -17,8 +17,8 @@ assert (rmx.aslist() ==
 ```
 Note that `rmx.baz` gets its values from `foo.bar.baz` in a natural manner.
 
-If `remix` is called on a grouped plist, the result is still a flat plist
-of flat pdicts, but the values in the pdicts are themselves pdicts:
+If `remix` is called on a grouped [`plist`](./pstar_plist.md), the result is still a flat [`plist`](./pstar_plist.md)
+of flat [`pdict`](./pstar_pdict.md)s, but the values in the [`pdict`](./pstar_pdict.md)s are themselves [`plist`](./pstar_plist.md)s:
 ```python
 foo_by_bam = foos.bar.bam.groupby()
 assert (foo_by_bam.aslist() ==
@@ -31,7 +31,7 @@ assert (rmx_by_bam.aslist() ==
          {'foo': [1],    'baz': [42]}])
 ```
 
-This behavior can be useful when integrating with pandas, for example:
+This behavior can be useful when integrating with `pandas`, for example:
 ```python
 df = rmx_by_bam.pd()
 assert (str(df) ==
@@ -40,8 +40,8 @@ assert (str(df) ==
         '1      [42]     [1]')
 ```
 
-If you instead want `remix` to return grouped pdicts, just pass `pepth=-1`
-to have it execute on the deepest plists, as with any other call to a plist:
+If you instead want `remix` to return grouped [`pdict`](./pstar_pdict.md)s, just pass `pepth=-1`
+to have it execute on the deepest [`plist`](./pstar_plist.md)s, as with any other call to a [`plist`](./pstar_plist.md):
 ```python
 rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz, pepth=-1)
 assert (rmx_by_bam.aslist() ==
@@ -52,7 +52,7 @@ assert (rmx_by_bam.aslist() ==
 
 **Args:**
 
->    **`*args`**: List of property names of items in `self` to include in the remix.
+>    **`*args`**: Property names of items in `self` to include in the remix.
 
 >    **`**kwargs`**: Key/value pairs where the key will be a new property on items in
 >              the remix and the value is a deepcast and set to that key.
