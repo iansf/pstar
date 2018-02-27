@@ -17,17 +17,20 @@ import setuptools
 
 
 def readme():
-  with open('docs/README.md') as f:
-    return f.read()
+  return '`pstar` documentation and source code can be found at https://github.com/iansf/pstar.'
+
+
+def version():
+  return '0.1.1'
 
 
 setuptools.setup(
     name='pstar',
-    description='pstar: better python collections',
+    description='pstar: numpy for arbitrary data',
     long_description=readme(),
-    version='0.1.0',
+    version=version(),
     url='https://github.com/iansf/pstar',
-    download_url='https://github.com/iansf/pstar/archive/0.1.0.tar.gz',
+    download_url='https://github.com/iansf/pstar/archive/%s.tar.gz' % version(),
     author='Ian Fischer, Google',
     author_email='iansf@google.com',
     packages=['pstar'],
