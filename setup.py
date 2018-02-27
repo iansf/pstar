@@ -21,7 +21,7 @@ def readme():
 
 
 def version():
-  return '0.1.1'
+  return '0.1.2'
 
 
 setuptools.setup(
@@ -35,7 +35,7 @@ setuptools.setup(
     author_email='iansf@google.com',
     packages=['pstar'],
     license='Apache 2.0',
-    install_requires=[],
+    install_requires=['qj'],
     test_suite='nose.collector',
     tests_require=['nose'],
 )
