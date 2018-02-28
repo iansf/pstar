@@ -3184,7 +3184,7 @@ class PStarTest(unittest.TestCase):
     self.assertTrue(pl._[[True, False, True]].apply(list).aslist() ==
             [[1, 3], [4, 6], [7, 9]])
     pl = plist[1, 2, 3]
-    # `plist` operations don't modify the original (except where natural)!
+    # plist operations don't modify the original (except where natural)!
     self.assertTrue((pl + 5) is not pl)
     self.assertTrue((pl + 5).root() is pl)
     pl2 = pl + 5

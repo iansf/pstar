@@ -1804,7 +1804,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
   `plist`s almost always remain the original `plist`:
   ```python
   pl = plist[1, 2, 3]
-  # `plist` operations don't modify the original (except where natural)!
+  # plist operations don't modify the original (except where natural)!
   assert ((pl + 5) is not pl)
   assert ((pl + 5).root() is pl)
   ```
