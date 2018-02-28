@@ -1857,7 +1857,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
   ```python
   foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
   # Note that the `bar == 1` group comes before the `bar == 0` group. The ordering
-  # is determined by the sort order of the `plist`.
+  # is determined by the sort order of the plist.
   assert (foos.bar.groupby().aslist() ==
           [[{'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}], [{'bar': 0, 'foo': 1}]])
   # Note that foos is unchanged:

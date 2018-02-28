@@ -547,7 +547,7 @@ returns the root, just like filtering:
 ```python
 foos = plist([pdict(foo=0, bar=1), pdict(foo=1, bar=0), pdict(foo=2, bar=1)])
 # Note that the `bar == 1` group comes before the `bar == 0` group. The ordering
-# is determined by the sort order of the [`plist`](./pstar_plist.md).
+# is determined by the sort order of the plist.
 assert (foos.bar.groupby().aslist() ==
         [[{'bar': 1, 'foo': 0}, {'bar': 1, 'foo': 2}], [{'bar': 0, 'foo': 1}]])
 # Note that foos is unchanged:
