@@ -3079,6 +3079,35 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
     return plist([x.__exit__(exc_type, exc_value, traceback) for x in self], root=self.__root__).all(bool)
 
   ##############################################################################
+  # Sensible tab completion.
+  ##############################################################################
+  def __dir__(self):
+    """Allow natural tab-completion on `self` and its contents.
+
+    Examples:
+    ```python
+    pl = plist['a', 'b', 'c']
+    assert ('capitalize' in dir(pl))
+    assert ('groupby' in dir(pl))
+
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    assert ('foo' in dir(foos))
+    assert ('groupby' in dir(foos))
+    assert ('foo' in dir(foos.bar.groupby()))
+    ```
+
+    Returns:
+      Combined `plist` of methods and properties available on `self` and its contents.
+    """
+    # list.__dir__ doesn't exist on 2.7, so we can't use it to get our own dir() results.
+    # Instead, we'll do what the python c runtime does, and just collect the keys from
+    # the plist class's __dict__ and up its superclass chain (which is just list, ignoring
+    # object).
+    return plist(
+        [plist(list(list.__dict__.keys()) + list(plist.__dict__.keys()))]
+        + [plist(dir(x)) for x in self]).ungroup(-1).puniq()
+
+  ##############################################################################
   ##############################################################################
   ##############################################################################
   # Public methods.

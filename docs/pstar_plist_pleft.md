@@ -61,4 +61,4 @@ by_bar_baz_bin.foo.apply(plot, by_bar_baz_bin.pleft(pepth=2), pepth=2)
 
 
 
-## [Source](../pstar/pstar.py#L5188-L5248)
+## [Source](../pstar/pstar.py#L5215-L5275)

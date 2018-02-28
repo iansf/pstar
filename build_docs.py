@@ -63,6 +63,7 @@ PUBLICIZE_SYMBOLS = plist[
     '__enter__',
     '__exit__',
     '__str__',
+    '__dir__',
 ]
 
 API_DOC_TEMPLATE = """

@@ -850,6 +850,10 @@ Deletes items of `self` using a variety of indexing styles.
 
 Delegates to [`__delitem__`](./pstar_plist___delitem__.md) whenever possible. For compatibility with python 2.7.
 
+#### [`pstar.plist.__dir__(self)`](./pstar_plist___dir__.md)
+
+Allow natural tab-completion on `self` and its contents.
+
 #### [`pstar.plist.__enter__(self)`](./pstar_plist___enter__.md)
 
 Allow the use of plists in `with` statements.

@@ -51,4 +51,4 @@ assert (filtered.pfill(3).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L5135-L5187)
+## [Source](../pstar/pstar.py#L5162-L5214)

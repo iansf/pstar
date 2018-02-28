@@ -37,4 +37,4 @@ assert (plist[('foo', 1), ('foo', 2)].pdict() ==
 
 
 
-## [Source](../pstar/pstar.py#L3497-L3539)
+## [Source](../pstar/pstar.py#L3524-L3566)

@@ -3397,6 +3397,16 @@ class PStarTest(unittest.TestCase):
     qj.COLOR = True
 
 
+  def test_from_docs_pstar_plist___dir__(self):
+    pl = plist['a', 'b', 'c']
+    self.assertTrue('capitalize' in dir(pl))
+    self.assertTrue('groupby' in dir(pl))
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    self.assertTrue('foo' in dir(foos))
+    self.assertTrue('groupby' in dir(foos))
+    self.assertTrue('foo' in dir(foos.bar.groupby()))
+
+
   def test_from_docs_pstar_plist___enter__(self):
     import glob, os
     path = os.path.dirname(__file__)
