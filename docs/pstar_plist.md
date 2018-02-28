@@ -164,7 +164,7 @@ See [`groupby`](./pstar_plist_groupby.md) and [`sortby`](./pstar_plist_sortby.md
 **Function Application and Multiple Arguments:**
 
 The most prominent case where you can't treat a `plist` as a single object is
-when you need to pass a single object to some function that isn't a propert of
+when you need to pass a single object to some function that isn't a property of
 the elements of the `plist`. In this case, just use [`apply`](./pstar_plist_apply.md):
 ```python
 pl = plist['abc', 'def', 'ghi']

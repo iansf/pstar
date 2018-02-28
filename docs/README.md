@@ -578,7 +578,7 @@ See [`groupby`](./pstar_plist_groupby.md) and [`sortby`](./pstar_plist_sortby.md
 **Function Application and Multiple Arguments:**
 
 The most prominent case where you can't treat a [`plist`](./pstar_plist.md) as a single object is
-when you need to pass a single object to some function that isn't a propert of
+when you need to pass a single object to some function that isn't a property of
 the elements of the [`plist`](./pstar_plist.md). In this case, just use [`apply`](./pstar_plist_apply.md):
 ```python
 pl = plist['abc', 'def', 'ghi']
@@ -1111,6 +1111,19 @@ Ran 220 tests in 0.693s
 
 OK (skipped=2)
 ```
+
+If you are adding a test or modifying an existing test, be sure to do so in
+[pstar_test.py.template](../pstar_test.py.template), rather than pstar/tests/pstar_test.py.
+After modification, you can rebuild pstar_test.py and rerun all of the tests with the
+following command (assuming that `nosetests` is installed for python 2.7 and `python3` is your
+binary for python 3.6+:
+```bash
+python build_docs.py; nosetests --nologcapture --nocapture; python3 pstar/tests/pstar_test.py
+```
+
+`--nologcapture` and `--nocapture` are useful for writing or debugging tests that involve logging,
+such as the various tests of [`qj`](https://github.com/iansf/qj) integration. Otherwise they are
+not needed.
 
 
 ## Disclaimer:

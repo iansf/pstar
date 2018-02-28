@@ -1888,7 +1888,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
   **Function Application and Multiple Arguments:**
 
   The most prominent case where you can't treat a `plist` as a single object is
-  when you need to pass a single object to some function that isn't a propert of
+  when you need to pass a single object to some function that isn't a property of
   the elements of the `plist`. In this case, just use `apply`:
   ```python
   pl = plist['abc', 'def', 'ghi']
