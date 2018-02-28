@@ -3194,7 +3194,7 @@ class PStarTest(unittest.TestCase):
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     # Filtering on a property:
     zero_bars = foos.bar == 0
-    # The result is a `plist` of the original `pdict`s, correctly filtered:
+    # The result is a plist of the original pdicts, correctly filtered:
     self.assertTrue(zero_bars.aslist() ==
             [{'foo': 0, 'bar': 0},
              {'foo': 2, 'bar': 0}])
