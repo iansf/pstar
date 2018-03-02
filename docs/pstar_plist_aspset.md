@@ -21,4 +21,4 @@ assert ([type(x) for x in by_bar.bar.aspset()] == [frozenpset, frozenpset])
 
 
 
-## [Source](../pstar/pstar.py#L3323-L3350)
+## [Source](../pstar/pstar.py#L3337-L3364)

@@ -123,4 +123,4 @@ Change the keys of `self` or a copy while keeping the same values.
 
 Update `self`. **Returns `self` to allow chaining.**
 
-## [Source](../pstar/pstar.py#L491-L914)
+## [Source](../pstar/pstar.py#L488-L911)

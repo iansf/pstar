@@ -14,7 +14,7 @@ assert (pl.replace('a', '').replace('o', '').pdict() ==
 
 foos = plist([pdict(foo=0, bar=0, baz=3), pdict(foo=1, bar=1, baz=2), pdict(foo=2, bar=0, baz=1)])
 by_bar = foos.bar.groupby()
-assert (by_bar.bar.ungroup().puniq().zip(by_bar).aspdict() ==
+assert (by_bar.bar.ungroup().puniq().zip(by_bar).uproot().aspdict() ==
         {0: [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 1, 'foo': 2}],
          1: [{'bar': 1, 'baz': 2, 'foo': 1}]})
 assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
@@ -26,4 +26,4 @@ assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
 
 
 
-## [Source](../pstar/pstar.py#L3351-L3381)
+## [Source](../pstar/pstar.py#L3365-L3395)

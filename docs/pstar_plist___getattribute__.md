@@ -64,4 +64,4 @@ assert (by_bar.foo.pstr().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L1968-L2057)
+## [Source](../pstar/pstar.py#L1980-L2069)

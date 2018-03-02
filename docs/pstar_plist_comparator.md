@@ -124,4 +124,4 @@ assert ((by_bar_foo == nonzero_by_bar_foo).nonempty(-1).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L1126-L1279)
+## [Source](../pstar/pstar.py#L1123-L1276)

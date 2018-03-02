@@ -17,4 +17,4 @@ assert (str(pd) ==
 
 
 
-## [Source](../pstar/pstar.py#L267-L288)
+## [Source](../pstar/pstar.py#L264-L285)

@@ -21,4 +21,4 @@ ps.qj('ps')
 
 
 
-## [Source](../pstar/pstar.py#L1019-L1040)
+## [Source](../pstar/pstar.py#L1016-L1037)

@@ -20,4 +20,4 @@ assert ('foo' in dir(foos.bar.groupby()))
 
 
 
-## [Source](../pstar/pstar.py#L3084-L3107)
+## [Source](../pstar/pstar.py#L3096-L3121)

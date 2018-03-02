@@ -3682,7 +3682,7 @@ class PStarTest(unittest.TestCase):
             dict(foo='f', bar='br', baz='bz'))
     foos = plist([pdict(foo=0, bar=0, baz=3), pdict(foo=1, bar=1, baz=2), pdict(foo=2, bar=0, baz=1)])
     by_bar = foos.bar.groupby()
-    self.assertTrue(by_bar.bar.ungroup().puniq().zip(by_bar).aspdict() ==
+    self.assertTrue(by_bar.bar.ungroup().puniq().zip(by_bar).uproot().aspdict() ==
             {0: [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 1, 'foo': 2}],
              1: [{'bar': 1, 'baz': 2, 'foo': 1}]})
     self.assertTrue([type(x) for x in by_bar.astuple()] == [tuple, tuple])
@@ -4180,6 +4180,16 @@ class PStarTest(unittest.TestCase):
             {'0': 0, '1': 1, '2': 0})
     self.assertTrue(plist[('foo', 1), ('foo', 2)].pdict() ==
             dict(foo=2))
+    pd = pdict(foo=1, bar=2.0, baz=3.3)
+    pl = pd.palues().apply(lambda x: (str(x), x))
+    pd2 = pl.pdict()
+    pd3 = pl.uproot().pdict()
+    self.assertTrue(pl.aslist() ==
+            [('2.0', 2.0), ('3.3', 3.3), ('1', 1)])
+    self.assertTrue(pd2 ==
+            dict(foo=('1', 1), bar=('2.0', 2.0), baz=('3.3', 3.3)))
+    self.assertTrue(pd3 ==
+            {'1': 1, '2.0': 2.0, '3.3': 3.3})
 
 
   def test_from_docs_pstar_plist_pequal(self):
@@ -4838,6 +4848,14 @@ class PStarTest(unittest.TestCase):
     self.assertTrue([type(x['foo']) for x in data2] == [plist, plist, plist])
     self.assertTrue([type(x['bar']) for x in data2] == [pdict, pdict, pdict])
     self.assertTrue([type(x['baz']) for x in data2] == [defaultpdict, frozenpset, pset])
+    # Convert inner objects even when outer objects have already been converted:
+    data3 = data2 / pstar
+    self.assertTrue(data3 == data)
+    self.assertTrue(type(data3) == list)
+    self.assertTrue([type(x) for x in data3] == [dict, dict, dict])
+    self.assertTrue([type(x['foo']) for x in data3] == [list, list, list])
+    self.assertTrue([type(x['bar']) for x in data3] == [dict, dict, dict])
+    self.assertTrue([type(x['baz']) for x in data3] == [defaultdict, frozenset, set])
     d1 = {'foo': 1, 'bar': 2}
     pd = pdict * d1
     self.assertTrue(type(d1) == dict)

@@ -77,7 +77,7 @@ class _SyntaxSugar(type):
     return _SyntaxSugar.__rmul__(cls, other, depth=1)
 
   def __sub__(cls, other):
-    return _SyntaxSugar.__truediv__(cls, other, depth=1)
+    return other - pstar + cls
 
   def __rsub__(cls, other):
     return _SyntaxSugar.__rtruediv__(cls, other, depth=1)
@@ -85,26 +85,23 @@ class _SyntaxSugar(type):
   def __mul__(cls, other, depth=-1):
     keys = plist(pstar.cls_map().keys())
     cls_map = (
-        keys.zip(keys).pdict()  # Map all classes to themselves
+        keys.zip(keys).uproot().pdict()  # Map all classes to themselves
     ).update({cls.__mro__[1]: cls})  # Map this pstar class's superclass to this pstar class
+    assert len(keys) == len(cls_map)  # We better not have dropped any classes
     return pstar(other, cls_map, depth)
 
   def __rmul__(cls, other, depth=-1):
     return _SyntaxSugar.__mul__(cls, other, depth)
 
-  def __truediv__(cls, other, depth=-1):
-    cls_map = (
-        (
-            plist(pstar.cls_map().items())._[0] != [defaultpdict, frozenpset, pdict, plist, pset, ptuple]  # Filter out pstar classes
-        )._[::-1].pdict()  # Reverse the normal mapping, so that pstar classes go to their python equivalents
-    ).update({cls: cls})  # Leave this pstar class alone
-    return pstar(other, cls_map, depth)
+  def __truediv__(cls, other):
+    return other / pstar * cls
 
   def __rtruediv__(cls, other, depth=-1):
     keys = plist(pstar.cls_map().keys())
     cls_map = (
-        keys.zip(keys).pdict()  # Map all classes to themselves
+        keys.zip(keys).uproot().pdict()  # Map all classes to themselves
     ).update({cls: cls.__mro__[1]})  # Map this pstar class to its superclass
+    assert len(keys) == len(cls_map)  # We better not have dropped any classes
     return pstar(other, cls_map, depth)
 
   if sys.version_info[0] < 3:
@@ -1440,10 +1437,19 @@ def _build_binary_op(op):
       `_build_binary_op` applied to it and `other`, or the corresponding element
       of `other`, if the lengths of `self` and `other` match.
     """
-    if other is pstar:
+    if (other is pstar
+        or other is defaultpdict
+        or other is frozenpset
+        or other is pdict
+        or other is plist
+        or other is pset
+        or other is ptuple
+       ):
       if sys.version_info[0] < 3:
-        return getattr(other, op.__name__)(self)
-      return getattr(other, '__%s__' % op.__name__)(self)
+        name = op.__name__.replace('__', '__r', 1)
+      else:
+        name = '__r%s__' % op.__name__
+      return getattr(other, name)(self)
     if isinstance(other, plist):
       if len(self) == len(other):
         return plist([op(x, o) for x, o in zip(self, other)], root=self.__root__)
@@ -1464,10 +1470,16 @@ def _build_binary_rop(op):
     binary_rop: The corresponding right-side binary operation function.
   """
   def binary_rop(self, other):
-    if other is pstar:
-      if sys.version_info[0] < 3:
-        return getattr(other, op.__name__)(self)
-      return getattr(other, '__%s__' % op.__name__)(self)
+    if (other is pstar
+        or other is defaultpdict
+        or other is frozenpset
+        or other is pdict
+        or other is plist
+        or other is pset
+        or other is ptuple
+       ):
+      # The plist.__r<op>__ methods should never be hit during conversion for valid conversions.
+      raise NotImplementedError('Operation %s is not supported as a pstar conversion method.' % op.__name__)
     return plist([op(other, x) for x in self], root=self.__root__)
 
   return binary_rop
@@ -3365,7 +3377,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
 
     foos = plist([pdict(foo=0, bar=0, baz=3), pdict(foo=1, bar=1, baz=2), pdict(foo=2, bar=0, baz=1)])
     by_bar = foos.bar.groupby()
-    assert (by_bar.bar.ungroup().puniq().zip(by_bar).aspdict() ==
+    assert (by_bar.bar.ungroup().puniq().zip(by_bar).uproot().aspdict() ==
             {0: [{'bar': 0, 'baz': 3, 'foo': 0}, {'bar': 0, 'baz': 1, 'foo': 2}],
              1: [{'bar': 1, 'baz': 2, 'foo': 1}]})
     assert ([type(x) for x in by_bar.astuple()] == [tuple, tuple])
@@ -3526,10 +3538,12 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
   def pdict(self, *args, **kwargs):
     """Convert `self` to a `pdict` if there is a natural mapping of keys to values in `self`.
 
-    Attempts to treat the contents of `self` as key-value pairs in order to create the `pdict`.
-    If that fails, checks if `self.root()` is a `plist` of `KeyValue` `namedtuple`s. If so, uses
-    `self.root().key` for the keys, and the values in `self` for the values. Otherwise,
-    attempts to create a `pdict` pairing values from `self.root()` with values from `self`.
+    If `self is self.root()`, attempts to treat the contents of `self` as key-value pairs in order
+    to create the `pdict` (i.e., `[(key, value), (key, value), ...]`). If that fails, attempts to build
+    the `pdict` assuming `self.root()` is a `plist` of `KeyValue` `namedtuple`s, using `self.root().key`
+    for the keys, and the values in `self` for the values. If that fails, creates a `pdict` pairing
+    values from `self.root()` with values from `self`. In that case, if `self is self.root()`, the
+    `pdict` will be of the form: `pdict(v1=v1, v2=v2, ...)`, as in the first example below.
 
     Examples:
     ```python
@@ -3555,15 +3569,38 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
             dict(foo=2))
     ```
 
+    If you created this `plist` from a `pdict`, but you want to use pairs in `self` to create the
+    new `pdict`, you will need to `uproot` first:
+    ```python
+    pd = pdict(foo=1, bar=2.0, baz=3.3)
+    pl = pd.palues().apply(lambda x: (str(x), x))
+    pd2 = pl.pdict()
+    pd3 = pl.uproot().pdict()
+    assert (pl.aslist() ==
+            [('2.0', 2.0), ('3.3', 3.3), ('1', 1)])
+    assert (pd2 ==
+            dict(foo=('1', 1), bar=('2.0', 2.0), baz=('3.3', 3.3)))
+    assert (pd3 ==
+            {'1': 1, '2.0': 2.0, '3.3': 3.3})
+    ```
+
+    Args:
+      *args: Passed to `pdict.update` after the new `pdict` is created.
+      **kwargs: Passed to `pdict.update` after the new `pdict` is created.
+
     Returns:
       New `pdict` based on the contents of `self`.
     """
+    if self is self.__root__:
+      try:
+        if self.all(lambda x: len(x) == 2):
+          return pdict({k: v for k, v in self}).update(*args, **kwargs)
+      except Exception:
+        pass
     try:
-      return pdict({k: v for k, v in self}).update(*args, **kwargs)
+      return pdict({k: v for k, v in zip(self.__root__.key, self)}).update(*args, **kwargs)
     except Exception:
       pass
-    if self.__root__.all(isinstance, KeyValue):
-      return pdict({k: v for k, v in zip(self.__root__.key, self)}).update(*args, **kwargs)
     return pdict({k: v for k, v in zip(self.__root__, self)}).update(*args, **kwargs)
 
   def pset(self):
@@ -5630,9 +5667,11 @@ class _Converter(type):
     return self.__rtruediv__(other)  # Right division is the principled one.
 
   def __rtruediv__(self, other, depth=-1):
-    cls_map = (
-        plist(self._cls_map.items())._[0] != [defaultpdict, frozenpset, pdict, plist, pset, ptuple]
-    )._[::-1].pdict()
+    # Get non-pstar types mapping to pstar types.
+    python_types = plist(self._cls_map.items())._[0] != [defaultpdict, frozenpset, pdict, plist, pset, ptuple]
+    # Swap order of python and pstar types, then merge them with python types mapped to themselves.
+    cls_map = python_types._[::-1].uproot().pdict(python_types._[0].zip(python_types._[0]).uproot().pdict())
+    assert len(self._cls_map) == len(cls_map)  # We better not have dropped any classes
     return self(other, cls_map, depth)
 
   def __add__(self, other):
@@ -5724,6 +5763,15 @@ class pstar(_compatible_metaclass(_Converter, object)):
   assert ([type(x['foo']) for x in data2] == [plist, plist, plist])
   assert ([type(x['bar']) for x in data2] == [pdict, pdict, pdict])
   assert ([type(x['baz']) for x in data2] == [defaultpdict, frozenpset, pset])
+
+  # Convert inner objects even when outer objects have already been converted:
+  data3 = data2 / pstar
+  assert (data3 == data)
+  assert (type(data3) == list)
+  assert ([type(x) for x in data3] == [dict, dict, dict])
+  assert ([type(x['foo']) for x in data3] == [list, list, list])
+  assert ([type(x['bar']) for x in data3] == [dict, dict, dict])
+  assert ([type(x['baz']) for x in data3] == [defaultdict, frozenset, set])
   ```
 
   You can also convert from each `pstar` class to its python equivalent and back using
@@ -5799,8 +5847,10 @@ class pstar(_compatible_metaclass(_Converter, object)):
    - `+` and `-`: Non-recursive conversions (only the operand itself is converted).
    - `*` and `/`: Recursive conversions (the operand and any children are converted).
    - `+` and `*` on the left or right: Convert python classes to `pstar` classes; e.g., `dict` to `pdict`.
-   - `-` and `/` on the right: Convert `pstar` classes to python classes; e.g., `plist` to `list`.
-   - `-` and `/` on the left: Convert non-`pdict` `pstar` types to their python equivalents.
+   - `-` and `/` on the right: Convert this `pstar` class to its equivalent python class; e.g., `plist` to `list`.
+   - `-` and `/` on the left: Convert all but this `pstar` type to their python equivalents;
+                              e.g., all but `pdict` get converted -- equivalent to `obj - pstar + pdict`
+                              or `obj / pstar * pdict`.
 
   Below are examples focused on `pdict`s, but the same is true for all of the operators:
   ```python

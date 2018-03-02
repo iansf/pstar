@@ -69,6 +69,15 @@ assert ([type(x) for x in data2] == [pdict, pdict, pdict])
 assert ([type(x['foo']) for x in data2] == [plist, plist, plist])
 assert ([type(x['bar']) for x in data2] == [pdict, pdict, pdict])
 assert ([type(x['baz']) for x in data2] == [defaultpdict, frozenpset, pset])
+
+# Convert inner objects even when outer objects have already been converted:
+data3 = data2 / pstar
+assert (data3 == data)
+assert (type(data3) == list)
+assert ([type(x) for x in data3] == [dict, dict, dict])
+assert ([type(x['foo']) for x in data3] == [list, list, list])
+assert ([type(x['bar']) for x in data3] == [dict, dict, dict])
+assert ([type(x['baz']) for x in data3] == [defaultdict, frozenset, set])
 ```
 
 You can also convert from each [`pstar`](./pstar.md) class to its python equivalent and back using
@@ -144,8 +153,10 @@ The semantics of the operators are:
  - `+` and `-`: Non-recursive conversions (only the operand itself is converted).
  - `*` and `/`: Recursive conversions (the operand and any children are converted).
  - `+` and `*` on the left or right: Convert python classes to [`pstar`](./pstar.md) classes; e.g., `dict` to [`pdict`](./pstar_pdict.md).
- - `-` and `/` on the right: Convert [`pstar`](./pstar.md) classes to python classes; e.g., [`plist`](./pstar_plist.md) to `list`.
- - `-` and `/` on the left: Convert non-[`pdict`](./pstar_pdict.md) [`pstar`](./pstar.md) types to their python equivalents.
+ - `-` and `/` on the right: Convert this [`pstar`](./pstar.md) class to its equivalent python class; e.g., [`plist`](./pstar_plist.md) to `list`.
+ - `-` and `/` on the left: Convert all but this [`pstar`](./pstar.md) type to their python equivalents;
+                            e.g., all but [`pdict`](./pstar_pdict.md) get converted -- equivalent to `obj - pstar + pdict`
+                            or `obj / pstar * pdict`.
 
 Below are examples focused on [`pdict`](./pstar_pdict.md)s, but the same is true for all of the operators:
 ```python
@@ -228,4 +239,4 @@ This is convenient if you only imported as `from pstar import pstar`.
 
 
 
-## [Source](../pstar/pstar.py#L5655-L5888)
+## [Source](../pstar/pstar.py#L5696-L5940)
