@@ -1453,8 +1453,6 @@ def _build_binary_op(op):
     if isinstance(other, plist):
       if len(self) == len(other):
         return plist([op(x, o) for x, o in zip(self, other)], root=self.__root__)
-      else:
-        qj((len(self), len(other)))
     return plist([op(x, other) for x in self], root=self.__root__)
 
   return binary_op

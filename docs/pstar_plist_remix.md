@@ -64,4 +64,4 @@ assert (rmx_by_bam.aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4833-L4907)
+## [Source](../pstar/pstar.py#L4831-L4905)

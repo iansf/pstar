@@ -42,4 +42,4 @@ assert (filtered.pstructure().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L5101-L5145)
+## [Source](../pstar/pstar.py#L5099-L5143)

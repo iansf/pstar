@@ -21,4 +21,4 @@ assert (by_bar.foo.pset().aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L3606-L3626)
+## [Source](../pstar/pstar.py#L3604-L3624)

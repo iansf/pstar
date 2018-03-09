@@ -27,4 +27,4 @@ assert (pl4.root() is not pl2)
 
 
 
-## [Source](../pstar/pstar.py#L3268-L3296)
+## [Source](../pstar/pstar.py#L3266-L3294)

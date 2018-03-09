@@ -19,4 +19,4 @@ assert (dict(foo=0, bar=0) in by_bar)
 
 
 
-## [Source](../pstar/pstar.py#L2914-L2943)
+## [Source](../pstar/pstar.py#L2912-L2941)
