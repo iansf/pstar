@@ -81,4 +81,4 @@ assert (by_bar_baz_apply_paslist_psplat.aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4028-L4146)
+## [Source](../pstar/pstar.py#L4032-L4152)

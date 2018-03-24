@@ -440,4 +440,4 @@ Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
 
 Zips `self` with `others`, recursively.
 
-## [Source](../pstar/pstar.py#L1736-L5644)
+## [Source](../pstar/pstar.py#L1738-L5650)

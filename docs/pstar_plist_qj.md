@@ -28,4 +28,4 @@ assert (foos.foo.qj('foo').aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4337-L4363)
+## [Source](../pstar/pstar.py#L4343-L4369)
