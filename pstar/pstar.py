@@ -2107,7 +2107,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
     else:
       wrap = lambda *a, **k: _call_attr(self, name, attr, *a, **k)
 
-    if name in NONCALLABLE_ATTRS or name == '_':
+    if name in NONCALLABLE_ATTRS or name in  ['_', '__']:
       return wrap()
 
     return wrap
@@ -3047,6 +3047,10 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
 
   __hex__ = _build_unary_op(hex)
 
+  # This makes python2.7 tests very unhappy, but doesn't break any tests on python3.6.
+  # def __nonzero__(self):
+  #   return bool(list(self.nonempty(-1)))
+
   ##############################################################################
   # Ensure plists can't be hashed.
   ##############################################################################
@@ -3158,6 +3162,50 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
       `self` occurs at the maximum depth.
     """
     self.__pepth__ = -1
+    return self
+
+  def __(self):
+    """Causes the next call to `self` to be performed on the innermost `plist`.
+
+    This is a convenience method primarily for easy subscripting of the innermost `plist`.
+
+    Examples:
+    ```python
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
+    assert (by_bar.__[0].aslist() ==
+            [{'bar': 0, 'foo': 0}, {'bar': 1, 'foo': 1}])
+    # This makes slicing the innermost plist easy as well, but note the three-argument slice:
+    assert (by_bar.__[:1:].aslist() ==
+            [[{'bar': 0, 'foo': 0}], [{'bar': 1, 'foo': 1}]])
+    ```
+
+    It can be used to call any method on the values of a `plist` as well:
+    ```python
+    pl = plist * [['foo'], ['bar']]
+    pl.__.append('baz')
+    assert (pl.apply(type).aslist() ==
+            [plist, plist])
+    assert (pl.aslist() ==
+            [['foo', 'baz'], ['bar', 'baz']])
+    ```
+
+    Compare the use of `__` with the use of `_`, which will work on the leaf values if they
+    support the property being accessed:
+    ```python
+    # Get the first two characters from the strings in the innermost plist.
+    assert (pl._[:2:].aslist() ==
+            [['fo', 'ba'], ['ba', 'ba']])
+    # Get the first two elements from the innermost plist (which in this case is the entire plist).
+    assert (pl.__[:2:].aslist() ==
+            [['foo', 'baz'], ['bar', 'baz']])
+    ```
+
+    Returns:
+      `self`, but in a state such that the next access to a property or method of
+      `self` occurs at the innermost `plist`.
+    """
+    self.__pepth__ = self.pdepth(True)
     return self
 
   ##############################################################################

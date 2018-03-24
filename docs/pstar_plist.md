@@ -200,6 +200,10 @@ Constructs plist.
 
 Causes the next call to `self` to be performed as deep as possible in the [`plist`](./pstar_plist.md).
 
+### [`pstar.plist.__(self)`](./pstar_plist___.md)
+
+Causes the next call to `self` to be performed on the innermost [`plist`](./pstar_plist.md).
+
 ### [`pstar.plist.__call__(self, *args, **kwargs)`](./pstar_plist___call__.md)
 
 Call each element of self, possibly recusively.
@@ -436,4 +440,4 @@ Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
 
 Zips `self` with `others`, recursively.
 
-## [Source](../pstar/pstar.py#L1736-L5596)
+## [Source](../pstar/pstar.py#L1736-L5644)

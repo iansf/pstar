@@ -155,6 +155,10 @@ Constructs plist.
 
 Causes the next call to `self` to be performed as deep as possible in the [`plist`](./pstar_plist.md).
 
+#### [`pstar.plist.__(self)`](./pstar_plist___.md)
+
+Causes the next call to `self` to be performed on the innermost [`plist`](./pstar_plist.md).
+
 #### [`pstar.plist.__call__(self, *args, **kwargs)`](./pstar_plist___call__.md)
 
 Call each element of self, possibly recusively.

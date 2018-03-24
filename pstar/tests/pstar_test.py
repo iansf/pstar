@@ -3247,6 +3247,28 @@ class PStarTest(unittest.TestCase):
             [['foo', 'baz'], ['bar', 'baz']])
 
 
+  def test_from_docs_pstar_plist___(self):
+    foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
+    by_bar = foos.bar.groupby()
+    self.assertTrue(by_bar.__[0].aslist() ==
+            [{'bar': 0, 'foo': 0}, {'bar': 1, 'foo': 1}])
+    # This makes slicing the innermost plist easy as well, but note the three-argument slice:
+    self.assertTrue(by_bar.__[:1:].aslist() ==
+            [[{'bar': 0, 'foo': 0}], [{'bar': 1, 'foo': 1}]])
+    pl = plist * [['foo'], ['bar']]
+    pl.__.append('baz')
+    self.assertTrue(pl.apply(type).aslist() ==
+            [plist, plist])
+    self.assertTrue(pl.aslist() ==
+            [['foo', 'baz'], ['bar', 'baz']])
+    # Get the first two characters from the strings in the innermost plist.
+    self.assertTrue(pl._[:2:].aslist() ==
+            [['fo', 'ba'], ['ba', 'ba']])
+    # Get the first two elements from the innermost plist (which in this case is the entire plist).
+    self.assertTrue(pl.__[:2:].aslist() ==
+            [['foo', 'baz'], ['bar', 'baz']])
+
+
   def test_from_docs_pstar_plist___call__(self):
     foos = plist([pdict(foo=0, bar=0), pdict(foo=1, bar=1), pdict(foo=2, bar=0)])
     # A plist of callables, one for each pdict:

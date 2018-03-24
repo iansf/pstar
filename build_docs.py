@@ -44,6 +44,7 @@ SKIP_SYMBOLS = 'pstar.' + CLASS_NAMES
 PUBLICIZE_SYMBOLS = plist[
     '__init__',
     '_',
+    '__',
     '__getattribute__',
     '__getattr__',
     '__getitem__',
