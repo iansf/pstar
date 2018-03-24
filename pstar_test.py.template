@@ -2245,6 +2245,11 @@ class PStarTest(unittest.TestCase):
     qj.LOG_FN = log_fn
     qj.COLOR = True
 
+  def test_plist_fiddly_conversions(self):
+    pl = plist[[1, 2, 3], [4, 5, 6]] * plist
+    self.assertTrue(type(pl) == plist)
+    self.assertTrue(pl.apply(type).aslist() == [plist, plist])
+
   def test_plist_of_pdict_inner_qj(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(3)])
 

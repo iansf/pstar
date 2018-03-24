@@ -1449,7 +1449,7 @@ def _build_binary_op(op):
         name = op.__name__.replace('__', '__r', 1)
       else:
         name = '__r%s__' % op.__name__
-      return getattr(other, name)(self)
+      return getattr(other.__class__, name)(other, self)
     if isinstance(other, plist):
       if len(self) == len(other):
         return plist([op(x, o) for x, o in zip(self, other)], root=self.__root__)
