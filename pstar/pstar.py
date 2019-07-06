@@ -4309,7 +4309,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
     for i, x in enumerate(new_plist[start:]):
       cur_val = func(cur_val, x, *[a[i] for a in args], **{k: v[i] for k, v in kwargs.items()})
 
-    return plist([cur_val], root=plist([initial_value], root=new_plist.__root__)).ungroup()
+    return plist.ungroup(plist([cur_val], root=plist([initial_value], root=new_plist.__root__)))
 
   def filter(self, func=bool, *args, **kwargs):
     """Filter `self` by an arbitrary function on elements of `self`, forwarding arguments.
