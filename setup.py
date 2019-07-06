@@ -21,13 +21,14 @@ def readme():
 
 
 def version():
-  return '0.1.7'
+  return '0.1.8'
 
 
 setuptools.setup(
     name='pstar',
     description='pstar: numpy for arbitrary data',
     long_description=readme(),
+    long_description_content_type='text/markdown',
     version=version(),
     url='https://github.com/iansf/pstar',
     download_url='https://github.com/iansf/pstar/archive/%s.tar.gz' % version(),
@@ -37,5 +38,5 @@ setuptools.setup(
     license='Apache 2.0',
     install_requires=['qj'],
     test_suite='nose.collector',
-    tests_require=['nose'],
+    tests_require=['matplotlib', 'mock', 'nose'],
 )
