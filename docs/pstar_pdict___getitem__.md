@@ -30,4 +30,4 @@ assert (pd[['foo', 'baz']].pdict() ==
 
 
 
-## [Source](../pstar/pstar.py#L197-L228)
+## [Source](../pstar/pstar.py#L202-L233)

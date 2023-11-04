@@ -28,4 +28,4 @@ assert (pd.stats.bar == [2])
 
 
 
-## [Source](../pstar/pstar.py#L559-L584)
+## [Source](../pstar/pstar.py#L564-L589)

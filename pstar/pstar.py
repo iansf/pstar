@@ -27,6 +27,11 @@ from pstar import defaultpdict, frozenpset, pdict, plist, pset, ptuple, pstar
 
 import collections
 from collections import defaultdict
+try:
+  collectionsAbc = collections.abc
+except AttributeError:
+  collectionsAbc = collections
+
 import inspect
 from multiprocessing.dummy import Pool
 import operator
@@ -1614,6 +1619,7 @@ def _call_attr(_pobj, _pname, _pattr, *_pargs, **_pkwargs):
                                          **{k: v[ca.i] for k, v in pkwargs.items()})
         pl = plist(pool.map(map_func, call_args, chunksize=_get_thread_chunksize(psplit, len(_pobj))), root=_pobj.__root__)
         pool.close()
+        pool.join()
         return pl
       return plist([_call_attr(x,
                                _pname,
@@ -2448,7 +2454,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
           operator.__setitem__(self, k, lval[i])
       elif isinstance(key, slice):
         lval = val
-        if not isinstance(val, collections.Iterable):
+        if not isinstance(val, collectionsAbc.Iterable):
           slice_len = len([i for i in range(*key.indices(len(self)))])
           lval = _ensure_len(slice_len, val)
         list.__setitem__(self, key, lval)
@@ -2904,6 +2910,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
                                  **{k: v[ca.i] for k, v in kwargs.items()})
       pl = plist(pool.map(map_func, call_args, chunksize=_get_thread_chunksize(psplit, len(self))), root=self.__root__)
       pool.close()
+      pool.join()
       return pl
     return plist([x(*[a[i] for a in args],
                     **{k: v[i] for k, v in kwargs.items()})
@@ -3544,12 +3551,12 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
                 {'bar': 0, 'baz': 7, 'bin': 13, 'foo': 4}]])
 
       assert (str(foos.pd()) ==
-              '   bar  baz  bin  foo\n'
-              '0    1    6   13    1\n'
-              '1    1    6   13    3\n'
-              '2    0    3   -1    0\n'
-              '3    0    5   -1    2\n'
-              '4    0    7   13    4')
+              '   foo  bar  baz  bin\n'
+              '0    1    1    6   13\n'
+              '1    3    1    6   13\n'
+              '2    0    0    3   -1\n'
+              '3    2    0    5   -1\n'
+              '4    4    0    7   13')
 
       assert (str(foos.pd(index='foo')) ==
               '     bar  baz  bin\n'
@@ -3561,14 +3568,14 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
               '4      0    7   13')
 
       assert (by_bar.pd_().pstr().aslist() ==
-              ['   bar  baz  bin  foo\n'
-               '0    1    6   13    1\n'
-               '1    1    6   13    3',
+              ['   foo  bar  baz  bin\n'
+               '0    1    1    6   13\n'
+               '1    3    1    6   13',
 
-               '   bar  baz  bin  foo\n'
-               '0    0    3   -1    0\n'
-               '1    0    5   -1    2\n'
-               '2    0    7   13    4'])
+               '   foo  bar  baz  bin\n'
+               '0    0    0    3   -1\n'
+               '1    2    0    5   -1\n'
+               '2    4    0    7   13'])
       ```
       Note the use of `pd_()` on the grouped `plist`. This allows you to get a separate `pandas.DataFrame` for
       each group in your `plist`, and then do normal `DataFrame` manipulations with them individually.
@@ -4139,6 +4146,7 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
           map_func = lambda ca: funcs[ca.i](ca.x, *[a[ca.i] for a in args], **{k: v[ca.i] for k, v in kwargs.items()})
       pl = plist(pool.map(map_func, call_args, chunksize=_get_thread_chunksize(psplit, len(self))), root=self.__root__)
       pool.close()
+      pool.join()
       return pl
 
     if paslist:
@@ -4918,9 +4926,9 @@ class plist(_compatible_metaclass(_SyntaxSugar, list)):
     ```python
     df = rmx_by_bam.pd()
     assert (str(df) ==
-            '        baz     foo\n'
-            '0  [13, -9]  [0, 2]\n'
-            '1      [42]     [1]')
+            '      foo       baz\n'
+            '0  [0, 2]  [13, -9]\n'
+            '1     [1]      [42]')
     ```
 
     If you instead want `remix` to return grouped `pdict`s, just pass `pepth=-1`

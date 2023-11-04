@@ -1916,12 +1916,12 @@ class PStarTest(unittest.TestCase):
     (baz == baz.np().max()).bin = 13
 
     self.assertEqual(str(foos.pd()),
-                     '   bar  baz  bin  foo\n'
-                     '0    1    6   13    1\n'
-                     '1    1    6   13    3\n'
-                     '2    0    3   -1    0\n'
-                     '3    0    5   -1    2\n'
-                     '4    0    7   13    4')
+                     '   foo  bar  baz  bin\n'
+                     '0    1    1    6   13\n'
+                     '1    3    1    6   13\n'
+                     '2    0    0    3   -1\n'
+                     '3    2    0    5   -1\n'
+                     '4    4    0    7   13')
 
     self.assertEqual(str(foos.pd(index='foo')),
                      '     bar  baz  bin\n'
@@ -1977,9 +1977,9 @@ class PStarTest(unittest.TestCase):
     by_bar_rm = by_bar.remix('foo', 'baz', new_bin=by_bar.bin * 13)
 
     self.assertEqual(str(by_bar_rm.pd()),
-                     '         baz        foo          new_bin\n'
-                     '0     [6, 6]     [1, 3]       [169, 169]\n'
-                     '1  [3, 5, 7]  [0, 2, 4]  [-13, -13, 169]')
+                     '         foo        baz          new_bin\n'
+                     '0     [1, 3]     [6, 6]       [169, 169]\n'
+                     '1  [0, 2, 4]  [3, 5, 7]  [-13, -13, 169]')
 
   def test_plist_of_pdict_groupby_groupby_sortby_pd_inner(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
@@ -2003,17 +2003,17 @@ class PStarTest(unittest.TestCase):
     # pylint: disable=bad-continuation
     self.assertEqual(by_bar_bin.pd__().pstr_().aslist(),
                      [[
-                          '   bar  baz  bin  foo\n'
-                          '0    0    3   -1    0\n'
-                          '1    0    5   -1    2',
+                          '   foo  bar  baz  bin\n'
+                          '0    0    0    3   -1\n'
+                          '1    2    0    5   -1',
 
-                          '   bar  baz  bin  foo\n'
-                          '0    0    7   13    4',
+                          '   foo  bar  baz  bin\n'
+                          '0    4    0    7   13'
                       ],
                       [
-                          '   bar  baz  bin  foo\n'
-                          '0    1    6   13    1\n'
-                          '1    1    6   13    3',
+                          '   foo  bar  baz  bin\n'
+                          '0    1    1    6   13\n'
+                          '1    3    1    6   13'
                       ]
                      ])
     # pylint: enable=bad-continuation
@@ -2113,12 +2113,12 @@ class PStarTest(unittest.TestCase):
                       {'bin': 13, 'baz': 6, 'foo': 3, 'bar': 1}])
 
     self.assertEqual(str(by_bar_bin_baz.ungroup(-1).pd()),
-                     '   bar  baz  bin  foo\n'
-                     '0    0    3   -1    0\n'
-                     '1    0    5   -1    2\n'
-                     '2    0    7   13    4\n'
-                     '3    1    6   13    1\n'
-                     '4    1    6   13    3')
+                     '   foo  bar  baz  bin\n'
+                     '0    0    0    3   -1\n'
+                     '1    2    0    5   -1\n'
+                     '2    4    0    7   13\n'
+                     '3    1    1    6   13\n'
+                     '4    3    1    6   13')
 
   def test_plist_of_pdict_pandas_filtering_equivalence(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(5)])
@@ -2142,13 +2142,13 @@ class PStarTest(unittest.TestCase):
 
     df = by.pd(index='idx')
     self.assertEqual(str(df),
-                     '     bar  baz  bin  foo\n'
+                     '     foo  bar  baz  bin\n'
                      'idx                    \n'
-                     '0      0    3   -1    0\n'
-                     '1      0    5   -1    2\n'
-                     '2      0    7   13    4\n'
-                     '3      1    6   13    1\n'
-                     '4      1    6   13    3')
+                     '0      0    0    3   -1\n'
+                     '1      2    0    5   -1\n'
+                     '2      4    0    7   13\n'
+                     '3      1    1    6   13\n'
+                     '4      3    1    6   13')
 
     self.assertEqual(str(df[(df.bar == 0) & (df.bin == -1)]),
                      str(((by.bar == 0) & (by.bin == -1)).pd(index='idx')))
@@ -2163,7 +2163,7 @@ class PStarTest(unittest.TestCase):
                      str(((by.bar == 0) & (by.bar == 0)).pd(index='idx')))
 
     self.assertEqual(str(df[(df.bar == 0) & (df.bar == 1)]),
-                     str(((by.bar == 0) & (by.bar == 1)).pd(index='idx', columns=sorted(by.keys()[0]))))
+                     str(((by.bar == 0) & (by.bar == 1)).pd(index='idx', columns=list(by.keys()[0]))))
 
   def test_plist_call_with_psplit(self):
     foos = plist([pdict(foo=i, bar=i % 2) for i in range(3)])
@@ -4138,12 +4138,12 @@ class PStarTest(unittest.TestCase):
               {'bar': 0, 'baz': 5, 'bin': -1, 'foo': 2},
               {'bar': 0, 'baz': 7, 'bin': 13, 'foo': 4}]])
     self.assertTrue(str(foos.pd()) ==
-            '   bar  baz  bin  foo\n'
-            '0    1    6   13    1\n'
-            '1    1    6   13    3\n'
-            '2    0    3   -1    0\n'
-            '3    0    5   -1    2\n'
-            '4    0    7   13    4')
+            '   foo  bar  baz  bin\n'
+            '0    1    1    6   13\n'
+            '1    3    1    6   13\n'
+            '2    0    0    3   -1\n'
+            '3    2    0    5   -1\n'
+            '4    4    0    7   13')
     self.assertTrue(str(foos.pd(index='foo')) ==
             '     bar  baz  bin\n'
             'foo               \n'
@@ -4153,13 +4153,13 @@ class PStarTest(unittest.TestCase):
             '2      0    5   -1\n'
             '4      0    7   13')
     self.assertTrue(by_bar.pd_().pstr().aslist() ==
-            ['   bar  baz  bin  foo\n'
-             '0    1    6   13    1\n'
-             '1    1    6   13    3',
-             '   bar  baz  bin  foo\n'
-             '0    0    3   -1    0\n'
-             '1    0    5   -1    2\n'
-             '2    0    7   13    4'])
+            ['   foo  bar  baz  bin\n'
+             '0    1    1    6   13\n'
+             '1    3    1    6   13',
+             '   foo  bar  baz  bin\n'
+             '0    0    0    3   -1\n'
+             '1    2    0    5   -1\n'
+             '2    4    0    7   13'])
 
 
   def test_from_docs_pstar_plist_pdepth(self):
@@ -4602,9 +4602,9 @@ class PStarTest(unittest.TestCase):
              {'foo': [1],    'baz': [42]}])
     df = rmx_by_bam.pd()
     self.assertTrue(str(df) ==
-            '        baz     foo\n'
-            '0  [13, -9]  [0, 2]\n'
-            '1      [42]     [1]')
+            '      foo       baz\n'
+            '0  [0, 2]  [13, -9]\n'
+            '1     [1]      [42]')
     rmx_by_bam = foo_by_bam.remix('foo', baz=foo_by_bam.bar.baz, pepth=-1)
     self.assertTrue(rmx_by_bam.aslist() ==
             [[{'foo': 0, 'baz': 13},

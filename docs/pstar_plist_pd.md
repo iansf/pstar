@@ -28,12 +28,12 @@ assert (by_bar.aslist() ==
           {'bar': 0, 'baz': 7, 'bin': 13, 'foo': 4}]])
 
 assert (str(foos.pd()) ==
-        '   bar  baz  bin  foo\n'
-        '0    1    6   13    1\n'
-        '1    1    6   13    3\n'
-        '2    0    3   -1    0\n'
-        '3    0    5   -1    2\n'
-        '4    0    7   13    4')
+        '   foo  bar  baz  bin\n'
+        '0    1    1    6   13\n'
+        '1    3    1    6   13\n'
+        '2    0    0    3   -1\n'
+        '3    2    0    5   -1\n'
+        '4    4    0    7   13')
 
 assert (str(foos.pd(index='foo')) ==
         '     bar  baz  bin\n'
@@ -45,14 +45,14 @@ assert (str(foos.pd(index='foo')) ==
         '4      0    7   13')
 
 assert (by_bar.pd_().pstr().aslist() ==
-        ['   bar  baz  bin  foo\n'
-         '0    1    6   13    1\n'
-         '1    1    6   13    3',
+        ['   foo  bar  baz  bin\n'
+         '0    1    1    6   13\n'
+         '1    3    1    6   13',
 
-         '   bar  baz  bin  foo\n'
-         '0    0    3   -1    0\n'
-         '1    0    5   -1    2\n'
-         '2    0    7   13    4'])
+         '   foo  bar  baz  bin\n'
+         '0    0    0    3   -1\n'
+         '1    2    0    5   -1\n'
+         '2    4    0    7   13'])
 ```
 Note the use of `pd_()` on the grouped [`plist`](./pstar_plist.md). This allows you to get a separate `pandas.DataFrame` for
 each group in your [`plist`](./pstar_plist.md), and then do normal `DataFrame` manipulations with them individually.
@@ -72,4 +72,4 @@ call `DataFrame.groupby`. Also see `plist.remix` for alternative ways of convert
 
 
 
-## [Source](../pstar/pstar.py#L3518-L3587)
+## [Source](../pstar/pstar.py#L3525-L3594)

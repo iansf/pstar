@@ -31,4 +31,4 @@ trailing '_' in the name that were detected by [`__getattribute__`](./pstar_plis
 
 
 
-## [Source](../pstar/pstar.py#L2073-L2116)
+## [Source](../pstar/pstar.py#L2079-L2122)

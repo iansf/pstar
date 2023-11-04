@@ -98,4 +98,4 @@ assert (pl.apply(list).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L2348-L2481)
+## [Source](../pstar/pstar.py#L2354-L2487)

@@ -1,4 +1,4 @@
-# [`pstar`](./pstar.md).`plist(list)`
+# [`pstar`](./pstar.md).`plist(self, *args, **kwargs)`
 
 `list` subclass for powerful, concise data processing.
 
@@ -308,7 +308,7 @@ Copy `self` to new [`plist`](./pstar_plist.md). Performs a shallow copy.
 
 Wrap the current [`plist`](./pstar_plist.md) values in tuples where the first item is the index.
 
-### [`pstar.plist.filter(self, func=<type 'bool'>, *args, **kwargs)`](./pstar_plist_filter.md)
+### [`pstar.plist.filter(self, func=<class 'bool'>, *args, **kwargs)`](./pstar_plist_filter.md)
 
 Filter `self` by an arbitrary function on elements of `self`, forwarding arguments.
 
@@ -440,4 +440,4 @@ Adds and returns an outer [`plist`](./pstar_plist.md) around `self`.
 
 Zips `self` with `others`, recursively.
 
-## [Source](../pstar/pstar.py#L1738-L5650)
+## [Source](../pstar/pstar.py#L1744-L5658)

@@ -35,9 +35,9 @@ This behavior can be useful when integrating with `pandas`, for example:
 ```python
 df = rmx_by_bam.pd()
 assert (str(df) ==
-        '        baz     foo\n'
-        '0  [13, -9]  [0, 2]\n'
-        '1      [42]     [1]')
+        '      foo       baz\n'
+        '0  [0, 2]  [13, -9]\n'
+        '1     [1]      [42]')
 ```
 
 If you instead want `remix` to return grouped [`pdict`](./pstar_pdict.md)s, just pass `pepth=-1`
@@ -64,4 +64,4 @@ assert (rmx_by_bam.aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4885-L4959)
+## [Source](../pstar/pstar.py#L4893-L4967)

@@ -1,4 +1,4 @@
-# [`pstar`](./pstar.md).`ptuple(tuple)`
+# [`pstar`](./pstar.md).`ptuple(iterable=())`
 
 Placeholder `tuple` subclass. Mostly unimplemented.
 
@@ -36,4 +36,4 @@ See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
-## [Source](../pstar/pstar.py#L1046-L1099)
+## [Source](../pstar/pstar.py#L1051-L1104)

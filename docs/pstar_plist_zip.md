@@ -30,4 +30,4 @@ assert (by_bar.bar.zip(by_bar.foo).aslist() ==
 
 
 
-## [Source](../pstar/pstar.py#L4636-L4672)
+## [Source](../pstar/pstar.py#L4644-L4680)

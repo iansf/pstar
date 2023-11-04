@@ -37,4 +37,4 @@ See [`pstar`](./pstar_pstar.md) for more details on conversion.
 
 Call the `qj` logging function with `self` as the value to be logged. All other arguments are passed through to `qj`.
 
-## [Source](../pstar/pstar.py#L920-L974)
+## [Source](../pstar/pstar.py#L925-L979)

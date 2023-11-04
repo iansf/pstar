@@ -31,4 +31,4 @@ assert (pd.baz == pd['baz'] == 'three')
 
 
 
-## [Source](../pstar/pstar.py#L661-L695)
+## [Source](../pstar/pstar.py#L666-L700)

@@ -60,4 +60,4 @@ assert (pd3 ==
 
 
 
-## [Source](../pstar/pstar.py#L3588-L3655)
+## [Source](../pstar/pstar.py#L3595-L3662)

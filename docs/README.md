@@ -700,7 +700,7 @@ Links for detailed documentation are below.
 
 ____
 
-### [`pstar.defaultpdict(defaultdict)`](./pstar_defaultpdict.md)
+### [`pstar.defaultpdict(self, *a, **kw)`](./pstar_defaultpdict.md)
 
 `defaultdict` subclass where everything is automatically a property.
 
@@ -768,7 +768,7 @@ Call the `qj` logging function with `self` as the value to be logged. All other 
 
 ____
 
-### [`pstar.pdict(dict)`](./pstar_pdict.md)
+### [`pstar.pdict(self, *a, **kw)`](./pstar_pdict.md)
 
 `dict` subclass where everything is automatically a property.
 
@@ -818,7 +818,7 @@ Update `self`. **Returns `self` to allow chaining.**
 
 ____
 
-### [`pstar.plist(list)`](./pstar_plist.md)
+### [`pstar.plist(self, *args, **kwargs)`](./pstar_plist.md)
 
 `list` subclass for powerful, concise data processing.
 
@@ -938,7 +938,7 @@ Copy `self` to new [`plist`](./pstar_plist.md). Performs a shallow copy.
 
 Wrap the current [`plist`](./pstar_plist.md) values in tuples where the first item is the index.
 
-#### [`pstar.plist.filter(self, func=<type 'bool'>, *args, **kwargs)`](./pstar_plist_filter.md)
+#### [`pstar.plist.filter(self, func=<class 'bool'>, *args, **kwargs)`](./pstar_plist_filter.md)
 
 Filter `self` by an arbitrary function on elements of `self`, forwarding arguments.
 
@@ -1082,13 +1082,13 @@ Call the `qj` logging function with `self` as the value to be logged. All other 
 
 ____
 
-### [`pstar.pstar(object)`](./pstar_pstar.md)
+### [`pstar.pstar(self, obj, cls_map=None, depth=-1, dbg=0)`](./pstar_pstar.md)
 
 Recursively converts between standard python types and pstar types.
 
 ____
 
-### [`pstar.ptuple(tuple)`](./pstar_ptuple.md)
+### [`pstar.ptuple(iterable=())`](./pstar_ptuple.md)
 
 Placeholder `tuple` subclass. Mostly unimplemented.
 

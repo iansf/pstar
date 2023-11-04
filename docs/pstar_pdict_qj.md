@@ -23,4 +23,4 @@ assert (pd.baz == 3)
 
 
 
-## [Source](../pstar/pstar.py#L393-L416)
+## [Source](../pstar/pstar.py#L398-L421)
